@@ -1,26 +1,292 @@
 @import "tailwindcss";
 
 :root {
+  /* ═══════════════════════════════════════════════════
+     BRAND COLORS
+     ═══════════════════════════════════════════════════ */
+  --brand-primary: #8B0000;
+  --brand-primary-hover: #a30000;
+  --brand-primary-active: #6d0000;
+  --brand-primary-subtle: #fff5f5;
+
+  /* ═══════════════════════════════════════════════════
+     HEADER / SIDEBAR
+     ═══════════════════════════════════════════════════ */
+  --header-bg: #1e2130;
+  --header-text: #ffffff;
+  --header-muted: #64748b;
+  --header-search-bg: rgba(100, 116, 139, 0.25);
+  --header-search-border: #475569;
+  --header-search-text: #cbd5e1;
+  --sidebar-hover: #2d3348;
+  --sidebar-icon: #94a3b8;
+  --sidebar-icon-active: #ffffff;
+
+  /* ═══════════════════════════════════════════════════
+     TEXT COLORS
+     ═══════════════════════════════════════════════════ */
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-muted: #94a3b8;
+  --text-disabled: #cbd5e1;
+
+  /* ═══════════════════════════════════════════════════
+     BORDER COLORS
+     ═══════════════════════════════════════════════════ */
+  --border-primary: #e2e8f0;
+  --border-secondary: #f1f5f9;
+  --border-input: #dbe2ea;
+  --border-input-alt: #dbe3ee;
+  --border-light: #f8fafc;
+
+  /* ═══════════════════════════════════════════════════
+     BACKGROUND COLORS
+     ═══════════════════════════════════════════════════ */
+  --bg-page: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-header: #fafafa;
+  --bg-table-header: #f8fafc;
+  --bg-table-row-alt: #fafafa;
+  --bg-table-row-hover: #f0f9ff;
+  --bg-hover: #f8fafc;
+  --bg-code-input: #fafafa;
+
+  /* ═══════════════════════════════════════════════════
+     STATUS — SUCCESS / OPEN / CLEAR
+     ═══════════════════════════════════════════════════ */
+  --status-success-bg: #dcfce7;
+  --status-success-text: #166534;
+  --status-success-border: #86efac;
+  --status-success-subtle: #ecfdf5;
+  --status-success-dark: #059669;
+  --status-success-emerald: #10b981;
+  --status-success-emerald-dark: #16a34a;
+  --status-success-green-50: #f0fdf4;
+  --status-success-green-700: #15803d;
+  --status-success-green-800: #166534;
+
+  /* ═══════════════════════════════════════════════════
+     STATUS — WARNING / OPEN LIEN / EXCEPTION
+     ═══════════════════════════════════════════════════ */
+  --status-warning-bg: #fef3c7;
+  --status-warning-text: #92400e;
+  --status-warning-border: #fde68a;
+  --status-warning-subtle: #fffbeb;
+
+  /* ═══════════════════════════════════════════════════
+     STATUS — ERROR / OPEN / CANCELLED
+     ═══════════════════════════════════════════════════ */
+  --status-error-bg: #fee2e2;
+  --status-error-text: #991b1b;
+  --status-error-border: #fca5a5;
+  --status-error-dark: #dc2626;
+
+  /* ═══════════════════════════════════════════════════
+     STATUS — INFO / CLOSED / RELEASED
+     ═══════════════════════════════════════════════════ */
+  --status-info-bg: #e0e7ff;
+  --status-info-text: #3730a3;
+  --status-info-subtle: #eff6ff;
+  --status-info-blue: #1d4ed8;
+  --status-info-blue-border: #bfdbfe;
+  --status-info-blue-text: #2563eb;
+  --status-info-blue-50: #dbeafe;
+
+  /* ═══════════════════════════════════════════════════
+     STATUS — NEUTRAL / RECONVEYED
+     ═══════════════════════════════════════════════════ */
+  --status-neutral-bg: #f1f5f9;
+  --status-neutral-text: #475569;
+
+  /* ═══════════════════════════════════════════════════
+     ACCENT COLORS (search sources, property types)
+     ═══════════════════════════════════════════════════ */
+  --accent-data-trace: #0369a1;
+  --accent-title-point: #7c3aed;
+  --accent-county-tax: #65a30d;
+  --accent-pacer: #b45309;
+  --accent-patriot: #dc2626;
+  --accent-assessor: #0891b2;
+  --accent-teal: #0d9488;
+
+  /* ═══════════════════════════════════════════════════
+     UI ELEMENT COLORS
+     ═══════════════════════════════════════════════════ */
+  --ui-avatar-bg: #2563eb;
+  --ui-avatar-text: #ffffff;
+  --ui-notification-bg: #dc2626;
+  --ui-notification-text: #ffffff;
+  --ui-checkbox-accent: #8B0000;
+  --ui-progress-bg: #e2e8f0;
+  --ui-progress-fill: #10b981;
+  --ui-progress-complete: #34d399;
+  --ui-code-text: #334155;
+  --ui-code-placeholder: #94a3b8;
+  --ui-link: #2563eb;
+
+  /* ═══════════════════════════════════════════════════
+     MODAL / OVERLAY
+     ═══════════════════════════════════════════════════ */
+  --modal-overlay: rgba(15, 23, 42, 0.6);
+  --modal-overlay-strong: rgba(15, 23, 42, 0.65);
+  --modal-shadow: rgba(0, 0, 0, 0.28);
+  --modal-shadow-strong: rgba(0, 0, 0, 0.3);
+
+  /* ═══════════════════════════════════════════════════
+     SHADOWS
+     ═══════════════════════════════════════════════════ */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-note: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-sidebar: 2px 0 12px rgba(0, 0, 0, 0.18);
+  --shadow-header: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-action-bar: 0 -2px 14px rgba(0, 0, 0, 0.08);
+
+  /* ═══════════════════════════════════════════════════
+     BASE
+     ═══════════════════════════════════════════════════ */
   --background: #ffffff;
   --foreground: #171717;
+  --logo-accent: #f87171;
+  --color-white: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-dm-sans);
+  --font-mono: var(--font-dm-mono);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Brand */
+  --color-brand: var(--brand-primary);
+  --color-brand-hover: var(--brand-primary-hover);
+  --color-brand-active: var(--brand-primary-active);
+  --color-brand-subtle: var(--brand-primary-subtle);
+
+  /* Header */
+  --color-header: var(--header-bg);
+  --color-header-text: var(--header-text);
+  --color-header-muted: var(--header-muted);
+  --color-header-search-bg: var(--header-search-bg);
+  --color-header-search-border: var(--header-search-border);
+  --color-header-search-text: var(--header-search-text);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-icon: var(--sidebar-icon);
+  --color-sidebar-icon-active: var(--sidebar-icon-active);
+
+  /* Text */
+  --color-text: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-muted: var(--text-muted);
+  --color-text-disabled: var(--text-disabled);
+
+  /* Border */
+  --color-border: var(--border-primary);
+  --color-border-secondary: var(--border-secondary);
+  --color-border-input: var(--border-input);
+  --color-border-input-alt: var(--border-input-alt);
+  --color-border-light: var(--border-light);
+
+  /* Background */
+  --color-bg-page: var(--bg-page);
+  --color-bg-card: var(--bg-card);
+  --color-bg-card-header: var(--bg-card-header);
+  --color-bg-table-header: var(--bg-table-header);
+  --color-bg-table-row-alt: var(--bg-table-row-alt);
+  --color-bg-table-row-hover: var(--bg-table-row-hover);
+  --color-bg-hover: var(--bg-hover);
+  --color-bg-code: var(--bg-code-input);
+
+  /* Status — Success */
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-text: var(--status-success-text);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-success-subtle: var(--status-success-subtle);
+  --color-status-success-dark: var(--status-success-dark);
+  --color-status-success-emerald: var(--status-success-emerald);
+  --color-status-success-emerald-dark: var(--status-success-emerald-dark);
+  --color-status-success-green-50: var(--status-success-green-50);
+  --color-status-success-green-700: var(--status-success-green-700);
+  --color-status-success-green-800: var(--status-success-green-800);
+
+  /* Status — Warning */
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-warning-text: var(--status-warning-text);
+  --color-status-warning-border: var(--status-warning-border);
+  --color-status-warning-subtle: var(--status-warning-subtle);
+
+  /* Status — Error */
+  --color-status-error-bg: var(--status-error-bg);
+  --color-status-error-text: var(--status-error-text);
+  --color-status-error-border: var(--status-error-border);
+  --color-status-error-dark: var(--status-error-dark);
+
+  /* Status — Info */
+  --color-status-info-bg: var(--status-info-bg);
+  --color-status-info-text: var(--status-info-text);
+  --color-status-info-subtle: var(--status-info-subtle);
+  --color-status-info-blue: var(--status-info-blue);
+  --color-status-info-blue-border: var(--status-info-blue-border);
+  --color-status-info-blue-text: var(--status-info-blue-text);
+  --color-status-info-blue-50: var(--status-info-blue-50);
+
+  /* Status — Neutral */
+  --color-status-neutral-bg: var(--status-neutral-bg);
+  --color-status-neutral-text: var(--status-neutral-text);
+
+  /* Accent */
+  --color-accent-data-trace: var(--accent-data-trace);
+  --color-accent-title-point: var(--accent-title-point);
+  --color-accent-county-tax: var(--accent-county-tax);
+  --color-accent-pacer: var(--accent-pacer);
+  --color-accent-patriot: var(--accent-patriot);
+  --color-accent-assessor: var(--accent-assessor);
+  --color-accent-teal: var(--accent-teal);
+
+  /* UI */
+  --color-ui-avatar: var(--ui-avatar-bg);
+  --color-ui-avatar-text: var(--ui-avatar-text);
+  --color-ui-notification: var(--ui-notification-bg);
+  --color-ui-checkbox: var(--ui-checkbox-accent);
+  --color-ui-progress-bg: var(--ui-progress-bg);
+  --color-ui-progress-fill: var(--ui-progress-fill);
+  --color-ui-progress-complete: var(--ui-progress-complete);
+  --color-ui-code: var(--ui-code-text);
+  --color-ui-code-placeholder: var(--ui-code-placeholder);
+  --color-ui-link: var(--ui-link);
+
+  /* Modal */
+  --color-modal-overlay: var(--modal-overlay);
+  --color-modal-overlay-strong: var(--modal-overlay-strong);
+  --color-modal-shadow: var(--modal-shadow);
+  --color-modal-shadow-strong: var(--modal-shadow-strong);
+
+  /* Misc */
+  --color-logo-accent: #f87171;
+  --color-white: #ffffff;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+.pulse-dot {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

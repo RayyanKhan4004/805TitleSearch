@@ -3,6 +3,7 @@
 import Icon from "@/components/common/icon";
 import { Button } from "@/components/ui";
 import { useState } from "react";
+import { useAuth } from "@/app/context/auth-context";
 import {
   StepDashboard,
   StepLegalVesting,
@@ -13,6 +14,7 @@ import {
 import { STEPS, NAV_ICONS } from "./consts";
 
 export default function Dashboard() {
+  const { logout } = useAuth();
   const [step, setStep] = useState(0);
 
   return (
@@ -121,6 +123,13 @@ export default function Dashboard() {
                 <div className="text-header-muted text-[9px]">Deceneer</div>
               </div>
             </div>
+            <button
+              onClick={logout}
+              className="bg-transparent border-none text-text-muted hover:text-white cursor-pointer transition-colors p-1"
+              title="Sign out"
+            >
+              <Icon name="arrowRight" size={14} />
+            </button>
           </div>
         </header>
         <div className="bg-white border-b border-border flex items-center px-5 h-9.5 shrink-0 gap-2.5">

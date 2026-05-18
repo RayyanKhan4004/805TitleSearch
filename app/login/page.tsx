@@ -96,7 +96,7 @@ export default function LoginPage() {
                 className="absolute right-3 top-[28px] text-text-muted hover:text-text-secondary cursor-pointer bg-transparent border-none p-0"
                 tabIndex={-1}
               >
-                <Icon name={showPassword ? "external" : "shield"} size={12} />
+                <Icon name={showPassword ? "eyeOff" : "eye"} size={12} />
               </button>
             </div>
 

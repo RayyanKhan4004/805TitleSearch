@@ -10,8 +10,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Title Production Dashboard",
-  description: "ATS Production Workflow for Title Management",
+  title: "805 Title Search",
+  description: "805TS Production Workflow for Title Management",
 };
 
 export default function RootLayout({

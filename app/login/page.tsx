@@ -50,8 +50,8 @@ export default function LoginPage() {
           <div className="w-14 h-14 bg-brand rounded-xl flex items-center justify-center mx-auto mb-3" style={{ boxShadow: "var(--shadow-card)" }}>
             <Icon name="building" size={24} className="text-white" />
           </div>
-          <Heading level="h2" className="mb-1">Title Dashboard</Heading>
-          <Text size="sm" muted>ATS Production Workflow</Text>
+          <Heading level="h2" className="mb-1">805 Title Search</Heading>
+          <Text size="sm" muted>805TS Production Workflow</Text>
         </div>
 
         <Card variant="elevated" padding="lg">
@@ -137,7 +137,7 @@ export default function LoginPage() {
         </Card>
 
         <Text size="xs" tertiary className="text-center mt-4">
-          &copy; 2026 Title Dashboard. All rights reserved.
+          &copy; 2026 805 Title Search. All rights reserved.
         </Text>
       </div>
     </div>

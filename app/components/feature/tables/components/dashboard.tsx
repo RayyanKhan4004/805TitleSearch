@@ -74,7 +74,7 @@ export default function Dashboard() {
             />
             <div>
               <div className="text-header-text text-[11px] font-bold tracking-wider">
-                YOUR TITLE
+                805TS
               </div>
               <div className="text-header-muted text-[8px] tracking-[0.15em]">
                 COMPANY

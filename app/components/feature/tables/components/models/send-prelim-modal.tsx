@@ -172,7 +172,7 @@ export default function SendPrelimModal({
           <span className="text-[11px] text-text-muted">
             Sending as:{" "}
             <strong className="text-text">
-              John Smith — Your Title Company
+              John Smith — 805 Title Search
             </strong>
           </span>
           <div className="flex gap-2">

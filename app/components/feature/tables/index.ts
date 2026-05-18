@@ -1,1 +1,1 @@
-export { default as Dashboard } from "./components/dashboard";
+export { Dashboard, IndexCard, IndexRow, CardHead, Lbl, Inp, Sel, Btn, statusStyle } from "./components";

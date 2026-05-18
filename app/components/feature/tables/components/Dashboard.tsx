@@ -1,7 +1,7 @@
 "use client";
 
 import Icon from "@/components/common/icon";
-import { S } from "./shared-atoms";
+import { Button } from "@/components/ui";
 import { useState } from "react";
 import {
   StepDashboard,
@@ -136,13 +136,13 @@ export default function Dashboard() {
             In Progress
           </span>
           <div className="flex-1" />
-          <button className={`${S.white} flex items-center gap-1.25`}>
+          <Button variant="secondary" size="sm">
             <Icon name="save" size={11} />
             Save Draft
-          </button>
-          <button className={`${S.red} flex items-center gap-1.25`}>
+          </Button>
+          <Button size="sm">
             Create TSR
-          </button>
+          </Button>
         </div>
         <div className="bg-white border-b border-border shrink-0">
           <div className="flex px-4.5">
@@ -248,14 +248,15 @@ export default function Dashboard() {
             {step === 4 && <StepReview />}
           </div>
           <div className="bg-white border-t border-border px-5 py-2.75 flex items-center justify-between shrink-0">
-            <button
+            <Button
+              variant="secondary"
               onClick={() => setStep((s) => Math.max(0, s - 1))}
               disabled={step === 0}
-              className={`${S.white} flex items-center gap-1.25 ${step === 0 ? "opacity-40 cursor-not-allowed" : ""}`}
+              className={step === 0 ? "opacity-40 cursor-not-allowed" : ""}
             >
               <Icon name="arrowLeft" size={12} />
               Previous Step
-            </button>
+            </Button>
             <div className="flex items-center gap-1.25">
               {STEPS.map((_, i) => (
                 <div
@@ -275,21 +276,19 @@ export default function Dashboard() {
               ))}
             </div>
             {step < STEPS.length - 1 ? (
-              <button
+              <Button
                 onClick={() => setStep((s) => s + 1)}
-                className={`${S.red} flex items-center gap-1.25`}
               >
                 Next Step
                 <Icon name="arrowRight" size={12} />
-              </button>
+              </Button>
             ) : (
-              <button
-                className={`${S.red} flex items-center gap-1.25`}
-                style={{ background: "var(--status-success-dark)" }}
+              <Button
+                variant="success"
               >
                 <Icon name="checkCircle" size={12} />
                 Submit Order
-              </button>
+              </Button>
             )}
           </div>
         </div>

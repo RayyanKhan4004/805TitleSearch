@@ -3,16 +3,6 @@
 import Icon from "@/components/common/icon";
 import type { CardHeadProps, LblProps, InpProps, SelProps, BtnProps } from "@/app/components/feature/tables/types";
 
-export const S = {
-  card: "bg-white border border-border rounded-xl shadow-card",
-  inp: "w-full border border-border-input rounded-[7px] px-2.5 py-1.5 text-[11px] text-text bg-white box-border",
-  lbl: "text-[9px] font-bold text-text-muted uppercase tracking-[0.07em] mb-0.5 block",
-  th: "px-2.5 py-2 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.05em] bg-table-header border-b border-border text-left",
-  td: "px-2.5 py-2 text-[11px] border-t border-secondary text-text-secondary align-middle",
-  red: "bg-brand text-white border-none rounded-lg px-3.5 py-1.5 text-[11px] font-semibold cursor-pointer",
-  white: "bg-white text-text-secondary border border-border rounded-lg px-3.5 py-1.5 text-[11px] font-semibold cursor-pointer",
-};
-
 export function CardHead({ title, sub, right }: CardHeadProps) {
   return (
     <div className="flex items-center justify-between px-4.5 py-[13px] border-b border-secondary">
@@ -26,7 +16,7 @@ export function CardHead({ title, sub, right }: CardHeadProps) {
 }
 
 export function Lbl({ children }: LblProps) {
-  return <div className={S.lbl}>{children}</div>;
+  return <div className="text-[9px] font-bold text-text-muted uppercase tracking-[0.07em] mb-0.5 block">{children}</div>;
 }
 
 export function Inp({ value, onChange, placeholder = "", type = "text" }: InpProps) {
@@ -36,14 +26,14 @@ export function Inp({ value, onChange, placeholder = "", type = "text" }: InpPro
       value={value}
       onChange={onChange}
       placeholder={placeholder}
-      className={S.inp}
+      className="w-full border border-border-input rounded-[7px] px-2.5 py-1.5 text-[11px] text-text bg-white box-border"
     />
   );
 }
 
 export function Sel({ value, onChange, options }: SelProps) {
   return (
-    <select value={value} onChange={onChange} className={S.inp}>
+    <select value={value} onChange={onChange} className="w-full border border-border-input rounded-[7px] px-2.5 py-1.5 text-[11px] text-text bg-white box-border">
       {options.map((o, i) => {
         const val = typeof o === "string" ? o : o.value;
         const label = typeof o === "string" ? o : o.label;
@@ -60,7 +50,7 @@ export function Btn({ children, onClick, style = {}, disabled = false }: BtnProp
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-1.25 ${S.red}`}
+      className="inline-flex items-center gap-1.25 bg-brand text-white border-none rounded-lg px-3.5 py-1.5 text-[11px] font-semibold cursor-pointer"
       style={{
         ...style,
         opacity: disabled ? 0.4 : 1,

@@ -1,7 +1,6 @@
 "use client";
 
 import Icon from "@/components/common/icon";
-import { S } from "../shared-atoms";
 import { useState } from "react";
 import { COUNTIES, DOC_SEARCH_TYPES } from "../consts";
 import type {
@@ -13,6 +12,7 @@ import type {
   SearchDataTraceProps,
   ManualSearchModalProps,
 } from "@/app/components/feature/tables/types";
+import { Button, Input, Select, Dialog, DialogContent, DialogFooter, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
 
 const FInp = ({
   label,
@@ -29,42 +29,40 @@ const FInp = ({
         {label}
       </label>
     )}
-    <input
+    <Input
       type={type}
       value={value}
       onChange={onChange}
       placeholder={placeholder || ""}
-      className={`border border-border-input rounded-[7px] px-2.5 py-1.5 text-[11px] text-text bg-white outline-none`}
+      className="text-[11px]"
       style={style}
     />
   </div>
 );
 
-const FSel = ({ label, value, onChange, options, style = {} }: FSelProps) => (
-  <div className="flex flex-col gap-0.5">
-    {label && (
-      <label className="text-[9px] font-bold text-text-secondary uppercase tracking-[0.07em]">
-        {label}
-      </label>
-    )}
-    <select
-      value={value}
-      onChange={onChange}
-      className={`border border-border-input rounded-[7px] px-2.5 py-1.5 text-[11px] text-text bg-white outline-none`}
-      style={style}
-    >
-      {options.map((o, i) => {
-        const val = typeof o === "string" ? o : o.value;
-        const label = typeof o === "string" ? o : o.label;
-        return (
-          <option key={i} value={val}>
-            {label}
-          </option>
-        );
-      })}
-    </select>
-  </div>
-);
+const FSel = ({ label, value, onChange, options, style = {} }: FSelProps) => {
+  const opts = options.map((o, i) => {
+    const val = typeof o === "string" ? o : o.value;
+    const lbl = typeof o === "string" ? o : o.label;
+    return { value: val, label: lbl };
+  });
+  return (
+    <div className="flex flex-col gap-0.5">
+      {label && (
+        <label className="text-[9px] font-bold text-text-secondary uppercase tracking-[0.07em]">
+          {label}
+        </label>
+      )}
+      <Select
+        value={value}
+        onChange={onChange}
+        options={opts}
+        className="text-[11px]"
+        style={style}
+      />
+    </div>
+  );
+};
 
 const FRow = ({ children }: FRowProps) => (
   <div className="flex gap-2.5 items-end">{children}</div>
@@ -166,12 +164,9 @@ function SearchDataTrace({ source }: SearchDataTraceProps) {
               <FInp label="From Date" type="date" />
               <FInp label="To Date" type="date" />
             </FRow>
-            <button
-              onClick={mockSearch}
-              className={`${S.red} self-start px-5 py-[7px] text-[12px]`}
-            >
+            <Button onClick={mockSearch} size="lg" className="self-start">
               Pull Image
-            </button>
+            </Button>
             {result && (
               <ResultBox>
                 <div className="flex items-center justify-center h-40 bg-white rounded-md border-2 border-dashed border-border text-text-muted text-[12px]">
@@ -198,12 +193,9 @@ function SearchDataTrace({ source }: SearchDataTraceProps) {
                 placeholder="e.g. 0557-081-23-0000"
               />
             </FGrid>
-            <button
-              onClick={mockSearch}
-              className={`${S.red} self-start px-5 py-[7px] text-[12px]`}
-            >
+            <Button onClick={mockSearch} size="lg" className="self-start">
               Load Tree
-            </button>
+            </Button>
             {result && (
               <ResultBox>
                 <div className="text-[11px] font-bold text-text mb-2">
@@ -276,17 +268,14 @@ function SearchDataTrace({ source }: SearchDataTraceProps) {
                 options={["Both", "Grantor Index", "Grantee Index"]}
               />
             </FGrid>
-            <button
-              onClick={mockSearch}
-              className={`${S.red} self-start px-5 py-[7px] text-[12px]`}
-            >
+            <Button onClick={mockSearch} size="lg" className="self-start">
               Search GI Index
-            </button>
+            </Button>
             {result && (
               <ResultBox>
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
                       {[
                         "Date",
                         "Doc Type",
@@ -294,17 +283,17 @@ function SearchDataTrace({ source }: SearchDataTraceProps) {
                         "Grantor",
                         "Grantee",
                       ].map((h) => (
-                        <th
+                        <TableHead
                           key={h}
-                          className={`${S.th} border-b border-border px-2.5 py-[7px]`}
+                          className="border-b border-border px-2.5 py-[7px]"
                           style={{ background: "var(--table-header)" }}
                         >
                           {h}
-                        </th>
+                        </TableHead>
                       ))}
-                    </tr>
-                  </thead>
-                  <tbody>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {[
                       [
                         "05/17/2025",
@@ -321,7 +310,7 @@ function SearchDataTrace({ source }: SearchDataTraceProps) {
                         "MICHAEL SMITH",
                       ],
                     ].map((r, i) => (
-                      <tr
+                      <TableRow
                         key={i}
                         className={i % 2 === 0 ? "bg-white" : ""}
                         style={
@@ -329,17 +318,17 @@ function SearchDataTrace({ source }: SearchDataTraceProps) {
                         }
                       >
                         {r.map((c, j) => (
-                          <td
+                          <TableCell
                             key={j}
-                            className={`${S.td} px-2.5 py-1.5 ${j === 2 ? "text-status-info-blue-text font-medium" : "text-text-secondary font-normal"}`}
+                            className={`px-2.5 py-1.5 ${j === 2 ? "text-status-info-blue-text font-medium" : "text-text-secondary font-normal"}`}
                           >
                             {c}
-                          </td>
+                          </TableCell>
                         ))}
-                      </tr>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </ResultBox>
             )}
           </div>
@@ -368,12 +357,9 @@ function SearchDataTrace({ source }: SearchDataTraceProps) {
               />
               <FInp label="Date Range" placeholder="MM/YYYY – MM/YYYY" />
             </FGrid>
-            <button
-              onClick={mockSearch}
-              className={`${S.red} self-start px-5 py-[7px] text-[12px]`}
-            >
+            <Button onClick={mockSearch} size="lg" className="self-start">
               Search
-            </button>
+            </Button>
             {result && (
               <ResultBox>
                 <div className="text-status-success-emerald font-bold mb-1.5">
@@ -449,12 +435,9 @@ function SearchDataTrace({ source }: SearchDataTraceProps) {
               />
               <FInp label="Zip Code" placeholder="e.g. 92376" />
             </FGrid>
-            <button
-              onClick={mockSearch}
-              className={`${S.red} self-start px-5 py-[7px] text-[12px]`}
-            >
+            <Button onClick={mockSearch} size="lg" className="self-start">
               Search
-            </button>
+            </Button>
             {result && (
               <ResultBox>
                 <div className="grid grid-cols-2 gap-2.5">
@@ -506,12 +489,9 @@ function SearchDataTrace({ source }: SearchDataTraceProps) {
                 options={COUNTIES}
               />
             </FGrid>
-            <button
-              onClick={mockSearch}
-              className={`${S.red} self-start px-5 py-[7px] text-[12px]`}
-            >
+            <Button onClick={mockSearch} size="lg" className="self-start">
               Search
-            </button>
+            </Button>
             {result && (
               <ResultBox>
                 <div className="text-status-success-emerald font-bold mb-1.5">
@@ -583,12 +563,9 @@ function SearchDataTrace({ source }: SearchDataTraceProps) {
                 ]}
               />
             </FGrid>
-            <button
-              onClick={mockSearch}
-              className={`${S.red} self-start px-5 py-[7px] text-[12px]`}
-            >
+            <Button onClick={mockSearch} size="lg" className="self-start">
               Search Legal
-            </button>
+            </Button>
             {result && (
               <ResultBox>
                 <div className="text-status-success-emerald font-bold mb-1.5">
@@ -636,12 +613,9 @@ function SearchDataTrace({ source }: SearchDataTraceProps) {
                 options={["CA", "NV", "AZ", "TX", "OR", "WA"]}
               />
             </FGrid>
-            <button
-              onClick={mockSearch}
-              className={`${S.red} self-start px-5 py-[7px] text-[12px]`}
-            >
+            <Button onClick={mockSearch} size="lg" className="self-start">
               Search Entity
-            </button>
+            </Button>
             {result && (
               <ResultBox>
                 <div className="text-status-success-emerald font-bold mb-2">
@@ -722,12 +696,9 @@ function SearchCountyTax() {
           options={["All", "Secured", "Unsecured", "Supplemental"]}
         />
       </FGrid>
-      <button
-        onClick={() => setResult(true)}
-        className={`${S.red} self-start px-5 py-[7px] text-[12px]`}
-      >
+      <Button onClick={() => setResult(true)} size="lg" className="self-start">
         Retrieve Tax Info
-      </button>
+      </Button>
       {result && (
         <ResultBox>
           <div className="grid grid-cols-2 gap-2.5 mb-3">
@@ -846,12 +817,9 @@ function SearchPacer() {
           ]}
         />
       </FGrid>
-      <button
-        onClick={() => setResult(true)}
-        className={`${S.red} self-start px-5 py-[7px] text-[12px]`}
-      >
+      <Button onClick={() => setResult(true)} size="lg" className="self-start">
         Search PACER
-      </button>
+      </Button>
       {result && (
         <ResultBox>
           <div
@@ -945,22 +913,19 @@ function SearchPatriotAct() {
         <FInp label="ID Number (optional)" placeholder="Last 4 digits only" />
       </FGrid>
       <div className="flex gap-2">
-        <button
-          onClick={search}
-          className={`${S.red} px-5 py-[7px] text-[12px]`}
-        >
+        <Button onClick={search} size="lg">
           Run Patriot Act Search
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => {
             setResult(true);
             setStatus("HIT");
           }}
-          className="text-white border-none rounded-lg px-5 py-[7px] text-[12px] font-semibold cursor-pointer"
-          style={{ background: "var(--status-error-dark)" }}
+          variant="destructive"
+          size="lg"
         >
           Simulate HIT
-        </button>
+        </Button>
       </div>
       {result && (
         <div
@@ -1061,12 +1026,9 @@ function SearchCountyAssessor() {
           options={["2025-26", "2024-25", "2023-24"]}
         />
       </FGrid>
-      <button
-        onClick={() => setResult(true)}
-        className={`${S.red} self-start px-5 py-[7px] text-[12px]`}
-      >
+      <Button onClick={() => setResult(true)} size="lg" className="self-start">
         Pull Assessor Page
-      </button>
+      </Button>
       {result && (
         <div className="flex flex-col gap-2.5">
           <ResultBox>
@@ -1127,23 +1089,23 @@ function SearchCountyAssessor() {
             <div className="text-[11px] font-bold text-text mb-2">
               Ownership History
             </div>
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
+            <Table>
+              <TableHeader>
+                <TableRow>
                   {["Date", "Grantor", "Grantee", "Doc No.", "Doc Type"].map(
                     (h) => (
-                      <th
+                      <TableHead
                         key={h}
-                        className={`${S.th} px-2.5 py-1.5`}
+                        className="px-2.5 py-1.5"
                         style={{ background: "var(--table-header)" }}
                       >
                         {h}
-                      </th>
+                      </TableHead>
                     ),
                   )}
-                </tr>
-              </thead>
-              <tbody>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {[
                   [
                     "05/17/2025",
@@ -1167,23 +1129,23 @@ function SearchCountyAssessor() {
                     "Grant Deed",
                   ],
                 ].map((r, i) => (
-                  <tr
+                  <TableRow
                     key={i}
                     className={i % 2 === 0 ? "bg-white" : ""}
                     style={i % 2 !== 0 ? { background: "var(--bg-page)" } : {}}
                   >
                     {r.map((c, j) => (
-                      <td
+                      <TableCell
                         key={j}
-                        className={`${S.td} px-2.5 py-1.5 ${j === 3 ? "text-status-info-blue-text font-medium" : "text-text-secondary font-normal"}`}
+                        className={`px-2.5 py-1.5 ${j === 3 ? "text-status-info-blue-text font-medium" : "text-text-secondary font-normal"}`}
                       >
                         {c}
-                      </td>
+                      </TableCell>
                     ))}
-                  </tr>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </ResultBox>
         </div>
       )}
@@ -1212,51 +1174,8 @@ export default function ManualSearchModal({ onClose }: ManualSearchModalProps) {
   const color = srcColors[source] || "var(--brand)";
 
   return (
-    <div
-      className="fixed inset-0 backdrop-blur-[2px] flex items-center justify-center z-[999] p-4"
-      style={{ background: "var(--modal-overlay-strong)" }}
-    >
-      <div
-        className="bg-white w-full max-w-[1100px] max-h-[92vh] rounded-[18px] overflow-hidden flex flex-col"
-        style={{ boxShadow: "var(--shadow-card)" }}
-      >
-        <div className="bg-header px-[22px] py-[15px] flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3.5">
-            <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-[background] duration-300"
-              style={{
-                background:
-                  source === "Data Trace"
-                    ? "var(--accent-data-trace)"
-                    : source === "Title Point"
-                      ? "var(--accent-title-point)"
-                      : source === "County Tax"
-                        ? "var(--accent-county-tax)"
-                        : source === "Pacer Search"
-                          ? "var(--accent-pacer)"
-                          : source === "Patriot Act"
-                            ? "var(--status-error-dark)"
-                            : "var(--accent-assessor)",
-              }}
-            >
-              <Icon name="search" size={16} className="text-white" />
-            </div>
-            <div>
-              <div className="text-[15px] font-bold text-white">
-                Manual Search
-              </div>
-              <div className="text-[11px] text-text-muted mt-0.5">
-                Direct access to external title search sources
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="bg-transparent border-none text-text-secondary text-[22px] cursor-pointer leading-none"
-          >
-            ×
-          </button>
-        </div>
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent size="xl" title="Manual Search" subtitle="Direct access to external title search sources" onClose={onClose}>
         <div
           className="px-[22px] py-[14px] border-b border-light shrink-0"
           style={{ background: "var(--card-header)" }}
@@ -1316,19 +1235,16 @@ export default function ManualSearchModal({ onClose }: ManualSearchModalProps) {
           {source === "Patriot Act" && <SearchPatriotAct />}
           {source === "County Assessor" && <SearchCountyAssessor />}
         </div>
-        <div
-          className="border-t border-border px-[22px] py-2.75 flex justify-between items-center shrink-0"
-          style={{ background: "var(--card-header)" }}
-        >
-          <span className="text-[11px] text-text-muted">
-            Connected to: <strong style={{ color }}>{source}</strong>
-          </span>
-          <button onClick={onClose} className={`${S.white} text-[12px]`}>
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+      <DialogFooter className="bg-card-header">
+        <span className="text-[11px] text-text-muted">
+          Connected to: <strong style={{ color }}>{source}</strong>
+        </span>
+        <Button variant="secondary" onClick={onClose}>
+          Close
+        </Button>
+      </DialogFooter>
+    </Dialog>
   );
 }
 

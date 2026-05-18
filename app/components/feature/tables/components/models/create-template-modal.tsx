@@ -1,7 +1,7 @@
 "use client";
 
 import Icon from "@/components/common/icon";
-import { S } from "../shared-atoms";
+import { Button, Dialog, DialogContent, DialogBody, DialogFooter, Textarea } from "@/components/ui";
 import { useState } from "react";
 import { EXAMPLE_TEMPLATES } from "../consts";
 import type { CreateTemplateModalProps } from "@/app/components/feature/tables/types";
@@ -36,24 +36,11 @@ export default function CreateTemplateModal({ onClose, onSave }: CreateTemplateM
     }, 900);
   };
 
-  const inp = "border border-border-input rounded-lg px-[11px] py-2 text-[12px] text-text bg-white outline-none w-full box-border";
-
   return (
-    <div className="fixed inset-0 backdrop-blur-[2px] flex items-center justify-center z-[999] p-4" style={{ background: "var(--modal-overlay)" }}>
-      <div className="bg-white w-full max-w-[960px] max-h-[92vh] rounded-[18px] overflow-hidden flex flex-col" style={{ boxShadow: "var(--shadow-card)" }}>
-        <div className="bg-header px-[22px] py-[14px] flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            {screen === "editor" && (<button onClick={() => setScreen("picker")} className="bg-white/10 border-none text-text-muted rounded-[7px] px-2.5 py-1 cursor-pointer text-[11px] flex items-center gap-1"><Icon name="chevLeft" size={11} />Back</button>)}
-            <div className="w-8.5 h-8.5 bg-brand rounded-lg flex items-center justify-center"><Icon name="file" size={16} className="text-white" /></div>
-            <div>
-              <div className="text-[14px] font-bold text-white">{screen === "picker" ? "Create Template" : `Editing: ${selected?.name}`}</div>
-              <div className="text-[10px] text-text-muted mt-0.5">{screen === "picker" ? "Choose an example template or start from blank" : "Customize your template and save"}</div>
-            </div>
-          </div>
-          <button onClick={onClose} className="bg-transparent border-none text-text-secondary text-[22px] cursor-pointer leading-none">×</button>
-        </div>
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent size="lg" title={screen === "picker" ? "Create Template" : `Editing: ${selected?.name}`} subtitle={screen === "picker" ? "Choose an example template or start from blank" : "Customize your template and save"} onClose={onClose}>
         {screen === "picker" && (
-          <div className="flex-1 overflow-y-auto p-[22px] flex flex-col gap-[18px]">
+          <div className="flex flex-col gap-[18px] p-[22px]">
             <div className="text-[12px] font-bold text-text">Example Templates</div>
             <div className="grid grid-cols-2 gap-3.5">
               {EXAMPLE_TEMPLATES.map((tpl) => (
@@ -77,16 +64,16 @@ export default function CreateTemplateModal({ onClose, onSave }: CreateTemplateM
         {screen === "editor" && (
           <div className="flex-1 flex flex-col overflow-hidden">
             <div className="px-[22px] py-2.5 border-b border-light bg-card-header flex items-center gap-2.5 shrink-0">
-              <div className="flex-1"><input value={tname} onChange={(e) => setTname(e.target.value)} placeholder="Template name…" className={`${inp} font-bold text-[13px] border-none bg-transparent px-0 py-0.5`} /></div>
+              <div className="flex-1"><input value={tname} onChange={(e) => setTname(e.target.value)} placeholder="Template name…" className="font-bold text-[13px] border-none bg-transparent px-0 py-0.5 text-text outline-none w-full" /></div>
               <div className="flex gap-1.5 items-center">
                 <span className="text-[10px] text-text-muted">{body.length} chars</span>
-                <label className={`${S.white} inline-flex items-center gap-1.25 text-[11px] cursor-pointer px-3 py-1.5`}><Icon name="upload" size={11} />Upload File<input type="file" className="hidden" accept=".pdf,.doc,.docx,.txt" /></label>
+                <label className="inline-flex items-center gap-1.25 bg-white text-text-secondary border border-border rounded-lg px-3 py-1.5 text-[11px] font-semibold cursor-pointer"><Icon name="upload" size={11} />Upload File<input type="file" className="hidden" accept=".pdf,.doc,.docx,.txt" /></label>
               </div>
             </div>
             <div className="flex-1 overflow-hidden flex gap-0">
               <div className="flex-1 flex flex-col border-r border-light">
                 <div className="px-[22px] pt-2 pb-1 border-b border-light" style={{ background: "var(--bg-page)" }}><span className="text-[9px] font-bold text-text-muted uppercase tracking-[0.07em]">Template Editor</span></div>
-                <textarea value={body} onChange={(e) => setBody(e.target.value)} className="flex-1 w-full border-none px-[22px] py-4 text-[11px] font-mono leading-[1.8] text-text bg-white resize-none outline-none box-border" placeholder="Start typing your template content here, or select an example above…" />
+                <Textarea size="mono" value={body} onChange={(e) => setBody(e.target.value)} className="flex-1 w-full border-none px-[22px] py-4 resize-none outline-none box-border" placeholder="Start typing your template content here, or select an example above…" />
               </div>
               <div className="w-80 shrink-0 flex flex-col overflow-hidden">
                 <div className="px-4 pt-2 pb-1 border-b border-light" style={{ background: "var(--bg-page)" }}><span className="text-[9px] font-bold text-text-muted uppercase tracking-[0.07em]">Live Preview</span></div>
@@ -97,14 +84,14 @@ export default function CreateTemplateModal({ onClose, onSave }: CreateTemplateM
             </div>
           </div>
         )}
-        <div className="border-t border-border px-[22px] py-2.75 flex justify-between items-center shrink-0 bg-card-header">
-          <span className="text-[11px] text-text-muted">{screen === "picker" ? "Select a template to continue" : `Editing: ${tname || "Untitled"}`}</span>
-          <div className="flex gap-2">
-            <button onClick={onClose} className={`${S.white} text-[12px]`}>Cancel</button>
-            {screen === "editor" && (<button onClick={handleSave} disabled={!body.trim() || !tname.trim() || saved} className={`${S.red} text-[12px] ${!body.trim() || !tname.trim() || saved ? "opacity-60 cursor-not-allowed" : ""}`}>{saved ? (<><Icon name="checkCircle" size={12} />Saved!</>) : (<><Icon name="save" size={12} />Save Template</>)}</button>)}
-          </div>
+      </DialogContent>
+      <DialogFooter className="bg-card-header">
+        <span className="text-[11px] text-text-muted">{screen === "picker" ? "Select a template to continue" : `Editing: ${tname || "Untitled"}`}</span>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          {screen === "editor" && (<Button onClick={handleSave} disabled={!body.trim() || !tname.trim() || saved} className={!body.trim() || !tname.trim() || saved ? "opacity-60 cursor-not-allowed" : ""}>{saved ? (<><Icon name="checkCircle" size={12} />Saved!</>) : (<><Icon name="save" size={12} />Save Template</>)}</Button>)}
         </div>
-      </div>
-    </div>
+      </DialogFooter>
+    </Dialog>
   );
 }

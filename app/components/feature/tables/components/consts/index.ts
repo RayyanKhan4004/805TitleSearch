@@ -136,8 +136,9 @@ export const STEPS = [
   { id: 0, label: "Dashboard", short: "Dashboard", icon: "dashboard" },
   { id: 1, label: "Legal & Vesting", short: "Legal", icon: "fileCheck" },
   { id: 2, label: "Title Chain Review", short: "Chain", icon: "link" },
-  { id: 3, label: "Documents & Notes", short: "Docs", icon: "clipboard" },
-  { id: 4, label: "Final Review", short: "Review", icon: "shield" },
+  { id: 3, label: "TSRI", short: "TSRI", icon: "fileCheck" },
+  { id: 4, label: "Documents & Notes", short: "Docs", icon: "clipboard" },
+  { id: 5, label: "Final Review", short: "Review", icon: "shield" },
 ];
 
 export const NAV_ICONS = [{ name: "tasks", label: "Tasks", active: true }];
@@ -348,25 +349,25 @@ export const INIT_DOCS = [
     name: "Prefon_Papers.pdf",
     date: "05/07/2026",
     size: "1.2 MB",
-    type: "document",
+    type: "document" as const,
   },
   {
     name: "Deed_2022-001234.pdf",
     date: "05/07/2024",
     size: "834 KB",
-    type: "document",
+    type: "document" as const,
   },
   {
     name: "Tax_GH_3025.pdf",
     date: "05/04/2026",
     size: "412 KB",
-    type: "document",
+    type: "document" as const,
   },
   {
     name: "HDA_Statement.pdf",
     date: "05/01/2026",
     size: "2.1 MB",
-    type: "document",
+    type: "document" as const,
   },
   {
     name: "Prelim_Notax.pdf",

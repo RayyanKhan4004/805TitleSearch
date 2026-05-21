@@ -8,14 +8,35 @@ import {
   StepDashboard,
   StepLegalVesting,
   StepTitleChain,
+  StepTSRI,
   StepDocuments,
   StepReview,
 } from "./steps";
 import { STEPS, NAV_ICONS } from "./consts";
+import type { SharedState, ChainCode, Document as DocType } from "@/app/components/feature/tables/types";
 
 export default function Dashboard() {
   const { logout } = useAuth();
   const [step, setStep] = useState(0);
+  const [shared, setShared] = useState<SharedState>({
+    vesting: "",
+    legal: "",
+    leaseHold: "",
+    effectiveDate: "05/07/2026",
+    chainCodes: [] as ChainCode[],
+  });
+  const [docs, setDocs] = useState<DocType[]>([]);
+
+  const handleGeneratePrelim = (tsriData: Record<string, unknown>) => {
+    const newDoc: DocType = {
+      name: "Preliminary_Report.pdf",
+      date: new Date().toLocaleDateString("en-US"),
+      size: "—",
+      type: "template",
+      body: tsriData.body as string | undefined,
+    };
+    setDocs((prev) => [newDoc, ...prev]);
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-bg-page">
@@ -251,10 +272,11 @@ export default function Dashboard() {
             }
           >
             {step === 0 && <StepDashboard />}
-            {step === 1 && <StepLegalVesting />}
-            {step === 2 && <StepTitleChain />}
-            {step === 3 && <StepDocuments />}
-            {step === 4 && <StepReview />}
+            {step === 1 && <StepLegalVesting shared={shared} setShared={setShared} />}
+            {step === 2 && <StepTitleChain shared={shared} setShared={setShared} />}
+            {step === 3 && <StepTSRI shared={shared} setShared={setShared} onGenerate={handleGeneratePrelim} />}
+            {step === 4 && <StepDocuments />}
+            {step === 5 && <StepReview />}
           </div>
           <div className="bg-white border-t border-border px-5 py-2.75 flex items-center justify-between shrink-0">
             <Button

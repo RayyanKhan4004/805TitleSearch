@@ -73,7 +73,7 @@ export default function FinalPrelimModal({ onClose, onSave }: FinalPrelimModalPr
           )}
         </div>
       </DialogContent>
-      {showSend && (<SendPrelimModal onClose={() => setShowSend(false)} docs={[{ name: docName + ".docx" }]} />)}
+      {showSend && (<SendPrelimModal onClose={() => setShowSend(false)} docs={[{ name: docName + ".docx", date: new Date().toLocaleDateString("en-US"), size: "—", type: "template" }]} />)}
     </Dialog>
   );
 }

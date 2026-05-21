@@ -6,9 +6,24 @@ import { Button } from "@/components/ui";
 import { useState } from "react";
 import ManualSearchModal from "../models/manual-search-modal";
 import { INDEX_SECTIONS } from "../consts";
+import type { SharedState, ChainCode } from "@/app/components/feature/tables/types";
 
-export default function StepTitleChain() {
+interface StepTitleChainProps {
+  shared?: SharedState;
+  setShared?: React.Dispatch<React.SetStateAction<SharedState>>;
+}
+
+export default function StepTitleChain({ shared, setShared }: StepTitleChainProps) {
   const [showSearch, setShowSearch] = useState(false);
+  const [codes, setCodes] = useState<ChainCode[]>(shared?.chainCodes || []);
+
+  const addCode = (code: ChainCode) => {
+    const next = [...codes, code];
+    setCodes(next);
+    if (setShared) {
+      setShared((s) => ({ ...s, chainCodes: next }));
+    }
+  };
 
   return (
     <div className="flex flex-col gap-1">

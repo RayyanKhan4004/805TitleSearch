@@ -17,8 +17,8 @@ import { Button, Input, Select, Dialog, DialogContent, DialogFooter, Table, Tabl
 const FInp = ({
   label,
   placeholder,
-  value,
-  onChange,
+  value = "",
+  onChange = () => {},
   type = "text",
   half = false,
   style = {},
@@ -40,7 +40,7 @@ const FInp = ({
   </div>
 );
 
-const FSel = ({ label, value, onChange, options, style = {} }: FSelProps) => {
+const FSel = ({ label, value = "", onChange = () => {}, options, style = {} }: FSelProps) => {
   const opts = options.map((o, i) => {
     const val = typeof o === "string" ? o : o.value;
     const lbl = typeof o === "string" ? o : o.label;

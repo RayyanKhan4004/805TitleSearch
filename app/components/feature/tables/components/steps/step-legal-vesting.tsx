@@ -3,17 +3,30 @@
 import Icon from "@/components/common/icon";
 import { CardHead, Lbl } from "../shared-atoms";
 import { useState } from "react";
+import type { SharedState } from "@/app/components/feature/tables/types";
 import { Card, CardContent, Button, Textarea, Input, Select, Badge } from "@/components/ui";
 
-export default function StepLegalVesting() {
-  const [legal, setLegal] = useState("LOT 22 OF TRACT 12345, IN THE CITY OF RIALTO, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA, AS PER MAP RECORDED IN BOOK 123, PAGE 45 OF MAPS, IN THE OFFICE OF THE COUNTY RECORDER OF SAID COUNTY.");
-  const [vesting, setVesting] = useState("John D. Doe and Jane R. Doe, husband and wife as community property, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA.");
-  const [lease, setLease] = useState("Fee simple estate subject to leasehold interest as disclosed in supporting documents.");
+interface StepLegalVestingProps {
+  shared?: SharedState;
+  setShared?: React.Dispatch<React.SetStateAction<SharedState>>;
+}
+
+export default function StepLegalVesting({ shared, setShared }: StepLegalVestingProps) {
+  const [legal, setLegal] = useState(shared?.legal || "LOT 22 OF TRACT 12345, IN THE CITY OF RIALTO, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA, AS PER MAP RECORDED IN BOOK 123, PAGE 45 OF MAPS, IN THE OFFICE OF THE COUNTY RECORDER OF SAID COUNTY.");
+  const [vesting, setVesting] = useState(shared?.vesting || "John D. Doe and Jane R. Doe, husband and wife as community property, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA.");
+  const [lease, setLease] = useState(shared?.leaseHold || "Fee simple estate subject to leasehold interest as disclosed in supporting documents.");
   const [areaType, setAreaType] = useState("City");
   const [areaName, setAreaName] = useState("Rialto");
   const [propType, setPropType] = useState("Single Family Residence");
   const [loading, setLoading] = useState(false);
   const [updated, setUpdated] = useState(false);
+
+  // Sync to shared state when values change
+  useState(() => {
+    if (setShared) {
+      setShared((s) => ({ ...s, legal, vesting, leaseHold: lease }));
+    }
+  });
 
   const handleUpdate = () => { setLoading(true); setUpdated(false); setTimeout(() => { setVesting("John D. Doe and Jane R. Doe, husband and wife as community property with right of survivorship, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA."); setLoading(false); setUpdated(true); setTimeout(() => setUpdated(false), 3000); }, 1500); };
 

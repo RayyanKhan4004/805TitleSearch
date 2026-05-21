@@ -10,8 +10,25 @@ import { INIT_DOCS, INIT_NOTES } from "../consts";
 import type { DocItem, NoteItem } from "@/app/components/feature/tables/types";
 import { Button, Card, CardContent, Badge } from "@/components/ui";
 
-export default function StepDocuments() {
+interface StepDocumentsProps {
+  extraDocs?: Array<{ name: string; date: string; size: string; type: string; body?: string }>;
+  onSaveClose?: () => void;
+}
+
+export default function StepDocuments({ extraDocs = [], onSaveClose }: StepDocumentsProps) {
   const [docs, setDocs] = useState<DocItem[]>(INIT_DOCS);
+
+  /* Merge extraDocs (generated prelims from TSRI) when they change */
+  useState(() => {
+    if (extraDocs.length > 0) {
+      const extraNames = extraDocs.map((d) => d.name);
+      setDocs((prev) => {
+        const existingNames = prev.map((d) => d.name);
+        const newExtras = extraDocs.filter((d) => !existingNames.includes(d.name));
+        return newExtras.length > 0 ? [...newExtras, ...prev] : prev;
+      });
+    }
+  });
   const [notes, setNotes] = useState<NoteItem[]>(INIT_NOTES);
   const [noteText, setNote] = useState("");
   const [showTpl, setShowTpl] = useState(false);

@@ -11,9 +11,10 @@ import type { SharedState, ChainCode } from "@/app/components/feature/tables/typ
 interface StepTitleChainProps {
   shared?: SharedState;
   setShared?: React.Dispatch<React.SetStateAction<SharedState>>;
+  onSaveClose?: () => void;
 }
 
-export default function StepTitleChain({ shared, setShared }: StepTitleChainProps) {
+export default function StepTitleChain({ shared, setShared, onSaveClose }: StepTitleChainProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [codes, setCodes] = useState<ChainCode[]>(shared?.chainCodes || []);
 
@@ -37,7 +38,7 @@ export default function StepTitleChain({ shared, setShared }: StepTitleChainProp
         <label className="inline-flex items-center gap-1.25 bg-white text-text-secondary border border-border rounded-lg px-3.5 py-1.5 text-[12px] font-semibold cursor-pointer"><Icon name="upload" size={12} />Upload<input type="file" className="hidden" multiple /></label>
         <div className="flex-1" />
         <Button variant="secondary" size="lg"><Icon name="save" size={12} />Save</Button>
-        <Button size="lg" style={{ background: "var(--header-bg)", color: "var(--header-text)" }}><Icon name="save" size={12} />Save / Close</Button>
+        <Button size="lg" style={{ background: "#8B0000", color: "#fff" }} onClick={onSaveClose}><Icon name="save" size={12} />Save / Close</Button>
       </div>
       {showSearch && <ManualSearchModal onClose={() => setShowSearch(false)} />}
     </div>

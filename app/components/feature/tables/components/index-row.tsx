@@ -37,6 +37,17 @@ function badgeStyle(status: string) {
   };
 }
 
+function rowBgColor(dtype: string): string {
+  const t = dtype.toLowerCase();
+  if (t.includes("deed")) return "#FEF3C7";
+  if (t.includes("mortgage") || t.includes("trust")) return "#DBEAFE";
+  if (t.includes("lien")) return "#FEE2E2";
+  if (t.includes("reconvey") || t.includes("release") || t.includes("satisfied")) return "#D1FAE5";
+  if (t.includes("easement")) return "#F3E8FF";
+  if (t.includes("judgment")) return "#F1F5F9";
+  return "#fff";
+}
+
 function statusToBadgeVariant(
   status: string,
 ): "success" | "warning" | "error" | "info" | "neutral" {
@@ -77,7 +88,7 @@ export default function IndexRow({ row, onRemove }: IndexRowProps) {
 
   return (
     <>
-      <tr className="bg-white transition-[background] duration-100 hover:bg-table-row-hover">
+      <tr className="transition-[background] duration-100 hover:brightness-[0.98]" style={{ background: rowBgColor(dtype) }}>
         <TableCell className="text-center w-8">
           <input
             type="checkbox"
@@ -229,4 +240,4 @@ export default function IndexRow({ row, onRemove }: IndexRowProps) {
   );
 }
 
-export { DOC_TYPES, badgeStyle };
+export { DOC_TYPES, badgeStyle, rowBgColor };

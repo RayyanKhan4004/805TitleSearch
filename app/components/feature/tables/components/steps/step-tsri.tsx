@@ -32,11 +32,96 @@ export default function StepTSRI({ shared, setShared, onGenerate }: StepTSRIProp
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState(false);
   const [synced, setSynced] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Sync back to shared when vesting/legal/effectiveDate change
   useState(() => {
     setShared((s) => ({ ...s, vesting, legal, effectiveDate }));
   });
+
+  const buildPrelimBody = () => {
+    const exceptionLines = exceptions.map((c, i) => `${i + 1}. ${c.verbiage}`).join("\n\n");
+    const requirementLines = requirements.map((c, i) => `${i + 1}. ${c.verbiage}`).join("\n\n");
+    const noteLines = notesCodes.map((c, i) => `${String.fromCharCode(65 + i)}. ${c.verbiage}`).join("\n\n");
+
+    return `PRELIMINARY REPORT
+
+Order No.: 2026-000123                          Date: ${effectiveDate}
+Property: 12345 Main Street, Apt 2, Rialto, CA 92376
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCHEDULE A
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Effective Date: ${effectiveDate} at ${effectiveTime}
+
+2. Policy or Policies to be issued:
+   CLTA Standard Coverage Policy – Owner's
+   Amount of Insurance: $485,000.00
+
+   ALTA Lender's Policy
+   Amount of Insurance: (Loan Amount TBD)
+
+3. The estate or interest in the land described herein is${leaseHold ? " a LEASEHOLD." : " a FEE."}
+${leaseHold ? `   Leasehold Note: ${leaseHold}` : ""}
+
+4. Title to said estate or interest at the date hereof is vested in:
+   ${vesting}
+
+5. The land referred to in this Report is described as follows:
+   ${legal}
+
+   APN: 0557-081-23-0000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCHEDULE B – REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${requirementLines || "No requirements added yet."}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCHEDULE B – EXCEPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${exceptionLines || "No exceptions added yet."}
+${easements ? `\n\nAdditional Easements:\n${easements}` : ""}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${noteLines || "No notes added yet."}
+${notes ? `\n\n${notes}` : ""}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Authorized Signatory: _________________________
+`;
+  };
+
+  const handleAutoGenerateExceptions = () => {
+    /* Auto-populate standard exceptions based on state/county */
+    const stdExceptions: ChainCode[] = [
+      { id: Date.now() + 1, type: "exception", code: "Exception 1", verbiage: "Property taxes, including any personal property taxes and any assessments collected with taxes, for the fiscal year 2025-2026, a lien not yet due and payable. APN: 0557-081-23-0000" },
+      { id: Date.now() + 2, type: "exception", code: "Exception 2", verbiage: "Any liens or other assessments, bonds or special district levies of San Bernardino County." },
+      { id: Date.now() + 3, type: "exception", code: "Exception 3", verbiage: "An easement for public utilities and incidental purposes in favor of CITY OF GLENDALE, recorded April 11, 1998 as Instrument No. 1998-0022341." },
+      { id: Date.now() + 4, type: "exception", code: "Exception 4", verbiage: "Covenants, Conditions and Restrictions of SUNSET HILLS HOA, recorded July 19, 2005 as Instrument No. 2005-0188770." },
+    ];
+    const next = [...codes, ...stdExceptions];
+    setCodes(next);
+    setShared((s) => ({ ...s, chainCodes: next }));
+  };
+
+  const handleAutoGenerateRequirements = () => {
+    /* Auto-populate standard requirements based on order type */
+    const stdRequirements: ChainCode[] = [
+      { id: Date.now() + 5, type: "requirement", code: "Requirement 1", verbiage: "Payment of the full consideration to or for the account of the grantors or mortgagors, as applicable." },
+      { id: Date.now() + 6, type: "requirement", code: "Requirement 2", verbiage: "Instruments in recordable form which must be executed, delivered and duly filed for record." },
+      { id: Date.now() + 7, type: "requirement", code: "Requirement 3", verbiage: "A Grant Deed from MICHAEL SMITH to JOHN D. DOE AND JANE R. DOE conveying the land described in Schedule A." },
+    ];
+    const next = [...codes, ...stdRequirements];
+    setCodes(next);
+    setShared((s) => ({ ...s, chainCodes: next }));
+  };
 
   const handleSync = () => {
     setVesting(shared.vesting);
@@ -63,6 +148,7 @@ export default function StepTSRI({ shared, setShared, onGenerate }: StepTSRIProp
         easements,
         notes,
         codes,
+        body: buildPrelimBody(),
       });
     }, 1600);
   };
@@ -104,6 +190,18 @@ export default function StepTSRI({ shared, setShared, onGenerate }: StepTSRIProp
           <Button variant="secondary" onClick={handleSync}>
             <Icon name="refresh" size={11} />
             {synced ? "✓ Synced!" : "Sync from Chain & Legal"}
+          </Button>
+          <Button variant="secondary" onClick={() => setShowPreview(!showPreview)}>
+            <Icon name="eye" size={11} />
+            {showPreview ? "Hide Preview" : "Preview Report"}
+          </Button>
+          <Button variant="secondary" onClick={handleAutoGenerateExceptions}>
+            <Icon name="fileCheck" size={11} />
+            Auto Exceptions
+          </Button>
+          <Button variant="secondary" onClick={handleAutoGenerateRequirements}>
+            <Icon name="checkCircle" size={11} />
+            Auto Requirements
           </Button>
           <Button
             onClick={handleGenerate}
@@ -396,6 +494,77 @@ export default function StepTSRI({ shared, setShared, onGenerate }: StepTSRIProp
           </Card>
         </div>
       </div>
+
+      {/* Preview Modal */}
+      {showPreview && (
+        <div
+          className="fixed inset-0 bg-black/55 flex items-center justify-center z-[999] p-6"
+          onClick={() => setShowPreview(false)}
+        >
+          <div
+            className="bg-white w-[900px] max-h-[90vh] rounded-2xl overflow-hidden flex flex-col"
+            style={{ boxShadow: "0 32px 80px rgba(0,0,0,.28)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-[#1e2130] px-5 py-3.5 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-[#8B0000] rounded-lg flex items-center justify-center">
+                  <Icon name="fileCheck" size={16} className="text-white" />
+                </div>
+                <div>
+                  <div className="text-[14px] font-bold text-white">Preliminary Report Preview</div>
+                  <div className="text-[10px] text-[#94a3b8]">Formatted as it will appear in the final document</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="bg-white/10 border-none text-[#94a3b8] rounded-md px-2.5 py-1 cursor-pointer text-[11px] flex items-center gap-1 hover:bg-white/20"
+              >
+                <Icon name="x" size={11} />
+                Close
+              </button>
+            </div>
+            <div className="p-5 overflow-y-auto flex-1">
+              <pre className="text-[11px] text-[#1e293b] leading-[1.7] font-mono whitespace-pre-wrap bg-[#f8fafc] border border-[#e2e8f0] rounded-lg p-4">
+                {buildPrelimBody()}
+              </pre>
+            </div>
+            <div className="border-t border-[#e2e8f0] px-5 py-3 flex items-center justify-between shrink-0">
+              <div className="text-[11px] text-[#94a3b8]">
+                {exceptions.length} exceptions · {requirements.length} requirements · {notesCodes.length} notes
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(buildPrelimBody());
+                  }}
+                >
+                  <Icon name="copy" size={11} />
+                  Copy to Clipboard
+                </Button>
+                <Button
+                  onClick={handleGenerate}
+                  disabled={generating || generated}
+                  style={{ background: "#8B0000" }}
+                >
+                  {generating ? (
+                    <>
+                      <Icon name="loader" size={11} className="spin" />
+                      Generating…
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="fileCheck" size={11} />
+                      Generate & Save
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

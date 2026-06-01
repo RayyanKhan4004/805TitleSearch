@@ -1,0 +1,65 @@
+:root {
+  /* ═══════════════════════════════════════════════════
+     ENTITY COLOR SCHEMES — Index Card / Index Row
+     ═══════════════════════════════════════════════════ */
+
+  /* ── Transfers (XFER) ── */
+  --entity-xfer-bg: #f7fdf9;
+  --entity-xfer-border: #86efac;
+  --entity-xfer-hover: #f0fdf4;
+  --entity-xfer-child-bg: #f0fdf4;
+  --entity-xfer-child-border: #bbf7d0;
+  --entity-xfer-select-bg: #f7fdf9;
+  --entity-xfer-select-color: #15803d;
+  --entity-xfer-select-border: #bbf7d0;
+
+  /* ── Deeds of Trust (DOT) ── */
+  --entity-dot-bg: #fffdf5;
+  --entity-dot-border: #fcd34d;
+  --entity-dot-hover: #fffbeb;
+  --entity-dot-child-bg: #fffbeb;
+  --entity-dot-child-border: #fde68a;
+  --entity-dot-select-bg: #fffdf5;
+  --entity-dot-select-color: #92400e;
+  --entity-dot-select-border: #fde68a;
+
+  /* ── Liens & Judgments (LIEN) ── */
+  --entity-lien-bg: #fff9f5;
+  --entity-lien-border: #fca5a5;
+  --entity-lien-hover: #fff7ed;
+  --entity-lien-child-bg: #fff1f0;
+  --entity-lien-child-border: #fecaca;
+  --entity-lien-select-bg: #fff9f5;
+  --entity-lien-select-color: #b91c1c;
+  --entity-lien-select-border: #fecaca;
+
+  /* ── Easements & Restrictions (EASE) ── */
+  --entity-ease-bg: #f5f9ff;
+  --entity-ease-border: #93c5fd;
+  --entity-ease-hover: #eff6ff;
+  --entity-ease-child-bg: #eff6ff;
+  --entity-ease-child-border: #bfdbfe;
+  --entity-ease-select-bg: #f5f9ff;
+  --entity-ease-select-color: #1d4ed8;
+  --entity-ease-select-border: #bfdbfe;
+
+  /* ── Bankruptcy / Probate (BANKR) ── */
+  --entity-bankr-bg: #fdf8ff;
+  --entity-bankr-border: #d8b4fe;
+  --entity-bankr-hover: #fdf4ff;
+  --entity-bankr-child-bg: #faf5ff;
+  --entity-bankr-child-border: #e9d5ff;
+  --entity-bankr-select-bg: #fdf8ff;
+  --entity-bankr-select-color: #7e22ce;
+  --entity-bankr-select-border: #e9d5ff;
+
+  /* ── Miscellaneous (MISC) ── */
+  --entity-misc-bg: #fafafa;
+  --entity-misc-border: #cbd5e1;
+  --entity-misc-hover: #f8fafc;
+  --entity-misc-child-bg: #f8fafc;
+  --entity-misc-child-border: #e2e8f0;
+  --entity-misc-select-bg: #f8fafc;
+  --entity-misc-select-color: #475569;
+  --entity-misc-select-border: #cbd5e1;
+}

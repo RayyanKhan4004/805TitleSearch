@@ -1235,15 +1235,15 @@ export default function ManualSearchModal({ onClose }: ManualSearchModalProps) {
           {source === "Patriot Act" && <SearchPatriotAct />}
           {source === "County Assessor" && <SearchCountyAssessor />}
         </div>
+        <DialogFooter className="bg-card-header">
+          <span className="text-[11px] text-text-muted">
+            Connected to: <strong style={{ color }}>{source}</strong>
+          </span>
+          <Button variant="secondary" onClick={onClose}>
+            Close
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogFooter className="bg-card-header">
-        <span className="text-[11px] text-text-muted">
-          Connected to: <strong style={{ color }}>{source}</strong>
-        </span>
-        <Button variant="secondary" onClick={onClose}>
-          Close
-        </Button>
-      </DialogFooter>
     </Dialog>
   );
 }

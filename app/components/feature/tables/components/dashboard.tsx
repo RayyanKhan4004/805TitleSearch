@@ -179,7 +179,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          {["Dashboard", "Orders", "Search", "Title Chain", "Documents", "Tasks"].map((item) => (
+          {["Dashboard", "Orders", "Search", "Title Chain", "Documents", "Tasks", "Reports", "Admin"].map((item) => (
             <button
               key={item}
               onClick={item === "Dashboard" ? handleCloseOrder : undefined}

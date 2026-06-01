@@ -84,14 +84,14 @@ export default function CreateTemplateModal({ onClose, onSave }: CreateTemplateM
             </div>
           </div>
         )}
+        <DialogFooter className="bg-card-header">
+          <span className="text-[11px] text-text-muted">{screen === "picker" ? "Select a template to continue" : `Editing: ${tname || "Untitled"}`}</span>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={onClose}>Cancel</Button>
+            {screen === "editor" && (<Button onClick={handleSave} disabled={!body.trim() || !tname.trim() || saved} className={!body.trim() || !tname.trim() || saved ? "opacity-60 cursor-not-allowed" : ""}>{saved ? (<><Icon name="checkCircle" size={12} />Saved!</>) : (<><Icon name="save" size={12} />Save Template</>)}</Button>)}
+          </div>
+        </DialogFooter>
       </DialogContent>
-      <DialogFooter className="bg-card-header">
-        <span className="text-[11px] text-text-muted">{screen === "picker" ? "Select a template to continue" : `Editing: ${tname || "Untitled"}`}</span>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          {screen === "editor" && (<Button onClick={handleSave} disabled={!body.trim() || !tname.trim() || saved} className={!body.trim() || !tname.trim() || saved ? "opacity-60 cursor-not-allowed" : ""}>{saved ? (<><Icon name="checkCircle" size={12} />Saved!</>) : (<><Icon name="save" size={12} />Save Template</>)}</Button>)}
-        </div>
-      </DialogFooter>
     </Dialog>
   );
 }

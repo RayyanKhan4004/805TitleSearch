@@ -5,7 +5,6 @@ import {
   Button,
   Dialog,
   DialogContent,
-  DialogBody,
   DialogFooter,
   Input,
   Textarea,
@@ -24,7 +23,7 @@ export default function SendPrelimModal({
   const [email, setEmail] = useState("");
   const [cc, setCc] = useState("");
   const [subject, setSubject] = useState(
-    "Preliminary Report — Order No. 2026-000123",
+    "Preliminary Report - Order No. 2026-000123",
   );
   const [message, setMessage] = useState(
     "Please find attached the Preliminary Report for the above referenced order.\n\nPlease review and advise of any additional requirements or exceptions.\n\nThank you.",
@@ -39,6 +38,7 @@ export default function SendPrelimModal({
     setName(p.name);
     setEmail(p.email);
   };
+
   const handleSend = () => {
     setSending(true);
     setTimeout(() => {
@@ -50,11 +50,11 @@ export default function SendPrelimModal({
   const docOptions = docs.map((d) => ({ value: d.name, label: d.name }));
   docOptions.push({
     value: "__prelim__",
-    label: "Preliminary Report — Auto-Generated",
+    label: "Preliminary Report - Auto-Generated",
   });
   docOptions.push({
     value: "__final__",
-    label: "Final Prelim — Order 2026-000123.docx",
+    label: "Final Prelim - Order 2026-000123.docx",
   });
 
   return (
@@ -166,39 +166,39 @@ export default function SendPrelimModal({
             </Button>
           </div>
         )}
+        {!sent && (
+          <DialogFooter className="bg-card-header">
+            <span className="text-[11px] text-text-muted">
+              Sending as:{" "}
+              <strong className="text-text">
+                John Smith - 805 Title Search
+              </strong>
+            </span>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSend}
+                disabled={!email || !name || sending}
+                style={{ background: "var(--accent-data-trace)" }}
+              >
+                {sending ? (
+                  <>
+                    <Icon name="loader" size={11} className="spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="mail" size={11} />
+                    Send Document
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogFooter>
+        )}
       </DialogContent>
-      {!sent && (
-        <DialogFooter className="bg-card-header">
-          <span className="text-[11px] text-text-muted">
-            Sending as:{" "}
-            <strong className="text-text">
-              John Smith — 805 Title Search
-            </strong>
-          </span>
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSend}
-              disabled={!email || !name || sending}
-              style={{ background: "var(--accent-data-trace)" }}
-            >
-              {sending ? (
-                <>
-                  <Icon name="loader" size={11} className="spin" />
-                  Sending…
-                </>
-              ) : (
-                <>
-                  <Icon name="mail" size={11} />
-                  Send Document
-                </>
-              )}
-            </Button>
-          </div>
-        </DialogFooter>
-      )}
     </Dialog>
   );
 }

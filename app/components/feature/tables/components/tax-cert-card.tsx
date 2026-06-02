@@ -2,7 +2,7 @@
 
 import { useState, Fragment } from "react";
 import Icon from "@/components/common/icon";
-import { CATX_CODES, type CatxCode } from "./consts";
+import { CATX_CODES, type CatxCode } from "./temp";
 
 interface TaxCertCardProps {
   title: string;

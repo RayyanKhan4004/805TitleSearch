@@ -2,11 +2,11 @@
 
 import Icon from "@/components/common/icon";
 import { CardHead } from "../shared-atoms";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FinalPrelimModal from "../models/final-prelim-modal";
 import CreateTemplateModal from "../models/create-template-modal";
 import SendPrelimModal from "../models/send-prelim-modal";
-import { INIT_DOCS, INIT_NOTES } from "../consts";
+import { INIT_DOCS, INIT_NOTES } from "../temp";
 import type { DocItem, NoteItem } from "@/app/components/feature/tables/types";
 import { Button, Card, CardContent, Badge } from "@/components/ui";
 
@@ -19,7 +19,7 @@ export default function StepDocuments({ extraDocs = [], onSaveClose }: StepDocum
   const [docs, setDocs] = useState<DocItem[]>(INIT_DOCS);
 
   /* Merge extraDocs (generated prelims from TSRI) when they change */
-  useState(() => {
+  useEffect(() => {
     if (extraDocs.length > 0) {
       const extraNames = extraDocs.map((d) => d.name);
       setDocs((prev) => {
@@ -28,7 +28,7 @@ export default function StepDocuments({ extraDocs = [], onSaveClose }: StepDocum
         return newExtras.length > 0 ? [...newExtras, ...prev] : prev;
       });
     }
-  });
+  }, [extraDocs]);
   const [notes, setNotes] = useState<NoteItem[]>(INIT_NOTES);
   const [noteText, setNote] = useState("");
   const [showTpl, setShowTpl] = useState(false);

@@ -4,7 +4,8 @@ import { useState, useRef, Fragment, type ReactNode } from "react";
 import Icon from "@/components/common/icon";
 import { Card, CardTitle, CardDescription } from "@/components/ui";
 import IndexRow from "./index-row";
-import { IDX_COLS, DOC_TITLES } from "./consts";
+import { IDX_COLS } from "./consts";
+import { DOC_TITLES } from "./temp";
 import { LEGEND_ITEMS, scheme } from "./schemes";
 import "./styles/entity-colors.css";
 

@@ -7,7 +7,7 @@ import {
   DOC_ENTITIES,
   DOC_TITLES,
   DOC_TYPES,
-} from "./consts";
+} from "./temp";
 import { entityStyle, rowScheme } from "./schemes";
 import "./styles/entity-colors.css";
 

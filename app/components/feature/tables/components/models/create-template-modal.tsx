@@ -3,7 +3,7 @@
 import Icon from "@/components/common/icon";
 import { Button, Dialog, DialogContent, DialogBody, DialogFooter, Textarea } from "@/components/ui";
 import { useState } from "react";
-import { EXAMPLE_TEMPLATES } from "../consts";
+import { EXAMPLE_TEMPLATES } from "../temp";
 import type { CreateTemplateModalProps } from "@/app/components/feature/tables/types";
 
 export default function CreateTemplateModal({ onClose, onSave }: CreateTemplateModalProps) {

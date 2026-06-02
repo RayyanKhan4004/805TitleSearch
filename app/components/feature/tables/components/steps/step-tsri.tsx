@@ -2,9 +2,20 @@
 
 import Icon from "@/components/common/icon";
 import { CardHead, Lbl } from "../shared-atoms";
-import { useState } from "react";
-import type { ChainCode, SharedState } from "@/app/components/feature/tables/types";
-import { Button, Card, CardContent, Input, Select, Textarea, Badge } from "@/components/ui";
+import { useState, useEffect } from "react";
+import type {
+  ChainCode,
+  SharedState,
+} from "@/app/components/feature/tables/types";
+import {
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Select,
+  Textarea,
+  Badge,
+} from "@/components/ui";
 
 interface StepTSRIProps {
   shared: SharedState;
@@ -12,11 +23,17 @@ interface StepTSRIProps {
   onGenerate: (data: Record<string, unknown>) => void;
 }
 
-export default function StepTSRI({ shared, setShared, onGenerate }: StepTSRIProps) {
+export default function StepTSRI({
+  shared,
+  setShared,
+  onGenerate,
+}: StepTSRIProps) {
   const [proposedInsured, setProposedInsured] = useState(
     `${(shared.vesting || "").split(",")[0] || "John D. Doe and Jane R. Doe"}`,
   );
-  const [effectiveDate, setEffectiveDate] = useState(shared.effectiveDate || "05/07/2026");
+  const [effectiveDate, setEffectiveDate] = useState(
+    shared.effectiveDate || "05/07/2026",
+  );
   const [effectiveTime, setEffectiveTime] = useState("7:30 a.m.");
   const [leaseHold, setLeaseHold] = useState(shared.leaseHold || "");
   const [vesting, setVesting] = useState(shared.vesting || "");
@@ -24,7 +41,11 @@ export default function StepTSRI({ shared, setShared, onGenerate }: StepTSRIProp
   const [easements, setEasements] = useState("");
   const [notes, setNotes] = useState("");
   const [codes, setCodes] = useState<ChainCode[]>(shared.chainCodes || []);
-  const [newCode, setNewCode] = useState<{ type: "exception" | "requirement" | "note"; code: string; verbiage: string }>({
+  const [newCode, setNewCode] = useState<{
+    type: "exception" | "requirement" | "note";
+    code: string;
+    verbiage: string;
+  }>({
     type: "exception",
     code: "",
     verbiage: "",
@@ -34,15 +55,20 @@ export default function StepTSRI({ shared, setShared, onGenerate }: StepTSRIProp
   const [synced, setSynced] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  // Sync back to shared when vesting/legal/effectiveDate change
-  useState(() => {
+  useEffect(() => {
     setShared((s) => ({ ...s, vesting, legal, effectiveDate }));
-  });
+  }, [vesting, legal, effectiveDate, setShared]);
 
   const buildPrelimBody = () => {
-    const exceptionLines = exceptions.map((c, i) => `${i + 1}. ${c.verbiage}`).join("\n\n");
-    const requirementLines = requirements.map((c, i) => `${i + 1}. ${c.verbiage}`).join("\n\n");
-    const noteLines = notesCodes.map((c, i) => `${String.fromCharCode(65 + i)}. ${c.verbiage}`).join("\n\n");
+    const exceptionLines = exceptions
+      .map((c, i) => `${i + 1}. ${c.verbiage}`)
+      .join("\n\n");
+    const requirementLines = requirements
+      .map((c, i) => `${i + 1}. ${c.verbiage}`)
+      .join("\n\n");
+    const noteLines = notesCodes
+      .map((c, i) => `${String.fromCharCode(65 + i)}. ${c.verbiage}`)
+      .join("\n\n");
 
     return `PRELIMINARY REPORT
 
@@ -101,10 +127,34 @@ Authorized Signatory: _________________________
   const handleAutoGenerateExceptions = () => {
     /* Auto-populate standard exceptions based on state/county */
     const stdExceptions: ChainCode[] = [
-      { id: Date.now() + 1, type: "exception", code: "Exception 1", verbiage: "Property taxes, including any personal property taxes and any assessments collected with taxes, for the fiscal year 2025-2026, a lien not yet due and payable. APN: 0557-081-23-0000" },
-      { id: Date.now() + 2, type: "exception", code: "Exception 2", verbiage: "Any liens or other assessments, bonds or special district levies of San Bernardino County." },
-      { id: Date.now() + 3, type: "exception", code: "Exception 3", verbiage: "An easement for public utilities and incidental purposes in favor of CITY OF GLENDALE, recorded April 11, 1998 as Instrument No. 1998-0022341." },
-      { id: Date.now() + 4, type: "exception", code: "Exception 4", verbiage: "Covenants, Conditions and Restrictions of SUNSET HILLS HOA, recorded July 19, 2005 as Instrument No. 2005-0188770." },
+      {
+        id: Date.now() + 1,
+        type: "exception",
+        code: "Exception 1",
+        verbiage:
+          "Property taxes, including any personal property taxes and any assessments collected with taxes, for the fiscal year 2025-2026, a lien not yet due and payable. APN: 0557-081-23-0000",
+      },
+      {
+        id: Date.now() + 2,
+        type: "exception",
+        code: "Exception 2",
+        verbiage:
+          "Any liens or other assessments, bonds or special district levies of San Bernardino County.",
+      },
+      {
+        id: Date.now() + 3,
+        type: "exception",
+        code: "Exception 3",
+        verbiage:
+          "An easement for public utilities and incidental purposes in favor of CITY OF GLENDALE, recorded April 11, 1998 as Instrument No. 1998-0022341.",
+      },
+      {
+        id: Date.now() + 4,
+        type: "exception",
+        code: "Exception 4",
+        verbiage:
+          "Covenants, Conditions and Restrictions of SUNSET HILLS HOA, recorded July 19, 2005 as Instrument No. 2005-0188770.",
+      },
     ];
     const next = [...codes, ...stdExceptions];
     setCodes(next);
@@ -114,9 +164,27 @@ Authorized Signatory: _________________________
   const handleAutoGenerateRequirements = () => {
     /* Auto-populate standard requirements based on order type */
     const stdRequirements: ChainCode[] = [
-      { id: Date.now() + 5, type: "requirement", code: "Requirement 1", verbiage: "Payment of the full consideration to or for the account of the grantors or mortgagors, as applicable." },
-      { id: Date.now() + 6, type: "requirement", code: "Requirement 2", verbiage: "Instruments in recordable form which must be executed, delivered and duly filed for record." },
-      { id: Date.now() + 7, type: "requirement", code: "Requirement 3", verbiage: "A Grant Deed from MICHAEL SMITH to JOHN D. DOE AND JANE R. DOE conveying the land described in Schedule A." },
+      {
+        id: Date.now() + 5,
+        type: "requirement",
+        code: "Requirement 1",
+        verbiage:
+          "Payment of the full consideration to or for the account of the grantors or mortgagors, as applicable.",
+      },
+      {
+        id: Date.now() + 6,
+        type: "requirement",
+        code: "Requirement 2",
+        verbiage:
+          "Instruments in recordable form which must be executed, delivered and duly filed for record.",
+      },
+      {
+        id: Date.now() + 7,
+        type: "requirement",
+        code: "Requirement 3",
+        verbiage:
+          "A Grant Deed from MICHAEL SMITH to JOHN D. DOE AND JANE R. DOE conveying the land described in Schedule A.",
+      },
     ];
     const next = [...codes, ...stdRequirements];
     setCodes(next);
@@ -183,15 +251,23 @@ Authorized Signatory: _________________________
       {/* Top toolbar */}
       <div className="flex items-center justify-between px-0.5 pb-3 border-b border-border mb-1">
         <div>
-          <h2 className="m-0 text-[15px] font-bold text-text">Title Search Report Index (TSRI)</h2>
-          <p className="m-0 text-[11px] text-text-muted mt-0.5">Compile all title data into a structured report — auto-populates Preliminary Report</p>
+          <h2 className="m-0 text-[15px] font-bold text-text">
+            Title Search Report Index (TSRI)
+          </h2>
+          <p className="m-0 text-[11px] text-text-muted mt-0.5">
+            Compile all title data into a structured report — auto-populates
+            Preliminary Report
+          </p>
         </div>
         <div className="flex gap-1.5">
           <Button variant="secondary" onClick={handleSync}>
             <Icon name="refresh" size={11} />
             {synced ? "✓ Synced!" : "Sync from Chain & Legal"}
           </Button>
-          <Button variant="secondary" onClick={() => setShowPreview(!showPreview)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowPreview(!showPreview)}
+          >
             <Icon name="eye" size={11} />
             {showPreview ? "Hide Preview" : "Preview Report"}
           </Button>
@@ -316,7 +392,9 @@ Authorized Signatory: _________________________
               sub="Current ownership vesting — auto-populated from Legal & Vesting"
               accent="#059669"
               right={
-                <Badge variant="success" size="sm">AUTO</Badge>
+                <Badge variant="success" size="sm">
+                  AUTO
+                </Badge>
               }
             />
             <CardContent>
@@ -338,7 +416,9 @@ Authorized Signatory: _________________________
               sub="Full parcel legal description — auto-populated"
               accent="#d97706"
               right={
-                <Badge variant="warning" size="sm">AUTO</Badge>
+                <Badge variant="warning" size="sm">
+                  AUTO
+                </Badge>
               }
             />
             <CardContent>
@@ -349,7 +429,9 @@ Authorized Signatory: _________________________
                 onChange={(e) => setLegal(e.target.value)}
                 size="mono"
               />
-              <div className="text-[9px] text-text-muted mt-1 text-right">{legal.length} chars</div>
+              <div className="text-[9px] text-text-muted mt-1 text-right">
+                {legal.length} chars
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -363,7 +445,9 @@ Authorized Signatory: _________________________
               sub="Schedule B — Exceptions (auto-populated from Title Chain codes)"
               accent="#dc2626"
               right={
-                <Badge variant="error" size="sm">{exceptions.length} items</Badge>
+                <Badge variant="error" size="sm">
+                  {exceptions.length} items
+                </Badge>
               }
             />
             <CardContent className="flex flex-col gap-2">
@@ -373,7 +457,9 @@ Authorized Signatory: _________________________
                   className="border border-red-100 rounded-lg bg-red-50/50 p-2.5 relative"
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${codeTypeStyle(c.type)}`}>
+                    <span
+                      className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${codeTypeStyle(c.type)}`}
+                    >
                       {c.code}
                     </span>
                     <button
@@ -383,7 +469,9 @@ Authorized Signatory: _________________________
                       ×
                     </button>
                   </div>
-                  <p className="text-[11px] text-text-secondary m-0 leading-[1.5]">{c.verbiage}</p>
+                  <p className="text-[11px] text-text-secondary m-0 leading-[1.5]">
+                    {c.verbiage}
+                  </p>
                 </div>
               ))}
               <div className="mt-1">
@@ -406,7 +494,9 @@ Authorized Signatory: _________________________
               sub="Schedule B — Requirements and Notes (auto-populated)"
               accent="#0891b2"
               right={
-                <Badge variant="info" size="sm">{requirements.length + notesCodes.length} items</Badge>
+                <Badge variant="info" size="sm">
+                  {requirements.length + notesCodes.length} items
+                </Badge>
               }
             />
             <CardContent className="flex flex-col gap-2">
@@ -416,7 +506,9 @@ Authorized Signatory: _________________________
                   className={`rounded-lg p-2.5 relative border ${c.type === "requirement" ? "border-blue-200 bg-blue-50" : "border-green-200 bg-green-50"}`}
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${codeTypeStyle(c.type)}`}>
+                    <span
+                      className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${codeTypeStyle(c.type)}`}
+                    >
                       {c.code}
                     </span>
                     <button
@@ -426,7 +518,9 @@ Authorized Signatory: _________________________
                       ×
                     </button>
                   </div>
-                  <p className="text-[11px] text-text-secondary m-0 leading-[1.5]">{c.verbiage}</p>
+                  <p className="text-[11px] text-text-secondary m-0 leading-[1.5]">
+                    {c.verbiage}
+                  </p>
                 </div>
               ))}
               <div className="mt-1">
@@ -455,7 +549,15 @@ Authorized Signatory: _________________________
                   <Lbl>Type</Lbl>
                   <Select
                     value={newCode.type}
-                    onChange={(e) => setNewCode((c) => ({ ...c, type: e.target.value as "exception" | "requirement" | "note" }))}
+                    onChange={(e) =>
+                      setNewCode((c) => ({
+                        ...c,
+                        type: e.target.value as
+                          | "exception"
+                          | "requirement"
+                          | "note",
+                      }))
+                    }
                     options={[
                       { value: "exception", label: "Exception" },
                       { value: "requirement", label: "Requirement" },
@@ -467,7 +569,9 @@ Authorized Signatory: _________________________
                   <Lbl>Code Label</Lbl>
                   <Input
                     value={newCode.code}
-                    onChange={(e) => setNewCode((c) => ({ ...c, code: e.target.value }))}
+                    onChange={(e) =>
+                      setNewCode((c) => ({ ...c, code: e.target.value }))
+                    }
                     placeholder="e.g. Exception 6, Requirement 3, Note B"
                   />
                 </div>
@@ -477,7 +581,9 @@ Authorized Signatory: _________________________
                 <Textarea
                   rows={3}
                   value={newCode.verbiage}
-                  onChange={(e) => setNewCode((c) => ({ ...c, verbiage: e.target.value }))}
+                  onChange={(e) =>
+                    setNewCode((c) => ({ ...c, verbiage: e.target.value }))
+                  }
                   size="mono"
                   placeholder="Full verbiage for this code…"
                 />
@@ -512,8 +618,12 @@ Authorized Signatory: _________________________
                   <Icon name="fileCheck" size={16} className="text-white" />
                 </div>
                 <div>
-                  <div className="text-[14px] font-bold text-white">Preliminary Report Preview</div>
-                  <div className="text-[10px] text-[#94a3b8]">Formatted as it will appear in the final document</div>
+                  <div className="text-[14px] font-bold text-white">
+                    Preliminary Report Preview
+                  </div>
+                  <div className="text-[10px] text-[#94a3b8]">
+                    Formatted as it will appear in the final document
+                  </div>
                 </div>
               </div>
               <button
@@ -531,7 +641,8 @@ Authorized Signatory: _________________________
             </div>
             <div className="border-t border-[#e2e8f0] px-5 py-3 flex items-center justify-between shrink-0">
               <div className="text-[11px] text-[#94a3b8]">
-                {exceptions.length} exceptions · {requirements.length} requirements · {notesCodes.length} notes
+                {exceptions.length} exceptions · {requirements.length}{" "}
+                requirements · {notesCodes.length} notes
               </div>
               <div className="flex gap-2">
                 <Button

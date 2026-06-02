@@ -11,7 +11,7 @@ import {
   Select,
 } from "@/components/ui";
 import { useState } from "react";
-import { RECIPIENTS, PREFILLS } from "../consts";
+import { RECIPIENTS, PREFILLS } from "../temp";
 import type { SendPrelimModalProps } from "@/app/components/feature/tables/types";
 
 export default function SendPrelimModal({

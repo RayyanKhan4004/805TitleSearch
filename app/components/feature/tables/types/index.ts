@@ -351,6 +351,35 @@ export interface BtnProps {
   disabled?: boolean;
 }
 
+export interface PrelimData {
+  orderNo: string;
+  fileNo: string;
+  titleOfficer: string;
+  titleEmail: string;
+  titlePhone: string;
+  titleFax: string;
+  propertyAddress: string;
+  effectiveDate: string;
+  effectiveTime: string;
+  county: string;
+  city: string;
+  vestingName: string;
+  vestingType: string;
+  leaseHold: string;
+  legal: string;
+  apn: string;
+  exceptions: { code: string; verbiage: string }[];
+  requirements: { code: string; verbiage: string }[];
+  notes: { code: string; verbiage: string }[];
+  easements: string;
+  extraNotes: string;
+}
+
+export interface PrelimPreviewModalProps {
+  data: PrelimData;
+  onClose: () => void;
+}
+
 export interface IconProps {
   name: string;
   size?: number;

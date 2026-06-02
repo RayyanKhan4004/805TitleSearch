@@ -11,7 +11,9 @@ import {
   StepDocuments,
   StepReview,
 } from "./steps";
-import { STEPS, NAV_ICONS } from "./consts";
+import { NAV_ICONS } from "./consts";
+import { PrelimPreviewModal } from "./models";
+import { DEFAULT_SHARED_STATE } from "./temp";
 import type { Order, OrderLock } from "@/app/components/feature/tables/types";
 
 const CURRENT_USER = "John Smith";
@@ -31,54 +33,109 @@ export default function Dashboard() {
   const [step, setStep] = useState(1); /* 1=Chain,2=TSRI,3=Docs,4=Review */
 
   /* Order status + lock tracking */
-  const [orderStatuses, setOrderStatuses] = useState<Record<string, string>>({});
-  const [lockedBy, setLockedBy] = useState<Record<string, OrderLock | null>>({});
-  const [lockAttempt, setLockAttempt] = useState<{ no: string; lock: OrderLock } | null>(null);
+  const [orderStatuses, setOrderStatuses] = useState<Record<string, string>>(
+    {},
+  );
+  const [lockedBy, setLockedBy] = useState<Record<string, OrderLock | null>>(
+    {},
+  );
+  const [lockAttempt, setLockAttempt] = useState<{
+    no: string;
+    lock: OrderLock;
+  } | null>(null);
+  const [prelimData, setPrelimData] = useState(null); /* null = not showing */
 
   /* Shared state between Title Chain + TSRI */
-  const [shared, setShared] = useState({
-    vesting: "John D. Doe and Jane R. Doe, husband and wife as community property, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA.",
-    legal: "LOT 22 OF TRACT 12345, IN THE CITY OF RIALTO, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA, AS PER MAP RECORDED IN BOOK 123, PAGE 45 OF MAPS, IN THE OFFICE OF THE COUNTY RECORDER OF SAID COUNTY.",
-    leaseHold: "Fee simple estate subject to leasehold interest as disclosed in supporting documents.",
-    effectiveDate: "05/07/2026",
-    chainCodes: [
-      { id: 1, type: "exception" as const, code: "Exception 1", verbiage: "Property taxes, including any personal property taxes and any assessments collected with taxes, for the fiscal year 2025-2026, a lien not yet due and payable. APN: 0557-081-23-0000" },
-      { id: 2, type: "exception" as const, code: "Exception 2", verbiage: "An easement for public utilities and incidental purposes in favor of CITY OF GLENDALE, recorded April 11, 1998 as Instrument No. 1998-0022341." },
-      { id: 3, type: "exception" as const, code: "Exception 3", verbiage: "Covenants, Conditions and Restrictions of SUNSET HILLS HOA, recorded July 19, 2005 as Instrument No. 2005-0188770." },
-      { id: 4, type: "exception" as const, code: "Exception 4", verbiage: "A Deed of Trust to secure an indebtedness executed by JOHN D. DOE, Trustor, in favor of BANK OF AMERICA, N.A., recorded as Instrument No. 2025-0213146. Must be paid off prior to close." },
-      { id: 5, type: "exception" as const, code: "Exception 5", verbiage: "A Judgment Lien in favor of COUNTY OF LOS ANGELES, recorded January 30, 2024 as Instrument No. 2024-0031122. Must be resolved prior to close." },
-      { id: 6, type: "requirement" as const, code: "Requirement 1", verbiage: "A Grant Deed from MICHAEL SMITH to JOHN D. DOE AND JANE R. DOE conveying the subject property must be executed, delivered, and duly recorded." },
-      { id: 7, type: "requirement" as const, code: "Requirement 2", verbiage: "Payment of all outstanding property taxes and assessments through the date of closing." },
-      { id: 8, type: "note" as const, code: "Note A", verbiage: "According to the public records, there have been no deeds conveying the property within a period of twenty-four (24) months prior to the date of this report, EXCEPT as shown herein." },
-    ],
-  });
+  const [shared, setShared] = useState(DEFAULT_SHARED_STATE);
 
   /* Generated documents from TSRI */
-  const [generatedDocs, setGeneratedDocs] = useState<Array<{ name: string; date: string; size: string; type: string; body?: string }>>([]);
+  const [generatedDocs, setGeneratedDocs] = useState<
+    Array<{
+      name: string;
+      date: string;
+      size: string;
+      type: string;
+      body?: string;
+    }>
+  >([]);
 
-  const getOrderStatus = (no: string) =>
-    orderStatuses[no] || "Open";
+  const getOrderStatus = (no: string) => orderStatuses[no] || "Open";
 
   const getLock = (no: string) => lockedBy[no] || null;
   const isLockedByMe = (no: string) => getLock(no)?.user === CURRENT_USER;
-  const isLockedByOther = (no: string) => {
-    const lock = getLock(no);
-    return lock && lock.user !== CURRENT_USER;
-  };
+  // const isLockedByOther = (no: string) => {
+  //   const lock = getLock(no);
+  //   return lock && lock.user !== CURRENT_USER;
+  // };
 
-  const handleGeneratePrelim = (tsriData: Record<string, unknown>) => {
+  function buildPrelimData(tsri: any, shared: any) {
+    const exceptions = (shared.chainCodes || []).filter(
+      (c: any) => c.type === "exception",
+    );
+    const requirements = (shared.chainCodes || []).filter(
+      (c: any) => c.type === "requirement",
+    );
+    const notes = (shared.chainCodes || []).filter(
+      (c: any) => c.type === "note",
+    );
+    return {
+      orderNo: "2026-000123",
+      fileNo: "ESC-2026-4412",
+      titleOfficer: "John Smith",
+      titleEmail: "john.smith@805title.com",
+      titlePhone: "(805) 568-6006",
+      titleFax: "(805) 568-7838",
+      propertyAddress: "12345 Main Street, Apt 2, Rialto, CA 92376",
+      effectiveDate: tsri.effectiveDate || shared.effectiveDate || "05/07/2026",
+      effectiveTime: "8:00 AM",
+      county: "San Bernardino",
+      city: "Rialto",
+      vestingName: tsri.vesting || shared.vesting || "",
+      vestingType: "Community Property",
+      leaseHold: tsri.leaseHold || shared.leaseHold || "",
+      legal: tsri.legal || shared.legal || "",
+      apn: "0557-081-23-0000",
+      exceptions,
+      requirements,
+      notes,
+      easements: tsri.easements || "",
+      extraNotes: tsri.notes || "",
+    };
+  }
+
+  function buildPrelimBody(tsri: any, shared: any) {
+    const d = buildPrelimData(tsri, shared);
+    return [
+      `PRELIMINARY REPORT — Order No. ${d.orderNo}`,
+      `Property: ${d.propertyAddress}`,
+      `Effective: ${d.effectiveDate} at ${d.effectiveTime}`,
+      `Vesting: ${d.vestingName}`,
+      `Legal: ${d.legal}`,
+      `APN: ${d.apn}`,
+      ...d.exceptions.map(
+        (e: any, i: number) => `Exception ${i + 1}: ${e.verbiage}`,
+      ),
+      ...d.requirements.map(
+        (r: any, i: number) => `Note ${i + 1}: ${r.verbiage}`,
+      ),
+    ].join("\n");
+  }
+
+  const handleGeneratePrelim = (tsriData: any) => {
     const date = new Date().toLocaleDateString("en-US");
+    const pData = buildPrelimData(tsriData, shared);
+    setPrelimData(pData as any); /* open preview modal */
     setGeneratedDocs((d) => [
       {
         name: "Preliminary_Report_" + date.replace(/\//g, "-") + ".docx",
         date,
         size: "—",
         type: "template",
-        body: tsriData.body as string | undefined,
+        body: buildPrelimBody(tsriData, shared),
+        prelimData: pData,
       },
       ...d,
     ]);
-    setStep(3);
   };
 
   const handleSelectOrder = (order: Order) => {
@@ -179,7 +236,16 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          {["Dashboard", "Orders", "Search", "Title Chain", "Documents", "Tasks", "Reports", "Admin"].map((item) => (
+          {[
+            "Dashboard",
+            "Orders",
+            "Search",
+            "Title Chain",
+            "Documents",
+            "Tasks",
+            "Reports",
+            "Admin",
+          ].map((item) => (
             <button
               key={item}
               onClick={item === "Dashboard" ? handleCloseOrder : undefined}
@@ -290,9 +356,17 @@ export default function Dashboard() {
               {(() => {
                 const st = getOrderStatus(selectedOrder.no);
                 const dotColor =
-                  st === "In Review" ? "#f59e0b" : st === "Closed" ? "#6366f1" : "#22c55e";
+                  st === "In Review"
+                    ? "#f59e0b"
+                    : st === "Closed"
+                      ? "#6366f1"
+                      : "#22c55e";
                 const txtColor =
-                  st === "In Review" ? "#92400e" : st === "Closed" ? "#3730a3" : "#16a34a";
+                  st === "In Review"
+                    ? "#92400e"
+                    : st === "Closed"
+                      ? "#3730a3"
+                      : "#16a34a";
                 return (
                   <span
                     className="flex items-center gap-1 text-[11px] font-semibold"
@@ -308,9 +382,7 @@ export default function Dashboard() {
               })()}
               {/* lock indicator */}
               {isLockedByMe(selectedOrder.no) && (
-                <span
-                  className="flex items-center gap-1 bg-[#fffbeb] border border-[#fde68a] rounded-full px-2.5 py-0.5 text-[10px] font-bold text-[#92400e]"
-                >
+                <span className="flex items-center gap-1 bg-[#fffbeb] border border-[#fde68a] rounded-full px-2.5 py-0.5 text-[10px] font-bold text-[#92400e]">
                   <svg
                     width="11"
                     height="11"
@@ -342,7 +414,8 @@ export default function Dashboard() {
               <div className="flex px-4.5">
                 {WORK_STEPS.map((s, i) => {
                   const idx = i + 1;
-                  const active = step === idx, done = step > idx;
+                  const active = step === idx,
+                    done = step > idx;
                   return (
                     <button
                       key={s.id}
@@ -359,7 +432,9 @@ export default function Dashboard() {
                           : done
                             ? "#059669"
                             : "#64748b",
-                        background: active ? "rgba(139,0,0,.03)" : "transparent",
+                        background: active
+                          ? "rgba(139,0,0,.03)"
+                          : "transparent",
                       }}
                     >
                       <div
@@ -395,7 +470,11 @@ export default function Dashboard() {
               <div className="px-5 pt-3.5 pb-0 shrink-0">
                 <div className="flex items-center gap-2.75 max-w-300 mx-auto">
                   <div className="w-8 h-8 bg-[#8B0000] rounded-lg flex items-center justify-center shrink-0">
-                    <Icon name={WORK_STEPS[step - 1].icon} size={15} className="text-white" />
+                    <Icon
+                      name={WORK_STEPS[step - 1].icon}
+                      size={15}
+                      className="text-white"
+                    />
                   </div>
                   <div>
                     <h1 className="m-0 text-[15px] font-bold text-[#1e293b]">
@@ -448,9 +527,7 @@ export default function Dashboard() {
                     onSaveClose={unlockAndClose}
                   />
                 )}
-                {step === 4 && (
-                  <StepReview onSaveClose={unlockAndClose} />
-                )}
+                {step === 4 && <StepReview onSaveClose={unlockAndClose} />}
               </div>
 
               {/* prev / next bar */}
@@ -491,10 +568,7 @@ export default function Dashboard() {
                     <Icon name="arrowRight" size={12} />
                   </Button>
                 ) : (
-                  <Button
-                    onClick={() => {}}
-                    style={{ background: "#059669" }}
-                  >
+                  <Button onClick={() => {}} style={{ background: "#059669" }}>
                     <Icon name="checkCircle" size={12} />
                     Submit Order
                   </Button>
@@ -505,6 +579,12 @@ export default function Dashboard() {
         )}
 
         {/* ── Lock-blocked modal ── */}
+        {prelimData && (
+          <PrelimPreviewModal
+            data={prelimData}
+            onClose={() => setPrelimData(null)}
+          />
+        )}
         {lockAttempt && (
           <div
             className="fixed inset-0 bg-black/55 flex items-center justify-center z-[999] p-6"
@@ -529,27 +609,42 @@ export default function Dashboard() {
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                   <path d="M7 11V7a5 5 0 0110 0v4" />
                 </svg>
-                <span className="text-[14px] font-bold text-white">Order Locked</span>
+                <span className="text-[14px] font-bold text-white">
+                  Order Locked
+                </span>
               </div>
               <div className="p-5.5 flex flex-col gap-3.5">
                 <p className="m-0 text-[12px] text-[#475569] leading-[1.6]">
-                  Order <strong className="text-[#1e293b]">#{lockAttempt.no}</strong> is currently locked and in review by:
+                  Order{" "}
+                  <strong className="text-[#1e293b]">#{lockAttempt.no}</strong>{" "}
+                  is currently locked and in review by:
                 </p>
                 <div className="bg-[#fffbeb] border border-[#fde68a] rounded-[10px] px-4 py-3 flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-full bg-[#f59e0b] flex items-center justify-center text-white text-[13px] font-bold shrink-0">
                     {lockAttempt.lock.user[0]}
                   </div>
                   <div>
-                    <div className="text-[13px] font-bold text-[#92400e]">{lockAttempt.lock.user}</div>
-                    <div className="text-[11px] text-[#94a3b8]">Locked since {lockAttempt.lock.since}</div>
+                    <div className="text-[13px] font-bold text-[#92400e]">
+                      {lockAttempt.lock.user}
+                    </div>
+                    <div className="text-[11px] text-[#94a3b8]">
+                      Locked since {lockAttempt.lock.since}
+                    </div>
                   </div>
                 </div>
                 <p className="m-0 text-[11px] text-[#94a3b8] leading-[1.5]">
-                  This order will become available once the examiner saves and closes the file. Please try again later or contact the examiner directly.
+                  This order will become available once the examiner saves and
+                  closes the file. Please try again later or contact the
+                  examiner directly.
                 </p>
                 <Button
                   onClick={() => setLockAttempt(null)}
-                  style={{ background: "#8B0000", justifyContent: "center", fontSize: 12, padding: "9px" }}
+                  style={{
+                    background: "#8B0000",
+                    justifyContent: "center",
+                    fontSize: 12,
+                    padding: "9px",
+                  }}
                 >
                   OK, Got It
                 </Button>

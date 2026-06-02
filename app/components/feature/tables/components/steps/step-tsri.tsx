@@ -2,6 +2,7 @@
 
 import Icon from "@/components/common/icon";
 import { CardHead, Lbl } from "../shared-atoms";
+import TaxCertCard from "../tax-cert-card";
 import { useState, useEffect } from "react";
 import type {
   ChainCode,
@@ -221,6 +222,9 @@ Authorized Signatory: _________________________
     }, 1600);
   };
 
+  const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null)
+
   const addCode = () => {
     if (!newCode.code.trim() || !newCode.verbiage.trim()) return;
     const next = [...codes, { ...newCode, id: Date.now() }];
@@ -231,6 +235,14 @@ Authorized Signatory: _________________________
 
   const removeCode = (id: number) => {
     const next = codes.filter((c) => c.id !== id);
+    setCodes(next);
+    setShared((s) => ({ ...s, chainCodes: next }));
+  };
+
+  const moveCode = (from: number, to: number) => {
+    const next = [...codes];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
     setCodes(next);
     setShared((s) => ({ ...s, chainCodes: next }));
   };
@@ -413,27 +425,44 @@ Authorized Signatory: _________________________
           <Card>
             <CardHead
               title="Legal Description"
-              sub="Full parcel legal description — auto-populated"
+              sub="Verify and edit the parcel legal description"
               accent="#d97706"
               right={
-                <Badge variant="warning" size="sm">
-                  AUTO
-                </Badge>
+                <div className="flex items-center gap-1.5">
+                  <span className="bg-[var(--status-success-emerald)] text-white text-[9px] font-bold px-1.5 py-0.5 rounded">AI</span>
+                  <button className="bg-transparent border-none cursor-pointer text-text-muted flex">
+                    <Icon name="copy" size={13} />
+                  </button>
+                  <button className="bg-transparent border-none cursor-pointer text-text-muted flex">
+                    <Icon name="cpu" size={13} />
+                  </button>
+                </div>
               }
             />
             <CardContent>
-              <Lbl>Legal Description (Schedule A)</Lbl>
               <Textarea
-                rows={5}
+                size="mono"
+                rows={6}
                 value={legal}
                 onChange={(e) => setLegal(e.target.value)}
-                size="mono"
               />
-              <div className="text-[9px] text-text-muted mt-1 text-right">
-                {legal.length} chars
+              <div className="flex justify-between items-center mt-1.5">
+                <button className="bg-transparent border-none text-status-info-blue-text text-[11px] font-semibold cursor-pointer">
+                  Convert to Fields
+                </button>
+                <span className="text-[10px] text-text-muted">
+                  {legal.length} chars
+                </span>
               </div>
             </CardContent>
           </Card>
+
+          {/* Tax Cert */}
+          <TaxCertCard
+            title="Tax Cert"
+            sub="Tax certificate and payment records"
+            accent="#7c3aed"
+          />
         </div>
 
         {/* RIGHT column */}
@@ -451,29 +480,68 @@ Authorized Signatory: _________________________
               }
             />
             <CardContent className="flex flex-col gap-2">
-              {exceptions.map((c) => (
-                <div
-                  key={c.id}
-                  className="border border-red-100 rounded-lg bg-red-50/50 p-2.5 relative"
-                >
-                  <div className="flex justify-between items-start mb-1">
-                    <span
-                      className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${codeTypeStyle(c.type)}`}
-                    >
-                      {c.code}
-                    </span>
-                    <button
-                      onClick={() => removeCode(c.id)}
-                      className="bg-transparent border-none cursor-pointer text-red-300 text-[11px] p-0 leading-none"
-                    >
-                      ×
-                    </button>
+              {exceptions.length === 0 && (
+                <p className="text-[11px] text-text-muted italic py-2">
+                  No exceptions yet — add from Title Chain codes or use Auto Exceptions above.
+                </p>
+              )}
+              {exceptions.map((c, i) => {
+                const globalIdx = codes.findIndex((x) => x.id === c.id)
+                const isDrag = dragIdx === globalIdx
+                const isOver = dragOverIdx === i
+                return (
+                  <div
+                    key={c.id}
+                    draggable
+                    onDragStart={() => setDragIdx(globalIdx)}
+                    onDragOver={(e) => { e.preventDefault(); setDragOverIdx(i) }}
+                    onDragEnd={() => { setDragIdx(null); setDragOverIdx(null) }}
+                    onDrop={() => {
+                      if (dragIdx !== null && dragIdx !== globalIdx) {
+                        moveCode(dragIdx, globalIdx)
+                      }
+                      setDragIdx(null)
+                      setDragOverIdx(null)
+                    }}
+                    className={`border rounded-lg p-2.5 relative transition-all duration-150 ${
+                      isDrag ? "opacity-40 border-brand shadow-md" : "border-red-100 bg-red-50/50"
+                    } ${isOver ? "ring-2 ring-brand pt-5" : ""}`}
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="cursor-grab active:cursor-grabbing text-red-200 hover:text-red-400 transition-colors flex"
+                          onMouseDown={(e) => e.currentTarget.style.cursor = "grabbing"}
+                          onMouseUp={(e) => e.currentTarget.style.cursor = "grab"}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                            <circle cx="9" cy="5" r="1.5" fill="currentColor" stroke="none" />
+                            <circle cx="15" cy="5" r="1.5" fill="currentColor" stroke="none" />
+                            <circle cx="9" cy="12" r="1.5" fill="currentColor" stroke="none" />
+                            <circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none" />
+                            <circle cx="9" cy="19" r="1.5" fill="currentColor" stroke="none" />
+                            <circle cx="15" cy="19" r="1.5" fill="currentColor" stroke="none" />
+                          </svg>
+                        </span>
+                        <span
+                          className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${codeTypeStyle(c.type)}`}
+                        >
+                          {c.code}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeCode(c.id)}
+                        className="bg-transparent border-none cursor-pointer text-red-300 text-[11px] p-0 leading-none"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-text-secondary m-0 leading-[1.5] pl-[18px]">
+                      {c.verbiage}
+                    </p>
                   </div>
-                  <p className="text-[11px] text-text-secondary m-0 leading-[1.5]">
-                    {c.verbiage}
-                  </p>
-                </div>
-              ))}
+                )
+              })}
               <div className="mt-1">
                 <Lbl>Additional Easements / Free-text</Lbl>
                 <Textarea

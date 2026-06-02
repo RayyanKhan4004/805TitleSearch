@@ -7,6 +7,7 @@ export interface Order {
   fileNo: string;
   productType: string;
   status: "Open" | "In Review" | "Closed" | "Cancelled";
+  rush?: boolean;
 }
 
 export interface RecentFile {

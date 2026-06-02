@@ -6,10 +6,12 @@ import LegalVestingDrawer from "../legal-vesting-drawer";
 import GenieSectionCard from "../genie-section-card";
 import RunsheetCard from "../runsheet-card";
 import TaxCertCard from "../tax-cert-card";
+import AssessorCard from "../assessor-card";
+import SectionUploadModal from "../section-upload-modal";
 import { Button } from "@/components/ui";
 import { useState } from "react";
 import ManualSearchModal from "../models/manual-search-modal";
-import { INDEX_SECTIONS } from "../consts";
+import { INDEX_SECTIONS, CAEXC_CODES, CAREQ_CODES } from "../consts";
 import type { SharedState, ChainCode } from "@/app/components/feature/tables/types";
 
 interface StepTitleChainProps {
@@ -20,6 +22,7 @@ interface StepTitleChainProps {
 
 export default function StepTitleChain({ shared, setShared, onSaveClose }: StepTitleChainProps) {
   const [showSearch, setShowSearch] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const [typeDate, setTypeDate] = useState("");
   const [effectiveDate, setEffectiveDate] = useState("2026-04-28");
   const [codes, setCodes] = useState<ChainCode[]>(shared?.chainCodes || []);
@@ -122,10 +125,11 @@ export default function StepTitleChain({ shared, setShared, onSaveClose }: StepT
         </div>
 
         {INDEX_SECTIONS.map((sec) => {
+          if (sec.title === "Assessor Page") return <AssessorCard key="Assessor Page" />;
           if (sec.title === "Tax Cert") return <TaxCertCard key={sec.title} title={sec.title} sub={sec.sub} accent={sec.accent} />;
           if (sec.title === "Runsheet") return <RunsheetCard key={sec.title} title={sec.title} sub={sec.sub} accent={sec.accent} />;
-          if (sec.title === "Other Exceptions") return <GenieSectionCard key={sec.title} title={sec.title} sub={sec.sub} accent={sec.accent} />;
-          if (sec.title === "Other Requirements") return <GenieSectionCard key={sec.title} title={sec.title} sub={sec.sub} accent={sec.accent} />;
+          if (sec.title === "Other Exceptions") return <GenieSectionCard key={sec.title} title={sec.title} sub="Schedule B Exceptions — from Genie Code Book" accent={sec.accent} codes={CAEXC_CODES} />;
+          if (sec.title === "Other Requirements") return <GenieSectionCard key={sec.title} title={sec.title} sub="Informational Notes & Requirements — from Genie Code Book" accent={sec.accent} codes={CAREQ_CODES} />;
           const isTitleChain = sec.title === "Title Chain Review";
           return (
             <IndexCard
@@ -135,7 +139,7 @@ export default function StepTitleChain({ shared, setShared, onSaveClose }: StepT
               accent={sec.accent}
               initRows={sec.rows}
               allowAddRow={isTitleChain}
-              showCode={isTitleChain}
+              showCode={sec.title === "Tract Map"}
             />
           );
         })}
@@ -153,11 +157,13 @@ export default function StepTitleChain({ shared, setShared, onSaveClose }: StepT
           <Icon name="search" size={12} />
           Manual Search
         </button>
-        <label className="inline-flex items-center gap-1.25 bg-white text-[#475569] border border-[#e2e8f0] rounded-lg px-3.5 py-1.75 text-[12px] font-semibold cursor-pointer">
+        <button
+          onClick={() => setShowUploadModal(true)}
+          className="inline-flex items-center gap-1.25 bg-white text-[#475569] border border-[#e2e8f0] rounded-lg px-3.5 py-1.75 text-[12px] font-semibold cursor-pointer"
+        >
           <Icon name="upload" size={12} />
           Upload
-          <input type="file" className="hidden" multiple />
-        </label>
+        </button>
         <div className="flex-1" />
         <button className="inline-flex items-center gap-1.25 bg-white text-[#475569] border border-[#e2e8f0] rounded-lg px-4 py-1.75 text-[12px] font-semibold cursor-pointer">
           <Icon name="save" size={12} />
@@ -173,6 +179,7 @@ export default function StepTitleChain({ shared, setShared, onSaveClose }: StepT
       </div>
 
       {showSearch && <ManualSearchModal onClose={() => setShowSearch(false)} />}
+      {showUploadModal && <SectionUploadModal onClose={() => setShowUploadModal(false)} />}
     </div>
   );
 }

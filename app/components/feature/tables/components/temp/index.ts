@@ -23,6 +23,7 @@ export const ORDERS: Order[] = [
     fileNo: "ESC-2026-4412",
     productType: "CLTA Owner",
     status: "Open",
+    rush: true,
   },
   {
     no: "26050018",
@@ -53,6 +54,7 @@ export const ORDERS: Order[] = [
     fileNo: "ESC-2026-5519",
     productType: "ALTA Homeowners",
     status: "Open",
+    rush: true,
   },
   {
     no: "26050027",
@@ -721,4 +723,182 @@ export const DEFAULT_SHARED_STATE: SharedState = {
         "According to the public records, there have been no deeds conveying the property within a period of twenty-four (24) months prior to the date of this report, EXCEPT as shown herein.",
     },
   ],
+};
+
+export interface UploadCatField {
+  k: string;
+  lbl: string;
+  t: string;
+  ph: string;
+  opts?: string[];
+}
+
+export interface UploadCat {
+  key: string;
+  label: string;
+  accent: string;
+  fields: UploadCatField[];
+}
+
+export const UPLOAD_CATS: UploadCat[] = [
+  {
+    key: "assessorPage",
+    label: "Assessor Page",
+    accent: "#0369a1",
+    fields: [
+      { k: "apn", lbl: "APN", t: "text", ph: "107-0-330-755" },
+      { k: "owner", lbl: "Owner Name", t: "text", ph: "RODRIGUEZ RAQUEL" },
+      { k: "address", lbl: "Situs Address", t: "text", ph: "2012 HARVEST LOOP, SANTA PAULA, CA" },
+      { k: "assessed", lbl: "Assessed Value", t: "text", ph: "$652,575" },
+      { k: "taxYear", lbl: "Tax Year", t: "text", ph: "2025" },
+      { k: "landUse", lbl: "Land Use", t: "text", ph: "CONDOMINIUM" },
+    ],
+  },
+  {
+    key: "assessorMap",
+    label: "Assessor Map",
+    accent: "#0891b2",
+    fields: [
+      { k: "mapRef", lbl: "Map Reference", t: "text", ph: "169MR34" },
+      { k: "parcelNo", lbl: "Parcel No.", t: "text", ph: "107-0-330-755" },
+      { k: "mapDate", lbl: "Map Date", t: "date", ph: "" },
+      { k: "notes", lbl: "Notes", t: "textarea", ph: "Map notes or page reference" },
+    ],
+  },
+  {
+    key: "tractMap",
+    label: "Tract Map",
+    accent: "#0d9488",
+    fields: [
+      { k: "tractNo", lbl: "Tract No.", t: "text", ph: "5991" },
+      { k: "bookPage", lbl: "Book / Page", t: "text", ph: "169M / 34-37" },
+      { k: "recDate", lbl: "Recorded Date", t: "date", ph: "" },
+      { k: "subdivision", lbl: "Subdivision Name", t: "text", ph: "Harvest Meadows" },
+    ],
+  },
+  {
+    key: "titleChain",
+    label: "Title Chain Review",
+    accent: "#0369a1",
+    fields: [
+      { k: "docType", lbl: "Document Type", t: "text", ph: "Grant Deed" },
+      { k: "instrumentNo", lbl: "Instrument No.", t: "text", ph: "2024-0012345" },
+      { k: "recDate", lbl: "Recording Date", t: "date", ph: "" },
+      { k: "grantor", lbl: "Grantor", t: "text", ph: "" },
+      { k: "grantee", lbl: "Grantee", t: "text", ph: "" },
+    ],
+  },
+  {
+    key: "taxCert",
+    label: "Tax Cert",
+    accent: "#65a30d",
+    fields: [
+      { k: "taxYear", lbl: "Tax Year", t: "text", ph: "2025" },
+      { k: "taxAmount", lbl: "Tax Amount", t: "text", ph: "$10,820.98" },
+      { k: "delinquent", lbl: "Delinquent Year", t: "text", ph: "" },
+      { k: "paidBy", lbl: "Paid By", t: "text", ph: "" },
+    ],
+  },
+];
+
+export interface AssessorData {
+  reportDate: string;
+  countyDataAsOf: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zip: string;
+  apn: string;
+  county: string;
+  ownerName: string;
+  owner1: string;
+  owner2: string;
+  vesting: string;
+  occupancy: string;
+  mailingAddress: string;
+  legalDescription: string;
+  munic: string;
+  tractNumber: string;
+  legalLot: string;
+  legalBlock: string;
+  mapRef: string;
+  characteristics: {
+    livingArea: number;
+    bedrooms: number;
+    fullBath: number;
+    halfBath: number;
+    yearBuilt: string;
+    stories: number;
+    parkingType: string;
+    garageArea: number;
+    pool: string;
+  };
+  site: {
+    landUse: string;
+    countyUse: string;
+    acres: number | null;
+    lotArea: number | null;
+    floodZoneCode: string;
+    floodMap: string;
+  };
+  tax: {
+    assessedYear: number;
+    taxYear: number;
+    taxArea: string;
+    propertyTax: number;
+    assessedValue: number;
+    landValue: number;
+    improvementValue: number;
+  };
+}
+
+export const ASSESSOR_DATA_SAMPLE: AssessorData = {
+  reportDate: "06/02/2026",
+  countyDataAsOf: "05/26/2026",
+  streetAddress: "2012 HARVEST LOOP",
+  city: "SANTA PAULA",
+  state: "CA",
+  zip: "93060-8008",
+  apn: "107-0-330-755",
+  county: "VENTURA",
+  ownerName: "RODRIGUEZ ANGEL DE JESUS M / RODRIGUEZ RAQUEL",
+  owner1: "RODRIGUEZ ANGEL DE JESUS M",
+  owner2: "RODRIGUEZ RAQUEL",
+  vesting: "",
+  occupancy: "Absentee Owner",
+  mailingAddress: "2012 HARVEST LOOP #23, SANTA PAULA, CA 93060-8008",
+  legalDescription: "TRACT: 599100 LOT: 1 REF: 169MR34 CONDO PLAN: 23",
+  munic: "SANTA PAULA",
+  tractNumber: "599100",
+  legalLot: "1",
+  legalBlock: "330",
+  mapRef: "169MR34",
+  characteristics: {
+    livingArea: 1939,
+    bedrooms: 4,
+    fullBath: 3,
+    halfBath: 1,
+    yearBuilt: "2021",
+    stories: 2,
+    parkingType: "GARAGE",
+    garageArea: 458,
+    pool: "",
+  },
+  site: {
+    landUse: "CONDOMINIUM",
+    countyUse: "CONDOMINIUM",
+    acres: null,
+    lotArea: null,
+    floodZoneCode: "X",
+    floodMap: "06111C0781F",
+  },
+  tax: {
+    assessedYear: 2025,
+    taxYear: 2025,
+    taxArea: "04-028",
+    propertyTax: 10820.98,
+    assessedValue: 652575,
+    landValue: 423953,
+    improvementValue: 228622,
+  },
 };

@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import FinalPrelimModal from "../models/final-prelim-modal";
 import CreateTemplateModal from "../models/create-template-modal";
 import SendPrelimModal from "../models/send-prelim-modal";
+import UploadPopover from "../upload-popover";
 import { INIT_DOCS, INIT_NOTES } from "../temp";
 import type { DocItem, NoteItem } from "@/app/components/feature/tables/types";
 import { Button, Card, CardContent, Badge } from "@/components/ui";
@@ -34,6 +35,7 @@ export default function StepDocuments({ extraDocs = [], onSaveClose }: StepDocum
   const [showTpl, setShowTpl] = useState(false);
   const [showFinal, setShowFinal] = useState(false);
   const [showSend, setShowSend] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
 
   const addNote = () => {
     if (!noteText.trim()) return;
@@ -87,11 +89,35 @@ export default function StepDocuments({ extraDocs = [], onSaveClose }: StepDocum
                   <Icon name="mail" size={11} />
                   Send Prelim
                 </Button>
-                <label className="inline-flex items-center gap-1.25 bg-white text-text-secondary border border-border rounded-lg px-3 py-1.5 text-[11px] font-semibold cursor-pointer">
-                  <Icon name="upload" size={11} />
-                  Upload
-                  <input type="file" className="hidden" multiple />
-                </label>
+                <div className="relative">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowUpload(!showUpload)}
+                  >
+                    <Icon name="upload" size={11} />
+                    Upload
+                  </Button>
+                  {showUpload && (
+                    <UploadPopover
+                      onUpload={(files) => {
+                        Array.from(files).forEach((f) => {
+                          setDocs((d) => [
+                            {
+                              name: f.name,
+                              date: new Date().toLocaleDateString("en-US"),
+                              size: f.size > 1024 * 1024 ? `${(f.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(f.size / 1024)} KB`,
+                              type: "document",
+                            },
+                            ...d,
+                          ])
+                        })
+                        setShowUpload(false)
+                      }}
+                      onClose={() => setShowUpload(false)}
+                    />
+                  )}
+                </div>
               </div>
             }
           />

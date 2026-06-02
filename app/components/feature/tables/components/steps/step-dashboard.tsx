@@ -18,14 +18,53 @@ export default function StepDashboard({
   getOrderStatus,
   getLock,
 }: StepDashboardProps) {
-  const [tab, setTab] = useState("Open");
   const [showModal, setShowModal] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
+  const [orders, setOrders] = useState<Order[]>(ORDERS);
+  const [showFunnel, setShowFunnel] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<"status" | "country" | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [countryFilter, setCountryFilter] = useState<string[]>([]);
+  const [rushFilter, setRushFilter] = useState(false);
   const onSelect = _onSelect || (() => {});
   const orderStatus = getOrderStatus || (() => "Open");
   const orderLock = getLock || (() => null);
 
-  const filtered = tab === "All" ? ORDERS : ORDERS.filter((o) => o.status === tab);
+  const ALL_STATUSES = ["Open", "In Review", "Closed", "Cancelled"];
+  const ALL_COUNTRIES = [...new Set(orders.map((o) => o.county))].sort();
+
+  const hasActiveFilters = statusFilter.length > 0 || countryFilter.length > 0 || rushFilter;
+
+  const toggleStatus = (s: string) =>
+    setStatusFilter((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
+
+  const toggleCountry = (c: string) =>
+    setCountryFilter((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
+
+  const clearFilters = () => {
+    setStatusFilter([]);
+    setCountryFilter([]);
+    setRushFilter(false);
+    setExpandedSection(null);
+    setShowFunnel(false);
+  };
+
+  const sorted = [...orders].sort((a, b) => {
+    if (a.rush && !b.rush) return -1;
+    if (!a.rush && b.rush) return 1;
+    return 0;
+  });
+
+  const filtered = sorted.filter((o) => {
+    if (statusFilter.length > 0 && !statusFilter.includes(o.status)) return false;
+    if (rushFilter && !o.rush) return false;
+    if (countryFilter.length > 0 && !countryFilter.includes(o.county)) return false;
+    return true;
+  });
+
+  const toggleRush = (no: string) => {
+    setOrders((prev) => prev.map((o) => (o.no === no ? { ...o, rush: !o.rush } : o)));
+  };
 
   function statusToColor(s: string) {
     if (s === "Open")
@@ -136,27 +175,159 @@ export default function StepDashboard({
             justifyContent: "space-between",
           }}
         >
-          <div style={{ display: "flex", gap: 6 }}>
-            {["Open", "Closed", "Cancelled", "All"].map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                style={{
-                  padding: "7px 16px",
-                  borderRadius: 9,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  border: "1px solid",
-                  cursor: "pointer",
-                  background: tab === t ? "#8B0000" : "#fff",
-                  borderColor: tab === t ? "#8B0000" : "#e2e8f0",
-                  color: tab === t ? "#fff" : "#475569",
-                  boxShadow: tab === t ? "0 2px 6px rgba(139,0,0,.2)" : "none",
-                }}
+          <div className="relative">
+            <button
+              onClick={() => { setShowFunnel(!showFunnel); setExpandedSection(null) }}
+              title="Filters"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "7px 12px",
+                borderRadius: 9,
+                fontSize: 12,
+                fontWeight: 600,
+                border: "1px solid",
+                cursor: "pointer",
+                background: hasActiveFilters ? "#8B0000" : "#fff",
+                borderColor: hasActiveFilters ? "#8B0000" : "#e2e8f0",
+                color: hasActiveFilters ? "#fff" : "#475569",
+                position: "relative",
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+              </svg>
+              {hasActiveFilters && (
+                <span style={{
+                  position: "absolute",
+                  top: -4, right: -4,
+                  width: 8, height: 8,
+                  borderRadius: "50%",
+                  background: "#dc2626",
+                }} />
+              )}
+            </button>
+            {showFunnel && (
+              <div
+                className="absolute top-full left-0 mt-1.5 bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,.18)] border border-border z-50 p-2"
+                style={{ minWidth: 240 }}
               >
-                {t} Files
-              </button>
-            ))}
+                {/* Status section */}
+                <div className="rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setExpandedSection(expandedSection === "status" ? null : "status")}
+                    className="flex items-center justify-between w-full px-3 py-2 text-[12px] font-semibold text-left cursor-pointer border-none rounded-lg transition-all"
+                    style={{ color: statusFilter.length > 0 ? "#8B0000" : "#334155", background: expandedSection === "status" ? "#f8fafc" : "transparent" }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "#f8fafc"}
+                    onMouseLeave={(e) => { if (expandedSection !== "status") e.currentTarget.style.background = "transparent" }}
+                  >
+                    <span>Status</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      {statusFilter.length > 0 && (
+                        <span className="text-[10px] font-bold text-white px-1.5 py-0.25 rounded-full" style={{ background: "#8B0000" }}>{statusFilter.length}</span>
+                      )}
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transform: expandedSection === "status" ? "rotate(90deg)" : "none", transition: "transform .15s" }}>
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </span>
+                  </button>
+                  {expandedSection === "status" && (
+                    <div className="px-3 pb-2 flex flex-col gap-0.5">
+                      {ALL_STATUSES.map((s) => {
+                        const checked = statusFilter.includes(s);
+                        return (
+                          <label
+                            key={s}
+                            className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-[11px] transition-all"
+                            style={{ background: checked ? "#fff5f5" : "transparent", color: checked ? "#8B0000" : "#475569", fontWeight: checked ? 600 : 400 }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleStatus(s)}
+                              className="accent-brand w-3 h-3"
+                            />
+                            {s}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Country section */}
+                <div className="rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setExpandedSection(expandedSection === "country" ? null : "country")}
+                    className="flex items-center justify-between w-full px-3 py-2 text-[12px] font-semibold text-left cursor-pointer border-none rounded-lg transition-all"
+                    style={{ color: countryFilter.length > 0 ? "#8B0000" : "#334155", background: expandedSection === "country" ? "#f8fafc" : "transparent" }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "#f8fafc"}
+                    onMouseLeave={(e) => { if (expandedSection !== "country") e.currentTarget.style.background = "transparent" }}
+                  >
+                    <span>Country</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      {countryFilter.length > 0 && (
+                        <span className="text-[10px] font-bold text-white px-1.5 py-0.25 rounded-full" style={{ background: "#8B0000" }}>{countryFilter.length}</span>
+                      )}
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transform: expandedSection === "country" ? "rotate(90deg)" : "none", transition: "transform .15s" }}>
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </span>
+                  </button>
+                  {expandedSection === "country" && (
+                    <div className="px-3 pb-2 flex flex-col gap-0.5">
+                      {ALL_COUNTRIES.map((c) => {
+                        const checked = countryFilter.includes(c);
+                        return (
+                          <label
+                            key={c}
+                            className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-[11px] transition-all"
+                            style={{ background: checked ? "#fff5f5" : "transparent", color: checked ? "#8B0000" : "#475569", fontWeight: checked ? 600 : 400 }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleCountry(c)}
+                              className="accent-brand w-3 h-3"
+                            />
+                            {c}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Rush toggle */}
+                <label
+                  className="flex items-center justify-between px-3 py-2 text-[12px] font-semibold cursor-pointer rounded-lg transition-all"
+                  style={{ color: rushFilter ? "#8B0000" : "#334155", background: rushFilter ? "#fff5f5" : "transparent" }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "#f8fafc"}
+                  onMouseLeave={(e) => { if (!rushFilter) e.currentTarget.style.background = "transparent" }}
+                >
+                  <span>Rush Only</span>
+                  <input
+                    type="checkbox"
+                    checked={rushFilter}
+                    onChange={() => setRushFilter(!rushFilter)}
+                    className="accent-brand w-3.5 h-3.5"
+                  />
+                </label>
+
+                {hasActiveFilters && (
+                  <>
+                    <div className="border-t border-border my-1.5" />
+                    <button
+                      onClick={clearFilters}
+                      className="w-full text-center text-[10px] font-semibold text-brand cursor-pointer bg-transparent border-none py-1.5 rounded-lg hover:bg-[#fff5f5] transition-all"
+                    >
+                      Clear all filters
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
           <button
             onClick={() => setShowModal(true)}
@@ -201,6 +372,7 @@ export default function StepDashboard({
                   "County",
                   "Product Type",
                   "Status",
+                  "Actions",
                 ].map((h) => (
                   <th
                     key={h}
@@ -225,7 +397,7 @@ export default function StepDashboard({
               {filtered.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     style={{
                       padding: 30,
                       textAlign: "center",
@@ -233,7 +405,7 @@ export default function StepDashboard({
                       fontSize: 12,
                     }}
                   >
-                    No {tab.toLowerCase()} files found.
+                    No files match the selected filter.
                   </td>
                 </tr>
               ) : (
@@ -245,9 +417,17 @@ export default function StepDashboard({
                     onMouseLeave={() => setHovered(null)}
                     style={{
                       cursor: "pointer",
-                      background: hovered === i ? "#fff5f5" : "#fff",
-                      borderLeft:
-                        hovered === i
+                      transition: "background .1s",
+                      background: row.rush
+                        ? hovered === i
+                          ? "#ffeaea"
+                          : "#fff5f5"
+                        : hovered === i
+                          ? "#fff5f5"
+                          : "#fff",
+                      borderLeft: row.rush
+                        ? "3px solid #dc2626"
+                        : hovered === i
                           ? "3px solid #8B0000"
                           : "3px solid transparent",
                     }}
@@ -267,9 +447,26 @@ export default function StepDashboard({
                           display: "flex",
                           alignItems: "center",
                           gap: 5,
+                          flexWrap: "wrap",
                         }}
                       >
                         {row.no}
+                        {row.rush && (
+                          <span
+                            style={{
+                              fontSize: 8,
+                              background: "#dc2626",
+                              color: "#fff",
+                              padding: "1px 7px",
+                              borderRadius: 4,
+                              fontWeight: 700,
+                              letterSpacing: "0.06em",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            RUSH
+                          </span>
+                        )}
                         {hovered === i && (
                           <span
                             style={{
@@ -434,6 +631,55 @@ export default function StepDashboard({
                           </span>
                         )}
                       </div>
+                    </td>
+                    {/* Actions — Rush toggle */}
+                    <td
+                      style={{
+                        padding: "13px 16px",
+                        fontSize: 11,
+                        borderTop: "1px solid #f1f5f9",
+                        color: "#475569",
+                        verticalAlign: "middle",
+                        textAlign: "center",
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleRush(row.no);
+                        }}
+                        title={row.rush ? "Remove Rush flag" : "Mark as Rush"}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 5,
+                          padding: "5px 11px",
+                          borderRadius: 7,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          border: "1px solid",
+                          transition: "all .15s",
+                          background: row.rush ? "#dc2626" : "#fff",
+                          borderColor: row.rush ? "#dc2626" : "#e2e8f0",
+                          color: row.rush ? "#fff" : "#94a3b8",
+                        }}
+                      >
+                        <svg
+                          width="10"
+                          height="10"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                        Rush
+                      </button>
                     </td>
                   </tr>
                 ))

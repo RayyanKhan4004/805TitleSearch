@@ -21,7 +21,7 @@ export default function LoginPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
       rememberMe: false,
     },
@@ -32,7 +32,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const success = await login(data.username, data.password);
+      const success = await login(data.email, data.password);
       if (!success) {
         setError("Invalid username or password");
       }
@@ -68,13 +68,13 @@ export default function LoginPage() {
             )}
 
             <Input
-              label="Username"
-              placeholder="Enter your username"
-              error={errors.username?.message}
-              state={errors.username ? "error" : "default"}
+              label="Email"
+              placeholder="Enter your email"
+              error={errors.email?.message}
+              state={errors.email ? "error" : "default"}
               size="lg"
               icon={<Icon name="user" size={12} />}
-              {...register("username")}
+              {...register("email")}
               disabled={isLoading}
             />
 

@@ -366,12 +366,13 @@ export default function StepDashboard({
               <tr>
                 {[
                   "Order No.",
-                  "File No.",
+                  "APN No.",
                   "Address",
                   "Owner",
                   "County",
                   "Product Type",
                   "Status",
+                  "Date",
                   "Actions",
                 ].map((h) => (
                   <th
@@ -563,6 +564,74 @@ export default function StepDashboard({
                       >
                         {row.productType}
                       </span>
+                    </td>
+                    <td
+                      style={{
+                        padding: "13px 16px",
+                        fontSize: 11,
+                        borderTop: "1px solid #f1f5f9",
+                        color: "#475569",
+                        verticalAlign: "middle",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 7,
+                        }}
+                      >
+                        <span
+                          style={{
+                            ...statusToColor(orderStatus(row.no)),
+                            fontSize: 10,
+                            fontWeight: 700,
+                            padding: "4px 12px",
+                            borderRadius: 999,
+                            display: "inline-block",
+                          }}
+                        >
+                          {orderStatus(row.no)}
+                        </span>
+                        {orderLock(row.no) && (
+                          <span
+                            title={"Locked by " + orderLock(row.no)?.user}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 3,
+                              background: "#fef3c7",
+                              border: "1px solid #fde68a",
+                              borderRadius: 999,
+                              padding: "2px 7px",
+                              fontSize: 9,
+                              fontWeight: 700,
+                              color: "#92400e",
+                            }}
+                          >
+                            <svg
+                              width="9"
+                              height="9"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <rect
+                                x="3"
+                                y="11"
+                                width="18"
+                                height="11"
+                                rx="2"
+                              />
+                              <path d="M7 11V7a5 5 0 0110 0v4" />
+                            </svg>
+                            {orderLock(row.no)?.user.split(" ")[0]}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td
                       style={{

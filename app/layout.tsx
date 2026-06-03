@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
 import StoreProvider from "./store/provider";
 import { AuthProvider } from "./context/auth-context";
 
@@ -26,6 +27,7 @@ export default function RootLayout({
         <StoreProvider>
           <AuthProvider>
             {children}
+            <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
           </AuthProvider>
         </StoreProvider>
       </body>

@@ -3,6 +3,7 @@
 import Icon from "@/components/common/icon";
 import { Button } from "@/components/ui";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/auth-context";
 import {
   StepDashboard,
@@ -16,8 +17,6 @@ import { PrelimPreviewModal } from "./models";
 import { DEFAULT_SHARED_STATE } from "./temp";
 import type { Order, OrderLock } from "@/app/components/feature/tables/types";
 
-const CURRENT_USER = "John Smith";
-
 const WORK_STEPS = [
   { id: 1, label: "Title Chain Review", short: "Chain", icon: "link" },
   { id: 2, label: "TSRI", short: "TSRI", icon: "fileCheck" },
@@ -26,7 +25,9 @@ const WORK_STEPS = [
 ];
 
 export default function Dashboard() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const router = useRouter();
+  const currentUserName = user ? `${user.firstName} ${user.lastName}` : "Unknown";
 
   /* null = no file open (dashboard only); object = selected order */
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -62,10 +63,10 @@ export default function Dashboard() {
   const getOrderStatus = (no: string) => orderStatuses[no] || "Open";
 
   const getLock = (no: string) => lockedBy[no] || null;
-  const isLockedByMe = (no: string) => getLock(no)?.user === CURRENT_USER;
+  const isLockedByMe = (no: string) => getLock(no)?.user === currentUserName;
   // const isLockedByOther = (no: string) => {
   //   const lock = getLock(no);
-  //   return lock && lock.user !== CURRENT_USER;
+  //   return lock && lock.user !== currentUserName;
   // };
 
   function buildPrelimData(tsri: any, shared: any) {
@@ -142,7 +143,7 @@ export default function Dashboard() {
     const no = order.no.replace("#", "");
     /* Block if locked by someone else */
     const lock = getLock(no);
-    if (lock && lock.user !== CURRENT_USER) {
+    if (lock && lock.user !== currentUserName) {
       setLockAttempt({ no, lock });
       return;
     }
@@ -151,7 +152,7 @@ export default function Dashboard() {
     /* Lock the order */
     setLockedBy((l) => ({
       ...l,
-      [no]: { user: CURRENT_USER, since: new Date().toLocaleTimeString() },
+      [no]: { user: currentUserName, since: new Date().toLocaleTimeString() },
     }));
     setSelectedOrder({ ...order, no });
     setStep(1);
@@ -214,8 +215,11 @@ export default function Dashboard() {
           size={16}
           className="text-[#64748b] cursor-pointer mb-1.5"
         />
-        <div className="w-7 h-7 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold cursor-pointer">
-          JB
+        <div
+          onClick={() => router.push("/profile")}
+          className="w-7 h-7 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold cursor-pointer"
+        >
+          {user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : "U"}
         </div>
       </aside>
 
@@ -277,15 +281,18 @@ export default function Dashboard() {
                 0
               </span>
             </div>
-            <div className="flex items-center gap-1.5 cursor-pointer">
+            <div
+              className="flex items-center gap-1.5 cursor-pointer"
+              onClick={() => router.push("/profile")}
+            >
               <div className="w-6.5 h-6.5 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold">
-                JB
+                {user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : "U"}
               </div>
               <div>
                 <div className="text-white text-[11px] font-semibold">
-                  John Smith
+                  {user ? `${user.firstName} ${user.lastName}` : "User"}
                 </div>
-                <div className="text-[#64748b] text-[9px]">Deceneer</div>
+                <div className="text-[#64748b] text-[9px]">Online</div>
               </div>
             </div>
             <button

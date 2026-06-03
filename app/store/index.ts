@@ -1,20 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit"
-import ordersReducer from "./slices/ordersSlice"
-import sharedReducer from "./slices/sharedSlice"
-import documentsReducer from "./slices/documentsSlice"
-import uiReducer from "./slices/uiSlice"
 import authReducer from "./slices/authSlice"
+import { ordersApi } from "./api/ordersApi"
 
 export const makeStore = () =>
   configureStore({
     reducer: {
       auth: authReducer,
-      orders: ordersReducer,
-      shared: sharedReducer,
-      documents: documentsReducer,
-      ui: uiReducer,
+      [ordersApi.reducerPath]: ordersApi.reducer,
     },
-    devTools: process.env.NODE_ENV !== "production",
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(ordersApi.middleware),
   })
 
 export type AppStore = ReturnType<typeof makeStore>

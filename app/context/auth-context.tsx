@@ -2,11 +2,14 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useAppDispatch } from "@/app/store/lib";
+import { login as reduxLogin, logout as reduxLogout } from "@/app/store/slices/authSlice";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  user: { id: number; email: string; firstName: string; lastName: string } | null;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -14,16 +17,22 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const dispatch = useAppDispatch();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const [user, setUser] = useState<AuthContextType["user"]>(null);
 
   useEffect(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-    if (stored) {
+    const storedUser = typeof window !== "undefined" ? localStorage.getItem("auth_user") : null;
+    if (stored && storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      dispatch(reduxLogin({ token: stored, user: parsedUser }));
       setIsAuthenticated(true);
+      setUser(parsedUser);
     }
     setIsChecking(false);
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (!isChecking) {
@@ -36,21 +45,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, isChecking, pathname, router]);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-    const validUsername = process.env.NEXT_PUBLIC_AUTH_USERNAME || "admin";
-    const validPassword = process.env.NEXT_PUBLIC_AUTH_PASSWORD || "Admin@123";
+  const login = async (email: string, password: string): Promise<boolean> => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-    if (username === validUsername && password === validPassword) {
-      localStorage.setItem("auth_token", "authenticated");
+    try {
+      const res = await fetch(`${baseUrl}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) return false;
+
+      const data = await res.json();
+      const token = data.access_token;
+      const userData = data.user;
+
+      localStorage.setItem("auth_token", token);
+      localStorage.setItem("auth_user", JSON.stringify(userData));
+
+      dispatch(reduxLogin({ token, user: userData }));
       setIsAuthenticated(true);
+      setUser(userData);
       return true;
+    } catch {
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
+    dispatch(reduxLogout());
     setIsAuthenticated(false);
+    setUser(null);
     router.push("/login");
   };
 
@@ -63,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, user }}>
       {children}
     </AuthContext.Provider>
   );

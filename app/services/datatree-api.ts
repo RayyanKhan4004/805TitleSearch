@@ -1,4 +1,4 @@
-import type { PropertyData, PropertyForm, SearchType } from "@/app/components/feature/tables/types";
+import type { PropertyData, PropertyForm, SearchType, IndexRow } from "@/app/components/feature/tables/types";
 
 const MOCK_RESPONSES: Record<string, PropertyData> = {
   "808-631-06": {
@@ -260,4 +260,23 @@ export async function searchProperty(
   if (searchType === "PropertyId" && params.PropertyIdDetail?.PropertyId) return found;
 
   return null;
+}
+
+export function mapApiChainToIndexRows(chain: unknown): IndexRow[] {
+  if (!Array.isArray(chain)) return [];
+  return chain.map((item: Record<string, any>, i) => ({
+    _id: `chain-${i}`,
+    rec: item.RecordingDate || item.recordingDate || item.Date || item.date || "",
+    abbr: item.DocumentType || item.documentType || item.abbr || "",
+    entity: item.Entity || item.entity || "",
+    docTitle: item.DocTitle || item.docTitle || item.Title || item.title || "",
+    instr: item.InstrumentNumber || item.instrumentNumber || item.Instr || item.instr || "",
+    book: item.Book || item.book || "",
+    pg: item.Page || item.page || "",
+    grantor: item.Grantor || item.grantor || "",
+    grantee: item.Grantee || item.grantee || "",
+    status: item.Status || item.status || "",
+    parentInstr: item.ParentInstr || item.parentInstr || null,
+    type: item.Type || item.type || "",
+  }));
 }

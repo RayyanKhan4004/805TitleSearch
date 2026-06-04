@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 import { useRouter, usePathname } from "next/navigation";
 import { useAppDispatch } from "@/app/store/lib";
 import { login as reduxLogin, logout as reduxLogout } from "@/app/store/slices/authSlice";
+import { useLoginMutation } from "@/app/store/api/authApi";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -18,6 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const dispatch = useAppDispatch();
+  const [loginMut] = useLoginMutation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [user, setUser] = useState<AuthContextType["user"]>(null);
@@ -36,28 +38,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isChecking) {
-      if (!isAuthenticated && pathname !== "/login") {
+      const publicPaths = ["/login", "/forgot-password"];
+      const normalizedPath = pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+      if (!isAuthenticated && !publicPaths.includes(normalizedPath)) {
         router.push("/login");
       }
-      if (isAuthenticated && pathname === "/login") {
+      if (isAuthenticated && publicPaths.includes(normalizedPath)) {
         router.push("/table");
       }
     }
   }, [isAuthenticated, isChecking, pathname, router]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
     try {
-      const res = await fetch(`${baseUrl}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!res.ok) return false;
-
-      const data = await res.json();
+      const data = await loginMut({ email, password }).unwrap();
       const token = data.access_token;
       const userData = data.user;
 

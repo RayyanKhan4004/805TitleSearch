@@ -24,6 +24,7 @@ export const ORDERS: Order[] = [
     productType: "CLTA Owner",
     status: "Open",
     rush: true,
+    date: "06/02/2026",
   },
   {
     no: "26050018",
@@ -34,6 +35,7 @@ export const ORDERS: Order[] = [
     fileNo: "ESC-2026-3391",
     productType: "ALTA Lender",
     status: "Closed",
+    date: "05/28/2026",
   },
   {
     no: "26050019",
@@ -44,6 +46,7 @@ export const ORDERS: Order[] = [
     fileNo: "ESC-2026-2204",
     productType: "CLTA Owner",
     status: "Cancelled",
+    date: "05/15/2026",
   },
   {
     no: "26050023",
@@ -55,6 +58,7 @@ export const ORDERS: Order[] = [
     productType: "ALTA Homeowners",
     status: "Open",
     rush: true,
+    date: "06/04/2026",
   },
   {
     no: "26050027",
@@ -65,6 +69,7 @@ export const ORDERS: Order[] = [
     fileNo: "ESC-2026-6630",
     productType: "CLTA/ALTA",
     status: "Open",
+    date: "06/01/2026",
   },
   {
     no: "26050031",
@@ -75,6 +80,7 @@ export const ORDERS: Order[] = [
     fileNo: "ESC-2026-7741",
     productType: "ALTA Lender",
     status: "Open",
+    date: "05/30/2026",
   },
 ];
 

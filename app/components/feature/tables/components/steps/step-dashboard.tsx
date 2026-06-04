@@ -26,6 +26,7 @@ export default function StepDashboard({
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [countryFilter, setCountryFilter] = useState<string[]>([]);
   const [rushFilter, setRushFilter] = useState(false);
+  const [statusDropdownFilter, setStatusDropdownFilter] = useState("");
   const onSelect = _onSelect || (() => {});
   const orderStatus = getOrderStatus || (() => "Open");
   const orderLock = getLock || (() => null);
@@ -56,6 +57,7 @@ export default function StepDashboard({
   });
 
   const filtered = sorted.filter((o) => {
+    if (statusDropdownFilter && o.status !== statusDropdownFilter) return false;
     if (statusFilter.length > 0 && !statusFilter.includes(o.status)) return false;
     if (rushFilter && !o.rush) return false;
     if (countryFilter.length > 0 && !countryFilter.includes(o.county)) return false;
@@ -64,6 +66,10 @@ export default function StepDashboard({
 
   const toggleRush = (no: string) => {
     setOrders((prev) => prev.map((o) => (o.no === no ? { ...o, rush: !o.rush } : o)));
+  };
+
+  const handleStatusChange = (no: string, status: Order["status"]) => {
+    setOrders((prev) => prev.map((o) => (o.no === no ? { ...o, status } : o)));
   };
 
   function statusToColor(s: string) {
@@ -113,6 +119,7 @@ export default function StepDashboard({
                 fileNo: "—",
                 productType: "—",
                 status: f.status as Order["status"],
+                date: "—",
               })
             }
             className="border border-border rounded-lg p-[11px] mb-2 cursor-pointer transition-all duration-150 hover:bg-[#fff5f5] hover:border-brand"
@@ -175,6 +182,7 @@ export default function StepDashboard({
             justifyContent: "space-between",
           }}
         >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div className="relative">
             <button
               onClick={() => { setShowFunnel(!showFunnel); setExpandedSection(null) }}
@@ -328,6 +336,7 @@ export default function StepDashboard({
                 )}
               </div>
             )}
+          </div>
           </div>
           <button
             onClick={() => setShowModal(true)}
@@ -581,18 +590,27 @@ export default function StepDashboard({
                           gap: 7,
                         }}
                       >
-                        <span
+                        <select
+                          value={row.status}
+                          onChange={(e) => handleStatusChange(row.no, e.target.value as Order["status"])}
+                          onClick={(e) => e.stopPropagation()}
                           style={{
-                            ...statusToColor(orderStatus(row.no)),
+                            ...statusToColor(row.status),
                             fontSize: 10,
                             fontWeight: 700,
                             padding: "4px 12px",
                             borderRadius: 999,
-                            display: "inline-block",
+                            border: "none",
+                            cursor: "pointer",
+                            outline: "none",
+                            appearance: "auto",
                           }}
                         >
-                          {orderStatus(row.no)}
-                        </span>
+                          <option value="Open" style={{ background: "#fff", color: "#000" }}>Open</option>
+                          <option value="In Review" style={{ background: "#fff", color: "#000" }}>In Review</option>
+                          <option value="Closed" style={{ background: "#fff", color: "#000" }}>Closed</option>
+                          <option value="Cancelled" style={{ background: "#fff", color: "#000" }}>Cancelled</option>
+                        </select>
                         {orderLock(row.no) && (
                           <span
                             title={"Locked by " + orderLock(row.no)?.user}
@@ -640,65 +658,17 @@ export default function StepDashboard({
                         borderTop: "1px solid #f1f5f9",
                         color: "#475569",
                         verticalAlign: "middle",
+                        whiteSpace: "nowrap",
                       }}
                     >
                       <div
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 7,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: "#334155",
                         }}
                       >
-                        <span
-                          style={{
-                            ...statusToColor(orderStatus(row.no)),
-                            fontSize: 10,
-                            fontWeight: 700,
-                            padding: "4px 12px",
-                            borderRadius: 999,
-                            display: "inline-block",
-                          }}
-                        >
-                          {orderStatus(row.no)}
-                        </span>
-                        {orderLock(row.no) && (
-                          <span
-                            title={"Locked by " + orderLock(row.no)?.user}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 3,
-                              background: "#fef3c7",
-                              border: "1px solid #fde68a",
-                              borderRadius: 999,
-                              padding: "2px 7px",
-                              fontSize: 9,
-                              fontWeight: 700,
-                              color: "#92400e",
-                            }}
-                          >
-                            <svg
-                              width="9"
-                              height="9"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <rect
-                                x="3"
-                                y="11"
-                                width="18"
-                                height="11"
-                                rx="2"
-                              />
-                              <path d="M7 11V7a5 5 0 0110 0v4" />
-                            </svg>
-                            {orderLock(row.no)?.user.split(" ")[0]}
-                          </span>
-                        )}
+                        {row.date}
                       </div>
                     </td>
                     {/* Actions — Rush toggle */}

@@ -68,42 +68,30 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
     >
       {/* header */}
       <div
-        className="flex items-center justify-between px-4 py-2.75 cursor-pointer select-none"
-        style={{
-          borderBottom: open ? "1px solid #f1f5f9" : "none",
-          background: "#fafafa",
-        }}
+        className="flex items-center justify-between px-4 py-2.75 cursor-pointer select-none bg-bg-card-header"
+        style={{ borderBottom: open ? "1px solid var(--border-secondary)" : "none" }}
         onClick={() => setOpen(!open)}
       >
         <div className="flex items-center gap-2.5">
           <div className="w-0.75 h-7 rounded-sm shrink-0" style={{ background: accent }} />
           <div>
-            <div className="text-[13px] font-bold text-[#1e293b]">{title}</div>
-            <div className="text-[10px] text-[#94a3b8] mt-0.5">{sub}</div>
+            <div className="text-[13px] font-bold text-text">{title}</div>
+            <div className="text-[10px] text-text-muted mt-0.5">{sub}</div>
           </div>
           {addedCodes.length > 0 && (
-            <span
-              className="text-[10px] font-semibold px-2 py-0.5 rounded-full ml-1"
-              style={{
-                background: "#f0fdf4",
-                color: "#166534",
-                border: "1px solid #bbf7d0",
-              }}
-            >
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full ml-1 bg-status-success-bg text-status-success-text border border-status-success-border">
               {addedCodes.length} code{addedCodes.length !== 1 ? "s" : ""} saved
             </span>
           )}
         </div>
-        <Icon name={open ? "chevDown" : "chevRight"} size={13} style={{ color: "#94a3b8" }} />
+        <Icon name={open ? "chevDown" : "chevRight"} size={13} className="text-text-muted" />
       </div>
 
       {open && (
         <div className="flex flex-col gap-3.5 p-4">
           {/* CATX code picker */}
           <div>
-            <div
-              className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.07em] mb-2"
-            >
+            <div className="text-[10px] font-bold text-text-tertiary uppercase tracking-[0.07em] mb-2">
               Select Tax Codes to Include
             </div>
             <div className="flex flex-wrap gap-1.75">
@@ -115,14 +103,14 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                     onClick={() => !added && addCode(catx)}
                     disabled={added}
                     title={catx.label}
-                    className="inline-flex items-center gap-1.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all duration-150"
+                    className="inline-flex items-center gap-1.5 rounded-lg text-[11px] font-bold transition-all duration-150"
                     style={{
                       padding: "5px 12px",
                       border: "1px solid",
                       cursor: added ? "default" : "pointer",
-                      background: added ? "#f0fdf4" : "#fff",
-                      borderColor: added ? "#86efac" : "#e2e8f0",
-                      color: added ? "#16a34a" : "#475569",
+                      background: added ? "var(--status-success-bg)" : "#fff",
+                      borderColor: added ? "var(--status-success-border)" : "var(--border-border)",
+                      color: added ? "var(--status-success-text)" : "var(--text-text-secondary)",
                       opacity: added ? 0.8 : 1,
                     }}
                   >
@@ -130,14 +118,14 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                       style={{
                         fontFamily: "'Courier New', monospace",
                         fontSize: 10,
-                        color: added ? "#16a34a" : accent,
+                        color: added ? "var(--status-success-text)" : accent,
                         fontWeight: 800,
                       }}
                     >
                       {catx.code}
                     </span>
                     {added ? (
-                      <Icon name="checkCircle" size={10} style={{ color: "#16a34a" }} />
+                      <Icon name="checkCircle" size={10} className="text-status-success-text" />
                     ) : (
                       <Icon name="plus" size={10} />
                     )}
@@ -150,7 +138,7 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
           {/* Added codes */}
           {addedCodes.length > 0 && (
             <div className="flex flex-col gap-2.25">
-              <div className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.07em]">
+              <div className="text-[10px] font-bold text-text-tertiary uppercase tracking-[0.07em]">
                 Added Codes
               </div>
               {addedCodes.map((c) => (
@@ -159,16 +147,16 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                   className="overflow-hidden rounded-[10px] transition-all duration-150"
                   style={{
                     border: "1px solid",
-                    borderColor: c.expanded ? "#e2e8f0" : "#bbf7d0",
-                    background: c.expanded ? "#fafafa" : "#f0fdf4",
+                    borderColor: c.expanded ? "var(--border-border)" : "var(--status-success-border)",
+                    background: c.expanded ? "var(--bg-card-header)" : "var(--status-success-bg)",
                   }}
                 >
                   {/* card header */}
                   <div
                     className="flex items-center justify-between px-3 py-2 cursor-pointer"
                     style={{
-                      background: c.expanded ? "#fff" : "#f0fdf4",
-                      borderBottom: c.expanded ? "1px solid #f1f5f9" : "none",
+                      background: c.expanded ? "#fff" : "var(--status-success-bg)",
+                      borderBottom: c.expanded ? "1px solid var(--border-secondary)" : "none",
                     }}
                     onClick={() => !c.editing && toggleExpanded(c.id)}
                   >
@@ -179,34 +167,26 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                           fontSize: 10,
                           fontWeight: 800,
                           color: accent,
-                          background: "#f7fee7",
-                          border: "1px solid #d9f99d",
+                          background: "var(--status-success-bg)",
+                          border: "1px solid var(--status-success-border)",
                           padding: "2px 8px",
                           borderRadius: 4,
                         }}
                       >
                         {c.code}
                       </span>
-                      <span className="text-[10px] text-[#64748b]">{c.label}</span>
+                      <span className="text-[10px] text-text-tertiary">{c.label}</span>
                       {!c.expanded && (
-                        <span
-                          className="text-[8px] font-bold px-1.5 py-0.25 rounded-full"
-                          style={{
-                            background: "#dcfce7",
-                            color: "#166534",
-                            border: "1px solid #bbf7d0",
-                          }}
-                        >
+                        <span className="text-[8px] font-bold px-1.5 py-0.25 rounded-full bg-status-success-bg text-status-success-text border border-status-success-border">
                           Saved
                         </span>
                       )}
                       {c.expanded && c.verbiage.includes("*") && !c.editing && (
-                        <span
-                          className="text-[9px] font-semibold px-1.75 py-0.25 rounded-full"
+                        <span className="text-[9px] font-semibold px-1.75 py-0.25 rounded-full"
                           style={{
-                            background: "#fef3c7",
-                            color: "#92400e",
-                            border: "1px solid #fde68a",
+                            background: "var(--status-warning-bg)",
+                            color: "var(--status-warning-text)",
+                            border: "1px solid var(--status-warning-border)",
                           }}
                         >
                           Fill in *
@@ -219,17 +199,17 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                           onClick={() => startEdit(c.id)}
                           className="bg-transparent rounded-md text-[10px] font-semibold cursor-pointer transition-colors duration-150"
                           style={{
-                            border: "1px solid #e2e8f0",
+                            border: "1px solid var(--border-border)",
                             padding: "2px 9px",
-                            color: "#475569",
+                            color: "var(--text-text-secondary)",
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = "#8B0000";
-                            e.currentTarget.style.color = "#8B0000";
+                            e.currentTarget.style.borderColor = "var(--brand-primary)";
+                            e.currentTarget.style.color = "var(--brand-primary)";
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = "#e2e8f0";
-                            e.currentTarget.style.color = "#475569";
+                            e.currentTarget.style.borderColor = "var(--border-border)";
+                            e.currentTarget.style.color = "var(--text-text-secondary)";
                           }}
                         >
                           Edit
@@ -239,7 +219,7 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                         <button
                           onClick={() => saveCode(c.id)}
                           className="inline-flex items-center gap-1 rounded-md border-none text-[10px] font-bold cursor-pointer text-white"
-                          style={{ background: "#059669", padding: "2px 10px" }}
+                          style={{ background: "var(--bg-status-success-emerald)", padding: "2px 10px" }}
                         >
                           <Icon name="save" size={10} />
                           Save
@@ -248,7 +228,7 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                       {!c.editing && (
                         <button
                           onClick={() => toggleExpanded(c.id)}
-                          className="bg-transparent border-none cursor-pointer flex text-[#94a3b8] p-0.5"
+                          className="bg-transparent border-none cursor-pointer flex text-text-muted p-0.5"
                         >
                           <Icon name={c.expanded ? "chevDown" : "chevRight"} size={12} />
                         </button>
@@ -274,7 +254,7 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                           rows={6}
                           style={{
                             width: "100%",
-                            border: "1px solid #fecaca",
+                            border: "1px solid var(--status-error-border)",
                             borderRadius: 7,
                             padding: "8px 10px",
                             fontSize: 11,
@@ -282,8 +262,8 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                             lineHeight: 1.6,
                             resize: "vertical",
                             outline: "none",
-                            background: "#fffbeb",
-                            color: "#1e293b",
+                            background: "var(--status-warning-bg)",
+                            color: "var(--text-text)",
                             boxSizing: "border-box",
                           }}
                         />
@@ -291,7 +271,7 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                         <p
                           style={{
                             fontSize: 11,
-                            color: "#334155",
+                            color: "var(--color-text)",
                             lineHeight: 1.6,
                             margin: 0,
                             whiteSpace: "pre-wrap",
@@ -301,14 +281,8 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                           {renderVerbiage(c.verbiage)}
                         </p>
                       )}
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 6,
-                          marginTop: 8,
-                          paddingTop: 8,
-                          borderTop: "1px solid #f1f5f9",
-                        }}
+                      <div className="flex gap-1.5 mt-2 pt-2"
+                        style={{ borderTop: "1px solid var(--border-secondary)" }}
                       >
                         <button
                           onClick={() => {
@@ -317,7 +291,7 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                             if (url && sel) updateVerbiage(c.id, c.verbiage.replace(sel, `${sel} [${url}]`));
                           }}
                           className="inline-flex items-center gap-1 px-2.5 py-1.25 text-[10px] font-semibold rounded-lg cursor-pointer"
-                          style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1d4ed8" }}
+                          style={{ background: "var(--status-info-subtle)", border: "1px solid var(--status-info-blue-border)", color: "var(--status-info-blue)" }}
                         >
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                             <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
@@ -333,7 +307,7 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                             )
                           }
                           className="inline-flex items-center gap-1 px-2.5 py-1.25 text-[10px] font-semibold rounded-lg cursor-pointer"
-                          style={{ background: "#fdf4ff", border: "1px solid #e9d5ff", color: "#7c3aed" }}
+                          style={{ background: "var(--status-info-subtle)", border: "1px solid var(--status-info-blue-border)", color: "var(--accent-title-point)" }}
                         >
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                             <path d="M18.84 12.25l1.72-1.71h-.02a5.004 5.004 0 00-.12-7.07 5.006 5.006 0 00-6.95 0l-1.72 1.71" />
@@ -352,7 +326,7 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
           )}
 
           {addedCodes.length === 0 && (
-            <p className="m-0 text-[11px] text-[#94a3b8] italic">
+            <p className="m-0 text-[11px] text-text-muted italic">
               Select codes above to add them to the Tax Cert section.
             </p>
           )}

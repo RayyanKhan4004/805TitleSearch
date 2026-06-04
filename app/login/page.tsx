@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormData } from "@/app/schema/login-schema";
@@ -9,10 +10,20 @@ import Icon from "@/components/common/icon";
 import { useAuth } from "@/app/context/auth-context";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("reset") === "success") {
+      setResetSuccess(true);
+      setTimeout(() => setResetSuccess(false), 6000);
+    }
+  }, [searchParams]);
 
   const {
     register,
@@ -50,8 +61,8 @@ export default function LoginPage() {
           <div className="w-14 h-14 bg-brand rounded-xl flex items-center justify-center mx-auto mb-3" style={{ boxShadow: "var(--shadow-card)" }}>
             <Icon name="building" size={24} className="text-white" />
           </div>
-          <Heading level="h2" className="mb-1">805 Title Search</Heading>
-          <Text size="sm" muted>805TS Production Workflow</Text>
+          <Heading level="h2" className="mb-1">805titleIQ</Heading>
+          <Text size="sm" muted>Intelligent Title Production Workflow</Text>
         </div>
 
         <Card variant="elevated" padding="lg">
@@ -60,6 +71,12 @@ export default function LoginPage() {
               <Heading level="h4" className="mb-0.5">Sign In</Heading>
               <Text size="sm" muted>Enter your credentials to continue</Text>
             </div>
+
+            {resetSuccess && (
+              <Alert variant="success" title="Password Reset Successful">
+                Your password has been reset. Please sign in with your new password.
+              </Alert>
+            )}
 
             {error && (
               <Alert variant="error" title="Authentication Failed">
@@ -108,6 +125,7 @@ export default function LoginPage() {
               />
               <button
                 type="button"
+                onClick={() => router.push("/forgot-password")}
                 className="text-[10px] text-brand font-semibold bg-transparent border-none cursor-pointer hover:underline"
               >
                 Forgot password?
@@ -137,7 +155,7 @@ export default function LoginPage() {
         </Card>
 
         <Text size="xs" tertiary className="text-center mt-4">
-          &copy; 2026 805 Title Search. All rights reserved.
+          &copy; 2026 805titleIQ. All rights reserved.
         </Text>
       </div>
     </div>

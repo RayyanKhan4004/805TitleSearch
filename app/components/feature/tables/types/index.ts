@@ -8,6 +8,7 @@ export interface Order {
   productType: string;
   status: "Open" | "In Review" | "Closed" | "Cancelled";
   rush?: boolean;
+  date: string;
 }
 
 export interface RecentFile {

@@ -3,19 +3,20 @@
 import Icon from "@/components/common/icon";
 import { CardHead, Lbl } from "./shared-atoms";
 import { useState } from "react";
+import type { SharedState } from "@/app/components/feature/tables/types";
 
-export default function LegalVestingDrawer() {
+interface LegalVestingDrawerProps {
+  shared?: SharedState;
+  setShared?: React.Dispatch<React.SetStateAction<SharedState>>;
+  isLoading?: boolean;
+}
+
+export default function LegalVestingDrawer({ shared, setShared, isLoading }: LegalVestingDrawerProps) {
   const [openLegal, setOpenLegal] = useState(false);
   const [openVesting, setOpenVesting] = useState(false);
-  const [legal, setLegal] = useState(
-    "LOT 22 OF TRACT 12345, IN THE CITY OF RIALTO, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA, AS PER MAP RECORDED IN BOOK 123, PAGE 45 OF MAPS, IN THE OFFICE OF THE COUNTY RECORDER OF SAID COUNTY."
-  );
-  const [vesting, setVesting] = useState(
-    "John D. Doe and Jane R. Doe, husband and wife as community property, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA."
-  );
-  const [lease, setLease] = useState(
-    "Fee simple estate subject to leasehold interest as disclosed in supporting documents."
-  );
+  const [legal, setLegal] = useState(shared?.legal ?? "");
+  const [vesting, setVesting] = useState(shared?.vesting ?? "");
+  const [lease, setLease] = useState(shared?.leaseHold ?? "");
   const [areaType, setAreaType] = useState("City");
   const [areaName, setAreaName] = useState("Rialto");
   const [propType, setPropType] = useState("Single Family Residence");
@@ -26,9 +27,12 @@ export default function LegalVestingDrawer() {
     setLoading(true);
     setUpdated(false);
     setTimeout(() => {
-      setVesting(
-        "John D. Doe and Jane R. Doe, husband and wife as community property with right of survivorship, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA."
-      );
+      setShared?.((s) => ({
+        ...s,
+        legal,
+        vesting,
+        leaseHold: lease,
+      }));
       setLoading(false);
       setUpdated(true);
       setTimeout(() => setUpdated(false), 3000);
@@ -47,25 +51,25 @@ export default function LegalVestingDrawer() {
       onClick={onClick}
       className="inline-flex items-center gap-1.5 px-4 py-1.75 rounded-lg text-[12px] font-semibold border cursor-pointer transition-all duration-150"
       style={{
-        borderColor: isOpen ? color : "#dbe2ea",
+        borderColor: isOpen ? color : "var(--border-input)",
         background: isOpen ? `${color}14` : "#fff",
-        color: isOpen ? color : "#334155",
+        color: isOpen ? color : "var(--ui-code-text)",
         boxShadow: isOpen ? `0 2px 8px ${color}22` : "0 1px 3px rgba(0,0,0,.05)",
       }}
     >
       <div
         className="w-5 h-5 rounded flex items-center justify-center shrink-0 transition-all duration-150"
         style={{
-          background: isOpen ? color : "#f1f5f9",
+          background: isOpen ? color : "var(--bg-page)",
         }}
       >
-        <Icon name={icon} size={11} className={isOpen ? "text-white" : "text-[#64748b]"} />
+        <Icon name={icon} size={11} className={isOpen ? "text-white" : "text-text-tertiary"} />
       </div>
       {label}
       <Icon
         name={isOpen ? "chevDown" : "chevRight"}
         size={11}
-        style={{ color: isOpen ? color : "#94a3b8", marginLeft: 2 }}
+        style={{ color: isOpen ? color : "var(--text-muted)", marginLeft: 2 }}
       />
     </button>
   );
@@ -82,7 +86,7 @@ export default function LegalVestingDrawer() {
         <span className="text-[12px] font-bold" style={{ color }}>{title}</span>
         <button
           onClick={onClose}
-          className="bg-transparent border-none cursor-pointer text-[#94a3b8] text-lg leading-none p-0.5"
+          className="bg-transparent border-none cursor-pointer text-text-muted text-lg leading-none p-0.5"
         >
           ×
         </button>
@@ -92,16 +96,22 @@ export default function LegalVestingDrawer() {
   );
 
   const ta =
-    "w-full border border-[#dbe3ee] rounded-lg px-3 py-2.5 text-[11px] text-[#334155] bg-white outline-none resize-none font-mono leading-relaxed";
-  const aiBadge = "bg-[#10b981] text-white text-[9px] font-bold px-1.5 py-0.5 rounded";
+    "w-full border border-border-input-alt rounded-lg px-3 py-2.5 text-[11px] text-ui-code bg-white outline-none resize-none font-mono leading-relaxed";
+  const aiBadge = "bg-status-success-emerald text-white text-[9px] font-bold px-1.5 py-0.5 rounded";
   const pill =
-    "bg-[#eff6ff] border border-[#bfdbfe] text-[#2563eb] text-[10px] font-semibold px-2.5 py-1 rounded-full";
-  const card = "bg-white border border-[#e2e8f0] rounded-xl overflow-hidden";
+    "bg-status-info-subtle border border-status-info-blue-border text-ui-link text-[10px] font-semibold px-2.5 py-1 rounded-full";
+  const card = "bg-white border border-border rounded-xl overflow-hidden";
   const inp =
-    "w-full border border-[#dbe3ee] rounded-lg px-3 py-2 text-[11px] text-[#334155] bg-white outline-none";
+    "w-full border border-border-input-alt rounded-lg px-3 py-2 text-[11px] text-ui-code bg-white outline-none";
 
   return (
     <div className="flex flex-col gap-3.5">
+      {isLoading && (
+        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-status-info-subtle border border-status-info-blue-border text-[11px] text-accent-data-trace">
+          <Icon name="loader" size={12} className="animate-spin" />
+          Loading property data from API…
+        </div>
+      )}
       <div className="flex gap-2 items-center">
         {triggerBtn("Legal Description", "fileCheck", "#8B0000", openLegal, () => setOpenLegal((v) => !v))}
         {triggerBtn("Vesting", "user", "#0369a1", openVesting, () => setOpenVesting((v) => !v))}
@@ -126,13 +136,13 @@ export default function LegalVestingDrawer() {
               }
             />
             <div className="p-[18px] flex flex-col gap-2.5">
-              <textarea rows={10} value={legal} onChange={(e) => setLegal(e.target.value)} className={ta} />
+              <textarea rows={10} value={legal} onChange={(e) => setLegal(e.target.value)} className={ta} disabled={isLoading} placeholder={isLoading ? "Loading property data..." : ""} />
               <div className="flex flex-wrap justify-between items-center gap-2">
-                <button className="bg-transparent border-none text-[#2563eb] text-[11px] font-semibold cursor-pointer">
+                <button className="bg-transparent border-none text-ui-link text-[11px] font-semibold cursor-pointer">
                   Convert to Fields
                 </button>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-[#94a3b8]">{legal.length} chars</span>
+                  <span className="text-[10px] text-text-muted">{legal.length} chars</span>
                   <button
                     onClick={() => {
                       const sel = window.getSelection()?.toString() || "";
@@ -140,7 +150,7 @@ export default function LegalVestingDrawer() {
                       if (url && sel) setLegal((l) => l.replace(sel, `${sel} [${url}]`));
                     }}
                     className="inline-flex items-center gap-1 px-2.5 py-1.25 text-[10px] font-semibold rounded-lg cursor-pointer"
-                    style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1d4ed8" }}
+                    style={{ background: "var(--status-info-subtle)", border: "1px solid var(--status-info-blue-border)", color: "var(--status-info-blue)" }}
                   >
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
@@ -155,7 +165,7 @@ export default function LegalVestingDrawer() {
                       )
                     }
                     className="inline-flex items-center gap-1 px-2.5 py-1.25 text-[10px] font-semibold rounded-lg cursor-pointer"
-                    style={{ background: "#fdf4ff", border: "1px solid #e9d5ff", color: "#7c3aed" }}
+                    style={{ background: "#fdf4ff", border: "1px solid #e9d5ff", color: "var(--accent-title-point)" }}
                   >
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <path d="M18.84 12.25l1.72-1.71h-.02a5.004 5.004 0 00-.12-7.07 5.006 5.006 0 00-6.95 0l-1.72 1.71" />
@@ -183,14 +193,14 @@ export default function LegalVestingDrawer() {
                   <button className="bg-transparent border-none cursor-pointer text-[#94a3b8] flex">
                     <Icon name="copy" size={13} />
                   </button>
-                  <button className="bg-transparent border-none cursor-pointer text-[#94a3b8] flex">
+                  <button className="bg-transparent border-none cursor-pointer text-text-muted flex">
                     <Icon name="external" size={13} />
                   </button>
                 </div>
               }
             />
             <div className="p-[18px] flex flex-col gap-3">
-              <textarea rows={4} value={vesting} onChange={(e) => setVesting(e.target.value)} className={ta} />
+              <textarea rows={4} value={vesting} onChange={(e) => setVesting(e.target.value)} className={ta} disabled={isLoading} placeholder={isLoading ? "Loading property data..." : ""} />
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => {
@@ -234,7 +244,7 @@ export default function LegalVestingDrawer() {
               </div>
               <div className="flex justify-between items-center">
                 {updated ? (
-                  <span className="flex items-center gap-1 text-[10px] text-[#059669] font-semibold">
+                  <span className="flex items-center gap-1 text-[10px] text-status-success-dark font-semibold">
                     <Icon name="checkCircle" size={11} />
                     Updated
                   </span>
@@ -246,7 +256,7 @@ export default function LegalVestingDrawer() {
                   disabled={loading}
                   className="inline-flex items-center gap-1 px-4 py-1.5 text-[11px] font-semibold border-none rounded-lg cursor-pointer transition-opacity"
                   style={{
-                    background: "#8B0000",
+                    background: "var(--brand-primary)",
                     color: "#fff",
                     opacity: loading ? 0.6 : 1,
                     cursor: loading ? "not-allowed" : "pointer",
@@ -272,7 +282,7 @@ export default function LegalVestingDrawer() {
       <div className={card}>
         <CardHead title="Lease Hold Interest" sub="Leasehold details and ownership remarks" />
         <div className="p-[18px]">
-          <textarea rows={3} value={lease} onChange={(e) => setLease(e.target.value)} className={ta} />
+          <textarea rows={3} value={lease} onChange={(e) => setLease(e.target.value)} className={ta} disabled={isLoading} placeholder={isLoading ? "Loading property data..." : ""} />
         </div>
       </div>
 
@@ -304,20 +314,20 @@ export default function LegalVestingDrawer() {
               style={{
                 background:
                   propType === "Single Family Residence"
-                    ? "#dcfce7"
+                    ? "var(--status-success-bg)"
                     : propType === "Multi-Family Residence"
-                      ? "#dbeafe"
+                      ? "var(--status-info-blue-50)"
                       : propType === "Condominium"
                         ? "#f3e8ff"
-                        : "#fef9c3",
+                        : "var(--status-warning-bg)",
                 color:
                   propType === "Single Family Residence"
-                    ? "#166534"
+                    ? "var(--status-success-text)"
                     : propType === "Multi-Family Residence"
-                      ? "#1d4ed8"
+                      ? "var(--status-info-blue)"
                       : propType === "Condominium"
                         ? "#7e22ce"
-                        : "#854d0e",
+                        : "var(--status-warning-text)",
               }}
             >
               {propType}

@@ -12,8 +12,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "805 Title Search",
-  description: "805TS Production Workflow for Title Management",
+    title: "805titleIQ",
+    description: "805titleIQ — Intelligent Title Production Workflow",
 };
 
 export default function RootLayout({

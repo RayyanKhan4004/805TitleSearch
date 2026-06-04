@@ -1,10 +1,14 @@
 "use client";
 
 import Icon from "@/components/common/icon";
-import { Button } from "@/components/ui";
-import { useState } from "react";
+import { Button, Spinner } from "@/components/ui";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/auth-context";
+import { useGetReportQuery } from "@/app/store/api/propertyReportApi";
+import { mapApiToForm } from "@/app/services/datatree-api";
+import toast from "react-hot-toast";
+import type { PropertyForm } from "@/app/components/feature/tables/types";
 import {
   StepDashboard,
   StepTitleChain,
@@ -24,10 +28,34 @@ const WORK_STEPS = [
   { id: 4, label: "Final Review", short: "Review", icon: "shield" },
 ];
 
+function flattenReportRaw(raw: Record<string, any>) {
+  const subject = raw.SubjectProperty || {};
+  return {
+    PropertyId: subject.PropertyId,
+    SitusAddress: subject.SitusAddress,
+    ParsedStreetAddress: subject.ParsedStreetAddress,
+    OwnerInformation: raw.OwnerInformation,
+    LocationInformation: raw.LocationInformation,
+    SiteInformation: raw.SiteInformation,
+    PropertyCharacteristics: raw.PropertyCharacteristics,
+    TaxInformation: raw.TaxInformation,
+    OwnerTransferInformation: raw.OwnerTransferInformation,
+    LastMarketSaleInformation: raw.LastMarketSaleInformation,
+  };
+}
+
 export default function Dashboard() {
   const { logout, user } = useAuth();
   const router = useRouter();
   const currentUserName = user ? `${user.firstName} ${user.lastName}` : "Unknown";
+  const [reportParams, setReportParams] = useState<{
+    searchType: string; apn: string; zipCode: string;
+  } | null>(null);
+  const { data: reportData, isLoading: isLoadingReport } = useGetReportQuery(
+    reportParams!,
+    { skip: !reportParams },
+  );
+  const [propertyForm, setPropertyForm] = useState<PropertyForm | null>(null);
 
   /* null = no file open (dashboard only); object = selected order */
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -139,7 +167,21 @@ export default function Dashboard() {
     ]);
   };
 
-  const handleSelectOrder = (order: Order) => {
+  useEffect(() => {
+    if (reportData?.found && reportParams) {
+      const propertyData = flattenReportRaw(reportData.raw);
+      const pf = mapApiToForm(propertyData);
+      setPropertyForm(pf);
+      setShared((s) => ({
+        ...s,
+        vesting: reportData.form.vestingText || s.vesting,
+        legal: reportData.form.shortLegal || s.legal,
+        effectiveDate: new Date().toLocaleDateString("en-US"),
+      }));
+    }
+  }, [reportData]);
+
+  const handleSelectOrder = async (order: Order) => {
     const no = order.no.replace("#", "");
     /* Block if locked by someone else */
     const lock = getLock(no);
@@ -156,6 +198,13 @@ export default function Dashboard() {
     }));
     setSelectedOrder({ ...order, no });
     setStep(1);
+
+    setPropertyForm(null);
+    setReportParams({
+      searchType: "APN",
+      apn: "689-0-360-315",
+      zipCode: "91362",
+    });
   };
 
   /* unlockAndClose — called ONLY from Save & Close button */
@@ -406,6 +455,12 @@ export default function Dashboard() {
                   Locked by You
                 </span>
               )}
+              {isLoadingReport && (
+                <span className="flex items-center gap-1.5 text-[#94a3b8] text-[10px]">
+                  <Spinner size="xs" variant="default" />
+                  Loading property data…
+                </span>
+              )}
               <div className="flex-1" />
               <Button variant="secondary" size="sm">
                 <Icon name="save" size={11} />
@@ -518,6 +573,9 @@ export default function Dashboard() {
                   <StepTitleChain
                     shared={shared}
                     setShared={setShared}
+                    propertyForm={propertyForm ?? undefined}
+                    reportRaw={reportData?.raw}
+                    isLoading={isLoadingReport}
                     onSaveClose={unlockAndClose}
                   />
                 )}

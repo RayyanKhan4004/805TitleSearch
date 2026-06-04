@@ -1,4 +1,3 @@
-import { TC_ROWS } from "../temp";
 
 export const PATHS: Record<string, string[]> = {
   building: ["M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z", "M9 22V12h6v10"],
@@ -176,7 +175,7 @@ export const INDEX_SECTIONS = [
   { title: "Other Exceptions", sub: "Additional title exceptions noted", accent: "#dc2626", rows: [] },
   { title: "Other Requirements", sub: "Additional requirements and conditions", accent: "#d97706", rows: [] },
   { title: "Starters", sub: "Starter documents and prior policy references", accent: "#475569", rows: [] },
-  { title: "Title Chain Review", sub: "Full chain of title — deeds, liens, easements", accent: "#8B0000", rows: TC_ROWS },
+  { title: "Title Chain Review", sub: "Full chain of title — deeds, liens, easements", accent: "#8B0000", rows: [] },
 ];
 
 export const COUNTIES = [

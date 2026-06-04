@@ -12,7 +12,7 @@ import { Button } from "@/components/ui";
 import { useState } from "react";
 import ManualSearchModal from "../models/manual-search-modal";
 import { INDEX_SECTIONS, CAEXC_CODES, CAREQ_CODES } from "../consts";
-import { mapApiChainToIndexRows } from "@/app/services/datatree-api";
+import { mapTransactionsToIndexRows } from "@/app/services/transaction-mapper";
 import type {
   SharedState,
   PropertyForm,
@@ -37,7 +37,7 @@ export default function StepTitleChain({
   onSaveClose,
 }: StepTitleChainProps) {
 
-  const apiChainRows = reportRaw ? mapApiChainToIndexRows(reportRaw.Chain) : [];
+  const apiChainRows = reportRaw?.Transactions ? mapTransactionsToIndexRows(reportRaw.Transactions) : [];
   const [showSearch, setShowSearch] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [typeDate, setTypeDate] = useState("");

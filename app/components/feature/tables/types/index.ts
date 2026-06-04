@@ -388,3 +388,64 @@ export interface IconProps {
   style?: React.CSSProperties;
   className?: string;
 }
+
+export interface FormData {
+  search: {
+    type: SearchType;
+    apnInput: string;
+    zipInput: string;
+    addrNum: string;
+    addrStr: string;
+    addrCity: string;
+    addrState: string;
+    addrZip: string;
+    ownerName: string;
+    propId: string;
+    fullAddr: string;
+    advCounty: string;
+    advYear: string;
+    advBeds: string;
+  };
+  property: PropertyForm;
+  file: {
+    clientName: string;
+    clientFileNo: string;
+    transactionType: string;
+    productType: string;
+    sourceOfBusiness: string;
+    loanNumber: string;
+  };
+  escrow: {
+    escrowNo: string;
+    escrowCompany: string;
+    titleOffice: string;
+    escrowOffice: string;
+    branch: string;
+    loanOfficer: string;
+    lender: string;
+  };
+  parties: {
+    buyers: Buyer[];
+    sellers: Seller[];
+    bFirst: string;
+    bLast: string;
+    bMid: string;
+    bVest: string;
+    bPhone: string;
+    bEmail: string;
+    bAddr: string;
+    bCity: string;
+    bState: string;
+    bZip: string;
+    bEntity: string;
+    sFirst: string;
+    sLast: string;
+    sMid: string;
+    sVest: string;
+    sPhone: string;
+    sEmail: string;
+    sAddr: string;
+    sDeedType: string;
+    sDocNo: string;
+  };
+}

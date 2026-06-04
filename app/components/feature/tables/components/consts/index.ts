@@ -1,4 +1,5 @@
 import { TC_ROWS } from "../temp";
+import type { PropertyForm, FormData } from "../../types";
 
 export const PATHS: Record<string, string[]> = {
   building: ["M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z", "M9 22V12h6v10"],
@@ -165,18 +166,61 @@ export const IDX_COLS = [
   "Add Code",
 ];
 
-
-
 export const INDEX_SECTIONS = [
-  { title: "Assessor Page", sub: "Assessor records and parcel data", accent: "#0369a1", rows: [] },
-  { title: "Assessor Map", sub: "Parcel map and boundary information", accent: "#0891b2", rows: [] },
-  { title: "Tract Map", sub: "Recorded tract map references", accent: "#0d9488", rows: [] },
-  { title: "Tax Cert", sub: "Tax certificate and payment records", accent: "#65a30d", rows: [] },
-  { title: "Runsheet", sub: "Search runsheet and index entries", accent: "#7c3aed", rows: [] },
-  { title: "Other Exceptions", sub: "Additional title exceptions noted", accent: "#dc2626", rows: [] },
-  { title: "Other Requirements", sub: "Additional requirements and conditions", accent: "#d97706", rows: [] },
-  { title: "Starters", sub: "Starter documents and prior policy references", accent: "#475569", rows: [] },
-  { title: "Title Chain Review", sub: "Full chain of title — deeds, liens, easements", accent: "#8B0000", rows: TC_ROWS },
+  {
+    title: "Assessor Page",
+    sub: "Assessor records and parcel data",
+    accent: "#0369a1",
+    rows: [],
+  },
+  {
+    title: "Assessor Map",
+    sub: "Parcel map and boundary information",
+    accent: "#0891b2",
+    rows: [],
+  },
+  {
+    title: "Tract Map",
+    sub: "Recorded tract map references",
+    accent: "#0d9488",
+    rows: [],
+  },
+  {
+    title: "Tax Cert",
+    sub: "Tax certificate and payment records",
+    accent: "#65a30d",
+    rows: [],
+  },
+  {
+    title: "Runsheet",
+    sub: "Search runsheet and index entries",
+    accent: "#7c3aed",
+    rows: [],
+  },
+  {
+    title: "Other Exceptions",
+    sub: "Additional title exceptions noted",
+    accent: "#dc2626",
+    rows: [],
+  },
+  {
+    title: "Other Requirements",
+    sub: "Additional requirements and conditions",
+    accent: "#d97706",
+    rows: [],
+  },
+  {
+    title: "Starters",
+    sub: "Starter documents and prior policy references",
+    accent: "#475569",
+    rows: [],
+  },
+  {
+    title: "Title Chain Review",
+    sub: "Full chain of title — deeds, liens, easements",
+    accent: "#8B0000",
+    rows: TC_ROWS,
+  },
 ];
 
 export const COUNTIES = [
@@ -212,23 +256,182 @@ export interface GenieCodeItem {
 }
 
 export const CAEXC_CODES: GenieCodeItem[] = [
-  { code: "CAA20", label: "Facts / Claims Not in Public Records", body: "Any facts, rights, interest, or claims which are not shown by the Public Records but which could be ascertained by an inspection of the Land or which may be asserted by persons in possession thereof." },
-  { code: "CAA21", label: "Survey Discrepancies", body: "Discrepancies, conflicts in boundary lines, shortage in area, encroachments, or any other facts which a correct survey would disclose, and which are not shown by the Public Records." },
-  { code: "CAA22", label: "Mining Claims / Water Rights / Special Assessments", body: "(a) Unpatented mining claims; (b) reservations or exceptions in patents or in Acts authorizing the issuance thereof; (c) water rights, claims or title to water, whether or not the matters excepted under (a), (b), or (c) are shown by the Public Records.\n\nAny liens or other assessments, bonds, or special district liens including without limitation, community facility districts, that arise by reason of any local, city, municipal or county project or special district." },
-  { code: "CAA12", label: "Water Rights", body: "Water rights, claims or title to water in or under said land, whether or not shown by the public records." },
-  { code: "CARQ20", label: "Statement of Information Required", body: "The Company required a Statement of Information from the vestee(s) named below, as we are unable to determine of record the marital status of said vestee(s) at the time of acquisition of title.\n\nVestee(s): *\n\nIf the above required Statement of Information discloses that said vestee was married at the time of acquisition of title, the interest of the spouse needs to be addressed. The Company reserves the right to make additional requirements upon receipt of the Statement of Information." },
-  { code: "CAFINCENEX", label: "FinCEN Report — Exception", body: 'In the event that the contemplated transaction is a transaction for which a Real Estate Report is required to be submitted to the US Department of Treasury Financial Crimes Enforcement Network ("FinCEN Report"), then the parties to transaction (Seller(s) and Buyer(s)) shall, no later than the closing, provide to the Company the information and documentation necessary to enable the Company to complete the FinCEN Report. Such information and documentation includes full legal name, date of birth, residential street address, and the IRS taxpayer identification number of the beneficial owners of the Buyer(s), as further defined and described in Section 1010.821 of Chapter 31 of the Code of Federal Regulations ("Code"). NOTE: The FinCEN Report requires that certain residential real estate transactions purchased with all cash or without institutional lender financing, where at least one buyer/transferee is a legal entity, limited liability company, corporation, partnership, trust, trustee or other non natural person, must be reported to the United States Treasury Department\'s Financial Crimes Enforcement Network. If the required information is not timely provided to the Company, the Company may elect to withdraw as the settlement company or otherwise be involved in the transaction.' },
+  {
+    code: "CAA20",
+    label: "Facts / Claims Not in Public Records",
+    body: "Any facts, rights, interest, or claims which are not shown by the Public Records but which could be ascertained by an inspection of the Land or which may be asserted by persons in possession thereof.",
+  },
+  {
+    code: "CAA21",
+    label: "Survey Discrepancies",
+    body: "Discrepancies, conflicts in boundary lines, shortage in area, encroachments, or any other facts which a correct survey would disclose, and which are not shown by the Public Records.",
+  },
+  {
+    code: "CAA22",
+    label: "Mining Claims / Water Rights / Special Assessments",
+    body: "(a) Unpatented mining claims; (b) reservations or exceptions in patents or in Acts authorizing the issuance thereof; (c) water rights, claims or title to water, whether or not the matters excepted under (a), (b), or (c) are shown by the Public Records.\n\nAny liens or other assessments, bonds, or special district liens including without limitation, community facility districts, that arise by reason of any local, city, municipal or county project or special district.",
+  },
+  {
+    code: "CAA12",
+    label: "Water Rights",
+    body: "Water rights, claims or title to water in or under said land, whether or not shown by the public records.",
+  },
+  {
+    code: "CARQ20",
+    label: "Statement of Information Required",
+    body: "The Company required a Statement of Information from the vestee(s) named below, as we are unable to determine of record the marital status of said vestee(s) at the time of acquisition of title.\n\nVestee(s): *\n\nIf the above required Statement of Information discloses that said vestee was married at the time of acquisition of title, the interest of the spouse needs to be addressed. The Company reserves the right to make additional requirements upon receipt of the Statement of Information.",
+  },
+  {
+    code: "CAFINCENEX",
+    label: "FinCEN Report — Exception",
+    body: 'In the event that the contemplated transaction is a transaction for which a Real Estate Report is required to be submitted to the US Department of Treasury Financial Crimes Enforcement Network ("FinCEN Report"), then the parties to transaction (Seller(s) and Buyer(s)) shall, no later than the closing, provide to the Company the information and documentation necessary to enable the Company to complete the FinCEN Report. Such information and documentation includes full legal name, date of birth, residential street address, and the IRS taxpayer identification number of the beneficial owners of the Buyer(s), as further defined and described in Section 1010.821 of Chapter 31 of the Code of Federal Regulations ("Code"). NOTE: The FinCEN Report requires that certain residential real estate transactions purchased with all cash or without institutional lender financing, where at least one buyer/transferee is a legal entity, limited liability company, corporation, partnership, trust, trustee or other non natural person, must be reported to the United States Treasury Department\'s Financial Crimes Enforcement Network. If the required information is not timely provided to the Company, the Company may elect to withdraw as the settlement company or otherwise be involved in the transaction.',
+  },
 ];
 
 export const CAREQ_CODES: GenieCodeItem[] = [
-  { code: "CAA1", label: "ALTA Endorsement Form 9 — No Decline", body: "Note: None of the items shown in this report will cause the Company to decline to attach ALTA Endorsement Form 9 to an Extended Coverage Loan Policy, when issued." },
-  { code: "CAA3", label: "CLTA Endorsement Form 116 — PUD", body: "Note: The Company is not aware of any matters which would cause it to decline to attach CLTA Endorsement Form 116 indicating that there is located on said land * known as * to an Extended Coverage Loan Policy." },
-  { code: "CANT2", label: "No Conveyances in 24 Months", body: "There are NO conveyances affecting said land, which recorded within the 24 month period of the date of this report." },
-  { code: "CANT3", label: "Conveyances in 24 Months — Detail", body: "The only conveyances(s) affecting said land, which recorded within the 24 month period of the date of this report, are as follows:\nGrantor: *\nGrantee: *\nRecorded: *\nInstrument/File No.: * of Official Records." },
-  { code: "CANT17", label: "Documentary Transfer Tax Affidavit", body: "Pursuant to Government Code Section 27388.1, as amended and effective as of 1-1-2018, a Documentary Transfer Tax (OTT) Affidavit may be required to be completed and submitted with each document when OTT is being paid or when an exemption is being claimed from paying the tax." },
-  { code: "CANT18", label: "Marijuana / Cannabis Prohibition", body: "Notice: Please be aware that due to the conflict between federal and state laws concerning the cultivation, distribution, manufacture or sale of marijuana, the Company is not able to close or insure any transaction involving Land that is associated with these activities." },
-  { code: "CANT19", label: "Preliminary Change of Ownership", body: "A Preliminary Change of Ownership form is required upon a change in ownership of the Land. Section 480 of the Revenue and Taxation Code of the State of California requires that a grantee of real property complete a Preliminary Change of Ownership statement, which is to be filed at the time that a grant deed is recorded." },
-  { code: "CANT20", label: "Sub-Escrow Loan Proceeds", body: "NOTE: When this title order closes and if the Company is handling the loan proceeds through a sub-escrow, all title charges and expenses normally billed will be deducted from those loan proceeds." },
-  { code: "CANT21", label: "Unlawful Restrictions Statement", body: "If a county recorder, title insurance company, escrow company, real estate agent or association provides a copy of the declaration, governing document or deed to any person, California law requires that the document provided shall include a statement regarding any unlawful restrictions." },
+  {
+    code: "CAA1",
+    label: "ALTA Endorsement Form 9 — No Decline",
+    body: "Note: None of the items shown in this report will cause the Company to decline to attach ALTA Endorsement Form 9 to an Extended Coverage Loan Policy, when issued.",
+  },
+  {
+    code: "CAA3",
+    label: "CLTA Endorsement Form 116 — PUD",
+    body: "Note: The Company is not aware of any matters which would cause it to decline to attach CLTA Endorsement Form 116 indicating that there is located on said land * known as * to an Extended Coverage Loan Policy.",
+  },
+  {
+    code: "CANT2",
+    label: "No Conveyances in 24 Months",
+    body: "There are NO conveyances affecting said land, which recorded within the 24 month period of the date of this report.",
+  },
+  {
+    code: "CANT3",
+    label: "Conveyances in 24 Months — Detail",
+    body: "The only conveyances(s) affecting said land, which recorded within the 24 month period of the date of this report, are as follows:\nGrantor: *\nGrantee: *\nRecorded: *\nInstrument/File No.: * of Official Records.",
+  },
+  {
+    code: "CANT17",
+    label: "Documentary Transfer Tax Affidavit",
+    body: "Pursuant to Government Code Section 27388.1, as amended and effective as of 1-1-2018, a Documentary Transfer Tax (OTT) Affidavit may be required to be completed and submitted with each document when OTT is being paid or when an exemption is being claimed from paying the tax.",
+  },
+  {
+    code: "CANT18",
+    label: "Marijuana / Cannabis Prohibition",
+    body: "Notice: Please be aware that due to the conflict between federal and state laws concerning the cultivation, distribution, manufacture or sale of marijuana, the Company is not able to close or insure any transaction involving Land that is associated with these activities.",
+  },
+  {
+    code: "CANT19",
+    label: "Preliminary Change of Ownership",
+    body: "A Preliminary Change of Ownership form is required upon a change in ownership of the Land. Section 480 of the Revenue and Taxation Code of the State of California requires that a grantee of real property complete a Preliminary Change of Ownership statement, which is to be filed at the time that a grant deed is recorded.",
+  },
+  {
+    code: "CANT20",
+    label: "Sub-Escrow Loan Proceeds",
+    body: "NOTE: When this title order closes and if the Company is handling the loan proceeds through a sub-escrow, all title charges and expenses normally billed will be deducted from those loan proceeds.",
+  },
+  {
+    code: "CANT21",
+    label: "Unlawful Restrictions Statement",
+    body: "If a county recorder, title insurance company, escrow company, real estate agent or association provides a copy of the declaration, governing document or deed to any person, California law requires that the document provided shall include a statement regarding any unlawful restrictions.",
+  },
 ];
 
+export const CREATE_STEPS = [
+  "Search Property",
+  "Property Information",
+  "File Information",
+  "Transaction Parties",
+];
+
+export const EMPTY_FORM: PropertyForm = {
+  addrNo: "",
+  dirPrefix: "",
+  streetName: "",
+  suffix: "",
+  postDir: "",
+  unitType: "",
+  unitNo: "",
+  city: "",
+  state: "CA",
+  zip: "",
+  county: "",
+  apn1: "",
+  apn2: "",
+  apn3: "",
+  apn4: "",
+  lot: "",
+  block: "",
+  tract: "",
+  mapBook: "",
+  page: "",
+  section: "",
+  township: "",
+  range: "",
+  shortLegal: "",
+  municipality: "City",
+  jurisdiction: "",
+  vestingText: "",
+  vestingType: "Community Property",
+  landUse: "Single Family Residential",
+};
+
+export const DEFAULT_FORM: FormData = {
+  search: {
+    type: "APN",
+    apnInput: "",
+    zipInput: "",
+    addrNum: "",
+    addrStr: "",
+    addrCity: "",
+    addrState: "CA",
+    addrZip: "",
+    ownerName: "",
+    propId: "",
+    fullAddr: "",
+    advCounty: "ORANGE",
+    advYear: "",
+    advBeds: "",
+  },
+  property: { ...EMPTY_FORM },
+  file: {
+    clientName: "",
+    clientFileNo: "",
+    transactionType: "Sale",
+    productType: "",
+    sourceOfBusiness: "",
+    loanNumber: "",
+  },
+  escrow: {
+    escrowNo: "",
+    escrowCompany: "",
+    titleOffice: "",
+    escrowOffice: "",
+    branch: "South Cal",
+    loanOfficer: "",
+    lender: "",
+  },
+  parties: {
+    buyers: [],
+    sellers: [],
+    bFirst: "",
+    bLast: "",
+    bMid: "",
+    bVest: "Community Property",
+    bPhone: "",
+    bEmail: "",
+    bAddr: "",
+    bCity: "",
+    bState: "CA",
+    bZip: "",
+    bEntity: "Individual",
+    sFirst: "",
+    sLast: "",
+    sMid: "",
+    sVest: "Community Property",
+    sPhone: "",
+    sEmail: "",
+    sAddr: "",
+    sDeedType: "Grant Deed",
+    sDocNo: "",
+  },
+};

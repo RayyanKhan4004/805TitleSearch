@@ -22,7 +22,16 @@ export const ordersApi = createApi({
       }),
       invalidatesTags: ["Orders"],
     }),
+
+    createOrder: builder.mutation<Order, Record<string, any>>({
+      query: (body) => ({
+        url: "/orders",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Orders"],
+    }),
   }),
 })
 
-export const { useFetchOrdersQuery, useUpdateOrderRushMutation } = ordersApi
+export const { useFetchOrdersQuery, useUpdateOrderRushMutation, useCreateOrderMutation } = ordersApi

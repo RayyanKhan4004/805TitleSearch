@@ -91,13 +91,6 @@ export default function StepDashboard({
     };
   }
 
-  const handleCreate = (orderData: Record<string, unknown>) => {
-    // TODO: Integrate with API to create order
-    console.log("Creating order:", orderData);
-    setShowModal(false);
-    // After API integration, refresh orders list
-  };
-
   return (
     <div className="flex flex-1 overflow-hidden">
       {/* Recent Worked Files - left panel */}
@@ -737,7 +730,6 @@ export default function StepDashboard({
       {showModal && (
         <CreateOrderModal
           onClose={() => setShowModal(false)}
-          onCreate={handleCreate}
         />
       )}
     </div>

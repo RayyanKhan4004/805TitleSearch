@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Icon from "@/components/common/icon";
 
 import { searchProperty, mapApiToForm } from "@/app/services/datatree-api";
+import { useCreateOrderMutation } from "@/app/store/api/ordersApi";
+import { buildCreatePayload } from "./create-order/mapper";
 import type {
   PropertyForm,
   PropertyData,
   CreateOrderStep,
-  Buyer,
-  Seller,
   FormData,
 } from "@/app/components/feature/tables/types";
+import type { PartiesState } from "./create-order/steps/step-parties";
 import { CREATE_STEPS, DEFAULT_FORM } from "../consts";
 import StepMethodSelection from "./create-order/steps/step-method-selection";
 import StepPropertySearch from "./create-order/steps/step-property-search";
@@ -21,19 +22,20 @@ import StepParties from "./create-order/steps/step-parties";
 
 interface CreateOrderModalProps {
   onClose: () => void;
-  onCreate: (orderData: Record<string, unknown>) => void;
 }
 
 type F = FormData;
 
 export default function CreateOrderModal({
   onClose,
-  onCreate,
 }: CreateOrderModalProps) {
   const [ms, setMs] = useState<CreateOrderStep>(-1);
   const [searching, setSearching] = useState(false);
   const [searchErr, setSearchErr] = useState("");
   const [apiResult, setApiResult] = useState<PropertyData | null>(null);
+
+  const [createOrder, { isLoading: creating }] = useCreateOrderMutation();
+  const partiesRef = useRef<PartiesState | null>(null);
 
   // data state  handling data 
   const [d, setD] = useState<FormData>(DEFAULT_FORM);
@@ -47,12 +49,6 @@ export default function CreateOrderModal({
   // Property sub-fields live deeper: d.property.addrNo = v
   const upProp = (k: keyof PropertyForm, v: string) =>
     setD((prev) => ({ ...prev, property: { ...prev.property, [k]: v } }));
-
-  // Parties arrays need their own helpers
-  const setBuyers = (buyers: Buyer[]) =>
-    setD((prev) => ({ ...prev, parties: { ...prev.parties, buyers } }));
-  const setSellers = (sellers: Seller[]) =>
-    setD((prev) => ({ ...prev, parties: { ...prev.parties, sellers } }));
 
   const handleSearch = async () => {
     setSearching(true);
@@ -125,14 +121,14 @@ export default function CreateOrderModal({
     }
   };
 
-  const handleCreate = () => {
-    onCreate({
-      property: d.property,
-      buyers: d.parties.buyers,
-      sellers: d.parties.sellers,
-      file: d.file,
-      escrow: d.escrow,
-    });
+  const handleCreate = async () => {
+    const payload = buildCreatePayload(d.property, d.file, d.escrow, partiesRef.current);
+    try {
+      await createOrder(payload).unwrap();
+      onClose();
+    } catch {
+      // Error handled by RTK Query
+    }
   };
 
   const stepIndicator = (n: number) => {
@@ -181,10 +177,6 @@ export default function CreateOrderModal({
   };
 
   const su = upd("search");
-  const fu = upd("file");
-  const eu = upd("escrow");
-  const pu = upd("parties");
-  const p = d.parties;
 
   return (
     <div className="fixed inset-0 bg-black/55 flex items-center justify-center z-[999] p-4">
@@ -278,64 +270,38 @@ export default function CreateOrderModal({
 
         {ms === 2 && (
           <StepFileInfo
-            clientName={d.file.clientName}
-            clientFileNo={d.file.clientFileNo}
-            transactionType={d.file.transactionType}
-            productType={d.file.productType}
-            sourceOfBusiness={d.file.sourceOfBusiness}
-            loanNumber={d.file.loanNumber}
+            form={d.file}
+            onChange={(field, value) => setD((prev) => ({ ...prev, file: { ...prev.file, [field]: value } }))}
             salePrice={d.property._lastSalePrice}
             loanAmount={d.property._mtgAmt}
-            onClientNameChange={(v) => fu("clientName", v)}
-            onClientFileNoChange={(v) => fu("clientFileNo", v)}
-            onTransactionTypeChange={(v) => fu("transactionType", v)}
-            onProductTypeChange={(v) => fu("productType", v)}
-            onSourceOfBusinessChange={(v) => fu("sourceOfBusiness", v)}
-            onLoanNumberChange={(v) => fu("loanNumber", v)}
           />
         )}
 
         {ms === 3 && (
           <StepParties
-            bFirst={p.bFirst} bLast={p.bLast} bMid={p.bMid} bEntity={p.bEntity} bVest={p.bVest}
-            bPhone={p.bPhone} bEmail={p.bEmail} bAddr={p.bAddr} bCity={p.bCity} bState={p.bState} bZip={p.bZip}
-            onBFirstChange={(v) => pu("bFirst", v)} onBLastChange={(v) => pu("bLast", v)}
-            onBMidChange={(v) => pu("bMid", v)} onBEntityChange={(v) => pu("bEntity", v)}
-            onBVestChange={(v) => pu("bVest", v)} onBPhoneChange={(v) => pu("bPhone", v)}
-            onBEmailChange={(v) => pu("bEmail", v)} onBAddrChange={(v) => pu("bAddr", v)}
-            onBCityChange={(v) => pu("bCity", v)} onBStateChange={(v) => pu("bState", v)}
-            onBZipChange={(v) => pu("bZip", v)}
-            buyerAdd={() => {
-              const name = [p.bFirst, p.bMid, p.bLast].filter(Boolean).join(" ") + ` (${p.bVest})`;
-              const buyer: Buyer = { id: Date.now(), name, first: p.bFirst, last: p.bLast, mid: p.bMid, vesting: p.bVest, entity: p.bEntity, phone: p.bPhone, email: p.bEmail, addr: p.bAddr, city: p.bCity, state: p.bState, zip: p.bZip };
-              setBuyers([...p.buyers, buyer]);
-              pu("bFirst", ""); pu("bLast", ""); pu("bMid", ""); pu("bPhone", ""); pu("bEmail", ""); pu("bAddr", ""); pu("bCity", ""); pu("bZip", "");
+            form={d.property}
+            defaultValue={{
+              ...d.parties,
+              titleOffice: d.escrow.titleOffice,
+              escrowOffice: d.escrow.escrowOffice,
+              branch: d.escrow.branch,
+              loanOfficer: d.escrow.loanOfficer,
+              lender: d.escrow.lender,
+            } as unknown as PartiesState}
+            onStateChange={(partyState) => {
+              partiesRef.current = partyState;
+              setD((prev) => ({
+                ...prev,
+                escrow: {
+                  ...prev.escrow,
+                  titleOffice: partyState.titleOffice,
+                  escrowOffice: partyState.escrowOffice,
+                  branch: partyState.branch,
+                  loanOfficer: partyState.loanOfficer,
+                  lender: partyState.lender,
+                },
+              }));
             }}
-            buyers={p.buyers}
-            onBuyerRemove={(id) => setBuyers(p.buyers.filter((x) => x.id !== id))}
-            sFirst={p.sFirst} sLast={p.sLast} sMid={p.sMid} sVest={p.sVest}
-            sDeedType={p.sDeedType} sPhone={p.sPhone} sEmail={p.sEmail} sAddr={p.sAddr} sDocNo={p.sDocNo}
-            onSFirstChange={(v) => pu("sFirst", v)} onSLastChange={(v) => pu("sLast", v)}
-            onSMidChange={(v) => pu("sMid", v)} onSVestChange={(v) => pu("sVest", v)}
-            onSDeedTypeChange={(v) => pu("sDeedType", v)} onSPhoneChange={(v) => pu("sPhone", v)}
-            onSEmailChange={(v) => pu("sEmail", v)} onSAddrChange={(v) => pu("sAddr", v)}
-            onSDocNoChange={(v) => pu("sDocNo", v)}
-            sellerAdd={() => {
-              const name = [p.sFirst, p.sMid, p.sLast].filter(Boolean).join(" ") + ` (${p.sVest})`;
-              const seller: Seller = { id: Date.now(), name, first: p.sFirst, last: p.sLast, mid: p.sMid, vesting: p.sVest, deedType: p.sDeedType, docNo: p.sDocNo, phone: p.sPhone, email: p.sEmail, addr: p.sAddr };
-              setSellers([...p.sellers, seller]);
-              pu("sFirst", ""); pu("sLast", ""); pu("sMid", ""); pu("sPhone", ""); pu("sEmail", ""); pu("sAddr", "");
-            }}
-            sellers={p.sellers}
-            onSellerRemove={(id) => setSellers(p.sellers.filter((x) => x.id !== id))}
-            sellerPrefill={d.property._seller || ""}
-            escrowNo={d.escrow.escrowNo} escrowCompany={d.escrow.escrowCompany}
-            titleOffice={d.escrow.titleOffice} escrowOffice={d.escrow.escrowOffice}
-            branch={d.escrow.branch} loanOfficer={d.escrow.loanOfficer} lender={d.escrow.lender}
-            onEscrowNoChange={(v) => eu("escrowNo", v)} onEscrowCompanyChange={(v) => eu("escrowCompany", v)}
-            onTitleOfficeChange={(v) => eu("titleOffice", v)} onEscrowOfficeChange={(v) => eu("escrowOffice", v)}
-            onBranchChange={(v) => eu("branch", v)} onLoanOfficerChange={(v) => eu("loanOfficer", v)}
-            onLenderChange={(v) => eu("lender", v)}
           />
         )}
 

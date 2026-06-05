@@ -5,6 +5,7 @@ import type {
   DocItem,
   NoteItem,
   SharedState,
+  AssessorData,
 } from "@/app/components/feature/tables/types";
 
 export interface CatxCode {
@@ -725,57 +726,6 @@ export const UPLOAD_CATS: UploadCat[] = [
     ],
   },
 ];
-
-export interface AssessorData {
-  reportDate: string;
-  countyDataAsOf: string;
-  streetAddress: string;
-  city: string;
-  state: string;
-  zip: string;
-  apn: string;
-  county: string;
-  ownerName: string;
-  owner1: string;
-  owner2: string;
-  vesting: string;
-  occupancy: string;
-  mailingAddress: string;
-  legalDescription: string;
-  munic: string;
-  tractNumber: string;
-  legalLot: string;
-  legalBlock: string;
-  mapRef: string;
-  characteristics: {
-    livingArea: number;
-    bedrooms: number;
-    fullBath: number;
-    halfBath: number;
-    yearBuilt: string;
-    stories: number;
-    parkingType: string;
-    garageArea: number;
-    pool: string;
-  };
-  site: {
-    landUse: string;
-    countyUse: string;
-    acres: number | null;
-    lotArea: number | null;
-    floodZoneCode: string;
-    floodMap: string;
-  };
-  tax: {
-    assessedYear: number;
-    taxYear: number;
-    taxArea: string;
-    propertyTax: number;
-    assessedValue: number;
-    landValue: number;
-    improvementValue: number;
-  };
-}
 
 export const ASSESSOR_DATA_SAMPLE: AssessorData = {
   reportDate: "06/02/2026",

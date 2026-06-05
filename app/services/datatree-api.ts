@@ -1,4 +1,4 @@
-import type { PropertyData, PropertyForm, SearchType, IndexRow } from "@/app/components/feature/tables/types";
+import type { PropertyData, PropertyForm, SearchType, IndexRow, AssessorData } from "@/app/components/feature/tables/types";
 
 const MOCK_RESPONSES: Record<string, PropertyData> = {
   "808-631-06": {
@@ -138,9 +138,9 @@ export function mapApiToForm(data: PropertyData): PropertyForm {
     shortLegal: l.LegalDescription || "",
     municipality: "City",
     jurisdiction: s.City || "",
-    vestingText: o.Owner1FullName || "",
+    vestingText: o.Owner1FullName || o.OwnerNames || "",
     vestingType:
-      o.Owner1FullName && o.Owner1FullName.toUpperCase().includes("TR")
+      String(o.Owner1FullName || o.OwnerNames || "").toUpperCase().includes("TR")
         ? "Trust"
         : "Community Property",
     landUse: lu,
@@ -279,4 +279,85 @@ export function mapApiChainToIndexRows(chain: unknown): IndexRow[] {
     parentInstr: item.ParentInstr || item.parentInstr || null,
     type: item.Type || item.type || "",
   }));
+}
+
+function extractNum(v: unknown): number {
+  if (v == null) return 0;
+  if (typeof v === "number") return v;
+  const n = parseFloat(String(v).replace(/[^0-9.-]/g, ""));
+  return isNaN(n) ? 0 : n;
+}
+
+export function mapRawToAssessorData(raw: Record<string, any>): AssessorData {
+  const now = () => new Date().toLocaleDateString("en-US");
+  const o = raw.OwnerInformation || {};
+  const l = raw.LocationInformation || {};
+  const si = raw.SiteInformation || {};
+  const pc = raw.PropertyCharacteristics || {};
+  const ti = raw.TaxInformation || {};
+  const subject = raw.SubjectProperty || {};
+  const situs = subject.SitusAddress || {};
+  const parsed = subject.ParsedStreetAddress || {};
+
+  const street = [
+    parsed.StandardizedHouseNumber || parsed.StandardizedHouseNumberString || "",
+    parsed.DirectionPrefix || "",
+    parsed.StreetName || situs.StreetAddress || "",
+    parsed.StreetSuffix || "",
+  ].filter(Boolean).join(" ");
+
+  return {
+    reportDate: now(),
+    countyDataAsOf: now(),
+    streetAddress: street,
+    city: situs.City || "",
+    state: situs.State || "CA",
+    zip: (situs.Zip9 || "").split("-")[0],
+    apn: situs.APN || l.APN || "",
+    county: situs.County || "",
+    ownerName: o.Owner1FullName || o.OwnerNames || "",
+    owner1: o.Owner1FullName || o.OwnerNames || "",
+    owner2: o.Owner2FullName || o.OwnerVestingInfo?.VestingOwner || "",
+    vesting: o.OwnerVestingInfo?.VestingOwnershipRight || "",
+    occupancy: o.Occupancy || "",
+    mailingAddress: (() => {
+      const ma = o.MailingAddress;
+      if (!ma || typeof ma !== "object") return ma || "";
+      return [ma.StreetAddress, ma.City, ma.State, ma.Zip9].filter(Boolean).join(", ");
+    })(),
+    legalDescription: l.LegalDescription || "",
+    munic: l.Munic || "",
+    tractNumber: l.TractNumber || "",
+    legalLot: l.LegalLot || "",
+    legalBlock: l.LegalBlock || "",
+    mapRef: l.MapReference || "",
+    characteristics: {
+      livingArea: extractNum(pc.LivingArea),
+      bedrooms: extractNum(pc.Bedrooms),
+      fullBath: extractNum(pc.FullBath),
+      halfBath: extractNum(pc.HalfBath),
+      yearBuilt: pc.YearBuilt || "",
+      stories: extractNum(pc.Stories ?? pc.TotalStories),
+      parkingType: pc.ParkingType || "",
+      garageArea: extractNum(pc.GarageCapacity),
+      pool: pc.Pool || "",
+    },
+    site: {
+      landUse: si.LandUse || "",
+      countyUse: si.CountyUse || "",
+      acres: si.Acres ?? null,
+      lotArea: si.LotArea ?? null,
+      floodZoneCode: si.FloodZoneCode || "",
+      floodMap: si.FloodMap || "",
+    },
+    tax: {
+      assessedYear: ti.TaxYear || 0,
+      taxYear: ti.TaxYear || 0,
+      taxArea: ti.TaxArea || "",
+      propertyTax: extractNum(ti.PropertyTax),
+      assessedValue: extractNum(ti.AssessedValue),
+      landValue: extractNum(ti.LandValue),
+      improvementValue: extractNum(ti.ImprovementValue),
+    },
+  };
 }

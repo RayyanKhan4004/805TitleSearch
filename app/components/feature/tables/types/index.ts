@@ -43,13 +43,21 @@ export interface PropertyData {
     ApartmentOrUnit?: string | null;
   };
   OwnerInformation?: {
-    Owner1FullName?: string;
+    OwnerNames?: string;
+    Owner1FullName?: string | null;
+    Owner2FullName?: string | null;
     OwnerVestingInfo?: {
       VestingOwner?: string;
       VestingOwnershipRight?: string;
       VestingEtal?: string;
     };
     Occupancy?: string;
+    MailingAddress?: {
+      StreetAddress?: string;
+      City?: string;
+      State?: string;
+      Zip9?: string;
+    };
   };
   LocationInformation?: {
     LegalDescription?: string;
@@ -387,4 +395,55 @@ export interface IconProps {
   size?: number;
   style?: React.CSSProperties;
   className?: string;
+}
+
+export interface AssessorData {
+  reportDate: string;
+  countyDataAsOf: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zip: string;
+  apn: string;
+  county: string;
+  ownerName: string;
+  owner1: string;
+  owner2: string;
+  vesting: string;
+  occupancy: string;
+  mailingAddress: string;
+  legalDescription: string;
+  munic: string;
+  tractNumber: string;
+  legalLot: string;
+  legalBlock: string;
+  mapRef: string;
+  characteristics: {
+    livingArea: number;
+    bedrooms: number;
+    fullBath: number;
+    halfBath: number;
+    yearBuilt: string;
+    stories: number;
+    parkingType: string;
+    garageArea: number;
+    pool: string;
+  };
+  site: {
+    landUse: string;
+    countyUse: string;
+    acres: number | null;
+    lotArea: number | null;
+    floodZoneCode: string;
+    floodMap: string;
+  };
+  tax: {
+    assessedYear: number;
+    taxYear: number;
+    taxArea: string;
+    propertyTax: number;
+    assessedValue: number;
+    landValue: number;
+    improvementValue: number;
+  };
 }

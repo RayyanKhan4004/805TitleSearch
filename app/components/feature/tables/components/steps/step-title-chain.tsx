@@ -36,8 +36,9 @@ export default function StepTitleChain({
   isLoading,
   onSaveClose,
 }: StepTitleChainProps) {
-
-  const apiChainRows = reportRaw?.Transactions ? mapTransactionsToIndexRows(reportRaw.Transactions) : [];
+  const apiChainRows = reportRaw?.Transactions
+    ? mapTransactionsToIndexRows(reportRaw.Transactions)
+    : [];
   const [showSearch, setShowSearch] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [typeDate, setTypeDate] = useState("");
@@ -55,7 +56,11 @@ export default function StepTitleChain({
   return (
     <div className="flex flex-col gap-4">
       {/* ── Legal & Vesting — slide-down panel ── */}
-      <LegalVestingDrawer shared={shared} setShared={setShared} isLoading={isLoading} />
+      <LegalVestingDrawer
+        shared={shared}
+        setShared={setShared}
+        isLoading={isLoading}
+      />
 
       {/* ── Type Date & Effective Date ── */}
       <div className="bg-white border border-border rounded-xl overflow-hidden">
@@ -93,8 +98,12 @@ export default function StepTitleChain({
               onChange={(e) => setEffectiveDate(e.target.value)}
               className="w-full border rounded-lg px-2.5 py-2 text-[12px] text-ui-code outline-none"
               style={{
-                borderColor: effectiveDate ? "var(--status-error-bg)" : "#d1d5db",
-                background: effectiveDate ? "var(--brand-primary-subtle)" : "#fff",
+                borderColor: effectiveDate
+                  ? "var(--status-error-bg)"
+                  : "#d1d5db",
+                background: effectiveDate
+                  ? "var(--brand-primary-subtle)"
+                  : "#fff",
               }}
             />
             {effectiveDate && (
@@ -148,7 +157,14 @@ export default function StepTitleChain({
 
         {INDEX_SECTIONS.map((sec) => {
           if (sec.title === "Assessor Page")
-            return <AssessorCard key="Assessor Page" data={propertyForm} isLoading={isLoading} />;
+            return (
+              <AssessorCard
+                key="Assessor Page"
+                data={propertyForm}
+                dataRaw={reportRaw}
+                isLoading={isLoading}
+              />
+            );
           if (sec.title === "Tax Cert")
             return (
               <TaxCertCard
@@ -194,7 +210,11 @@ export default function StepTitleChain({
               title={sec.title}
               sub={sec.sub}
               accent={sec.accent}
-              initRows={isTitleChain && apiChainRows.length > 0 ? apiChainRows : sec.rows}
+              initRows={
+                isTitleChain && apiChainRows.length > 0
+                  ? apiChainRows
+                  : sec.rows
+              }
               allowAddRow={isTitleChain}
               showCode={sec.title === "Tract Map"}
             />
@@ -233,6 +253,13 @@ export default function StepTitleChain({
           <Icon name="save" size={12} />
           Save &amp; Close
         </button>
+        <Button
+          className="inline-flex items-center gap-1.25 bg-header text-white border-none rounded-lg px-4 py-1.75 text-[12px] font-semibold cursor-pointer"
+          size="md"
+          style={{ background: "#8B0000" }}
+        >
+          Create TSR
+        </Button>
       </div>
 
       {showSearch && <ManualSearchModal onClose={() => setShowSearch(false)} />}

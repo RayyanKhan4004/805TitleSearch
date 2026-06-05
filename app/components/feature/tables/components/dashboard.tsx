@@ -466,9 +466,9 @@ export default function Dashboard() {
                 <Icon name="save" size={11} />
                 Save Draft
               </Button>
-              <Button size="sm" style={{ background: "#8B0000" }}>
+              {/* <Button size="sm" style={{ background: "#8B0000" }}>
                 Create TSR
-              </Button>
+              </Button> */}
             </div>
 
             {/* work-step tabs */}
@@ -596,49 +596,7 @@ export default function Dashboard() {
               </div>
 
               {/* prev / next bar */}
-              <div className="bg-white border-t border-[#e2e8f0] px-5 py-2.5 flex items-center justify-between shrink-0">
-                <Button
-                  variant="secondary"
-                  onClick={() => setStep((s) => Math.max(1, s - 1))}
-                  disabled={step === 1}
-                  className={step === 1 ? "opacity-40 cursor-not-allowed" : ""}
-                >
-                  <Icon name="arrowLeft" size={12} />
-                  Previous Step
-                </Button>
-                <div className="flex items-center gap-1.25">
-                  {WORK_STEPS.map((_, i) => (
-                    <div
-                      key={i}
-                      onClick={() => setStep(i + 1)}
-                      className="cursor-pointer h-1.75 rounded-full transition-all duration-200"
-                      style={{
-                        width: i + 1 === step ? 18 : 7,
-                        background:
-                          i + 1 === step
-                            ? "#8B0000"
-                            : i + 1 < step
-                              ? "#34d399"
-                              : "#e2e8f0",
-                      }}
-                    />
-                  ))}
-                </div>
-                {step < WORK_STEPS.length ? (
-                  <Button
-                    onClick={() => setStep((s) => s + 1)}
-                    style={{ background: "#8B0000" }}
-                  >
-                    Next Step
-                    <Icon name="arrowRight" size={12} />
-                  </Button>
-                ) : (
-                  <Button onClick={() => {}} style={{ background: "#059669" }}>
-                    <Icon name="checkCircle" size={12} />
-                    Submit Order
-                  </Button>
-                )}
-              </div>
+          
             </div>
           </>
         )}

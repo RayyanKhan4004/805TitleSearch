@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, Fragment, type ReactNode } from "react";
+import { useState, useRef, useEffect, Fragment, type ReactNode } from "react";
 import Icon from "@/components/common/icon";
 import { Card, CardTitle, CardDescription } from "@/components/ui";
 import IndexRow from "./index-row";
@@ -33,6 +33,13 @@ export default function IndexCard({
     initRows.map((r, i) => ({ ...r, _id: String(i), parentInstr: r.parentInstr || null }))
   );
   const nextId = useRef(initRows.length);
+
+  useEffect(() => {
+    if (initRows.length > 0) {
+      setRows(initRows.map((r, i) => ({ ...r, _id: String(i), parentInstr: r.parentInstr || null })));
+      nextId.current = initRows.length;
+    }
+  }, [initRows]);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [codeOpen, setCodeOpen] = useState(false);
   const [codeInput, setCodeInput] = useState("");

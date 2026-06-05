@@ -6,7 +6,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/auth-context";
 import { useGetReportQuery } from "@/app/store/api/propertyReportApi";
+import { useFetchOrdersQuery, useUpdateOrderRushMutation } from "@/app/store/api/ordersApi";
 import { mapApiToForm } from "@/app/services/datatree-api";
+import { mapOrdersResponse } from "./models/api-mappers";
 import toast from "react-hot-toast";
 import type { PropertyForm } from "@/app/components/feature/tables/types";
 import {
@@ -48,6 +50,10 @@ export default function Dashboard() {
   const { logout, user } = useAuth();
   const router = useRouter();
   const currentUserName = user ? `${user.firstName} ${user.lastName}` : "Unknown";
+
+  const { data: ordersData, isLoading: isLoadingOrders } = useFetchOrdersQuery();
+  const [updateOrderRush] = useUpdateOrderRushMutation();
+
   const [reportParams, setReportParams] = useState<{
     searchType: string; apn: string; zipCode: string;
   } | null>(null);
@@ -202,8 +208,8 @@ export default function Dashboard() {
     setPropertyForm(null);
     setReportParams({
       searchType: "APN",
-      apn: "689-0-360-315",
-      zipCode: "91362",
+      apn: order.apn1 || order.apn || "",
+      zipCode: order.zipCode || "",
     });
   };
 
@@ -372,11 +378,19 @@ export default function Dashboard() {
             </div>
             {/* full-bleed dashboard */}
             <div className="flex-1 overflow-hidden flex flex-col">
-              <StepDashboard
-                onSelect={handleSelectOrder}
-                getOrderStatus={getOrderStatus}
-                getLock={getLock}
-              />
+              {isLoadingOrders ? (
+                <div className="flex items-center justify-center flex-1">
+                  <Spinner className="text-brand" />
+                </div>
+              ) : (
+                <StepDashboard
+                  orders={ordersData ? mapOrdersResponse(ordersData) : []}
+                  onSelect={handleSelectOrder}
+                  getOrderStatus={getOrderStatus}
+                  getLock={getLock}
+                  onRushToggle={(no) => updateOrderRush({ no, rush: true })}
+                />
+              )}
             </div>
           </>
         )}

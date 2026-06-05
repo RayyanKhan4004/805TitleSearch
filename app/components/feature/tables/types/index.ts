@@ -9,6 +9,22 @@ export interface Order {
   status: "Open" | "In Review" | "Closed" | "Cancelled";
   rush?: boolean;
   date: string;
+  apn1?: string;
+  zipCode?: string;
+  streetName?: string;
+  city?: string;
+  state?: string;
+  clientName?: string;
+  transactionType?: string;
+  sourceOfBusiness?: string;
+  loanAmount?: string;
+  loanNumber?: string;
+  titleOffice?: string;
+  escrowOffice?: string;
+  titleBranchReview?: string;
+  loanOfficer?: string;
+  lenderBank?: string;
+  id?: number;
 }
 
 export interface RecentFile {

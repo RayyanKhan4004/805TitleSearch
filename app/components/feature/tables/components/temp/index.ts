@@ -1,6 +1,4 @@
 import type {
-  Order,
-  RecentFile,
   IndexRow,
   DocItem,
   NoteItem,
@@ -13,98 +11,6 @@ export interface CatxCode {
   label: string;
   verbiage: string;
 }
-
-export const ORDERS: Order[] = [
-  {
-    no: "26050012",
-    apn: "123-456-78",
-    addr: "123 Main St",
-    owner: "Michael Smith",
-    county: "Los Angeles",
-    fileNo: "ESC-2026-4412",
-    productType: "CLTA Owner",
-    status: "Open",
-    rush: true,
-    date: "06/02/2026",
-  },
-  {
-    no: "26050018",
-    apn: "458-888-12",
-    addr: "458 Oak Ave",
-    owner: "John Doe",
-    county: "Riverside",
-    fileNo: "ESC-2026-3391",
-    productType: "ALTA Lender",
-    status: "Closed",
-    date: "05/28/2026",
-  },
-  {
-    no: "26050019",
-    apn: "789-444-98",
-    addr: "88 Sunset Blvd",
-    owner: "James Parker",
-    county: "San Diego",
-    fileNo: "ESC-2026-2204",
-    productType: "CLTA Owner",
-    status: "Cancelled",
-    date: "05/15/2026",
-  },
-  {
-    no: "26050023",
-    apn: "321-111-55",
-    addr: "44 Palm Drive",
-    owner: "Sara Lee",
-    county: "Orange",
-    fileNo: "ESC-2026-5519",
-    productType: "ALTA Homeowners",
-    status: "Open",
-    rush: true,
-    date: "06/04/2026",
-  },
-  {
-    no: "26050027",
-    apn: "654-222-33",
-    addr: "99 Harbor Blvd",
-    owner: "Tom Brown",
-    county: "Ventura",
-    fileNo: "ESC-2026-6630",
-    productType: "CLTA/ALTA",
-    status: "Open",
-    date: "06/01/2026",
-  },
-  {
-    no: "26050031",
-    apn: "987-333-77",
-    addr: "55 Willow Lane",
-    owner: "Amy Chang",
-    county: "San Bernardino",
-    fileNo: "ESC-2026-7741",
-    productType: "ALTA Lender",
-    status: "Open",
-    date: "05/30/2026",
-  },
-];
-
-export const RECENT_FILES: RecentFile[] = [
-  {
-    no: "#26050012",
-    addr: "123 Main Street, Los Angeles",
-    owner: "Michael Smith",
-    status: "Open",
-  },
-  {
-    no: "#26050018",
-    addr: "458 Oak Ave, Riverside",
-    owner: "John Doe",
-    status: "Closed",
-  },
-  {
-    no: "#26050019",
-    addr: "88 Sunset Blvd, San Diego",
-    owner: "James Parker",
-    status: "Cancelled",
-  },
-];
 
 // export const TC_ROWS: IndexRow[] = [
 //   { rec: "06/12/2019", abbr: "QCD", entity: "XFER", docTitle: "Quitclaim Deed", instr: "2019-0098234", book: "", pg: "", grantor: "ESTATE OF HELEN SMITH", grantee: "MICHAEL SMITH" },

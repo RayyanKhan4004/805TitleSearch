@@ -3,24 +3,28 @@
 import Icon from "@/components/common/icon";
 import { statusStyle } from "../shared-atoms";
 import { useState } from "react";
-import { ORDERS, RECENT_FILES } from "../temp";
 import { CreateOrderModal } from "../models";
 import type { Order, OrderLock } from "@/app/components/feature/tables/types";
 
 interface StepDashboardProps {
+  orders: Order[];
   onSelect?: (order: Order) => void;
   getOrderStatus?: (no: string) => string;
   getLock?: (no: string) => OrderLock | null;
+  onRushToggle?: (no: string) => void;
+  onStatusChange?: (no: string, status: Order["status"]) => void;
 }
 
 export default function StepDashboard({
+  orders,
   onSelect: _onSelect,
   getOrderStatus,
   getLock,
+  onRushToggle,
+  onStatusChange,
 }: StepDashboardProps) {
   const [showModal, setShowModal] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
-  const [orders, setOrders] = useState<Order[]>(ORDERS);
   const [showFunnel, setShowFunnel] = useState(false);
   const [expandedSection, setExpandedSection] = useState<"status" | "country" | null>(null);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -65,11 +69,11 @@ export default function StepDashboard({
   });
 
   const toggleRush = (no: string) => {
-    setOrders((prev) => prev.map((o) => (o.no === no ? { ...o, rush: !o.rush } : o)));
+    onRushToggle?.(no);
   };
 
   const handleStatusChange = (no: string, status: Order["status"]) => {
-    setOrders((prev) => prev.map((o) => (o.no === no ? { ...o, status } : o)));
+    onStatusChange?.(no, status);
   };
 
   function statusToColor(s: string) {
@@ -99,22 +103,10 @@ export default function StepDashboard({
           <Icon name="file" size={13} className="text-brand" />
           Recent Worked Files
         </div>
-        {RECENT_FILES.map((f) => (
+        {orders.slice(0, 3).map((f) => (
           <div
             key={f.no}
-            onClick={() =>
-              onSelect({
-                no: f.no.replace("#", ""),
-                apn: "—",
-                addr: f.addr,
-                owner: f.owner,
-                county: "—",
-                fileNo: "—",
-                productType: "—",
-                status: f.status as Order["status"],
-                date: "—",
-              })
-            }
+            onClick={() => onSelect(f)}
             className="border border-border rounded-lg p-[11px] mb-2 cursor-pointer transition-all duration-150 hover:bg-[#fff5f5] hover:border-brand"
           >
             <div className="flex justify-between items-center mb-1">
@@ -122,11 +114,11 @@ export default function StepDashboard({
               <div className="flex items-center gap-1.25">
                 <span
                   className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                  style={statusToColor(orderStatus(f.no.replace("#", "")))}
+                  style={statusToColor(orderStatus(f.no))}
                 >
-                  {orderStatus(f.no.replace("#", ""))}
+                  {orderStatus(f.no)}
                 </span>
-                {orderLock(f.no.replace("#", "")) && (
+                {orderLock(f.no) && (
                   <svg
                     width="10"
                     height="10"
@@ -137,7 +129,7 @@ export default function StepDashboard({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <title>{`Locked by ${orderLock(f.no.replace("#", ""))?.user}`}</title>
+                    <title>{`Locked by ${orderLock(f.no)?.user}`}</title>
                     <rect x="3" y="11" width="18" height="11" rx="2" />
                     <path d="M7 11V7a5 5 0 0110 0v4" />
                   </svg>
@@ -147,7 +139,7 @@ export default function StepDashboard({
             <div className="text-[11px] text-text-secondary mb-0.5">
               {f.addr}
             </div>
-            <div className="text-[10px] text-text-muted">{f.owner}</div>
+            <div className="text-[10px] text-text-muted">{f.owner || f.clientName}</div>
             <div className="mt-1.5 text-[10px] text-brand font-semibold flex items-center gap-0.75">
               Open file <Icon name="arrowRight" size={10} />
             </div>

@@ -3,9 +3,10 @@
 import { useState, useRef } from "react";
 import Icon from "@/components/common/icon";
 
-import { searchProperty, mapApiToForm } from "@/app/services/datatree-api";
 import { useCreateOrderMutation } from "@/app/store/api/ordersApi";
+import { useSearchReportMutation } from "@/app/store/api/propertyReportApi";
 import { buildCreatePayload } from "./create-order/mapper";
+import { mapReportToForm, buildApiResult } from "./create-order/property-mapper";
 import type {
   PropertyForm,
   PropertyData,
@@ -30,11 +31,11 @@ export default function CreateOrderModal({
   onClose,
 }: CreateOrderModalProps) {
   const [ms, setMs] = useState<CreateOrderStep>(-1);
-  const [searching, setSearching] = useState(false);
   const [searchErr, setSearchErr] = useState("");
   const [apiResult, setApiResult] = useState<PropertyData | null>(null);
 
   const [createOrder, { isLoading: creating }] = useCreateOrderMutation();
+  const [searchReport, { isLoading: searching }] = useSearchReportMutation();
   const partiesRef = useRef<PartiesState | null>(null);
 
   // data state  handling data 
@@ -51,73 +52,51 @@ export default function CreateOrderModal({
     setD((prev) => ({ ...prev, property: { ...prev.property, [k]: v } }));
 
   const handleSearch = async () => {
-    setSearching(true);
     setSearchErr("");
     setApiResult(null);
     try {
       const s = d.search;
-      let params: Record<string, unknown> = {};
-      if (s.type === "APN")
-        params = { ApnDetail: { APN: s.apnInput, ZipCode: s.zipInput } };
-      if (s.type === "Address")
-        params = {
-          AddressDetail: {
-            HouseNumber: s.addrNum,
-            StreetName: s.addrStr,
-            City: s.addrCity,
-            State: s.addrState,
-            Zip: s.addrZip,
-          },
+      let body: Record<string, string> = {};
+      if (s.type === "APN") {
+        body = { searchType: "APN", apn: s.apnInput, zipCode: s.zipInput };
+      } else if (s.type === "Address") {
+        body = {
+          searchType: "Address",
+          houseNumber: s.addrNum,
+          streetName: s.addrStr,
+          city: s.addrCity,
+          state: s.addrState,
+          zip: s.addrZip,
         };
-      if (s.type === "FullAddress")
-        params = { FullAddressDetail: { FullAddress: s.fullAddr } };
-      if (s.type === "OwnerName")
-        params = {
-          OwnerNameDetail: { OwnerName: s.ownerName, State: s.addrState },
-        };
-      if (s.type === "PropertyId")
-        params = { PropertyIdDetail: { PropertyId: s.propId } };
-      if (s.type === "Advanced")
-        params = {
-          AdvancedDetail: {
-            County: s.advCounty,
-            YearBuilt: s.advYear,
-            Bedrooms: s.advBeds,
-            State: "CA",
-          },
-        };
-      const data = await searchProperty(s.type, params as never);
-      if (!data) {
+      } else if (s.type === "OwnerName") {
+        body = { searchType: "OwnerName", ownerName: s.ownerName, state: s.addrState };
+      } else {
+        setSearchErr("Unsupported search type: " + s.type);
+        return;
+      }
+      const res = await searchReport(body as never).unwrap();
+      if (!res.found) {
         setSearchErr("No property found. Please check your search criteria.");
       } else {
-        setApiResult(data);
+        const propForm = mapReportToForm(res.form);
+        setApiResult(buildApiResult(res));
         setD((prev) => ({
           ...prev,
-          property: mapApiToForm(data),
+          property: propForm,
           parties: {
             ...prev.parties,
-            sFirst:
-              (data.OwnerTransferInformation?.SellerName || "").split(" ")[0] ||
-              "",
-            sLast:
-              (data.OwnerTransferInformation?.SellerName || "")
-                .split(" ")
-                .slice(1)
-                .join(" ") || "",
-            sDocNo: data.OwnerTransferInformation?.TransferDocumentNumber || "",
-            sDeedType: data.OwnerTransferInformation?.DeedType || "Grant Deed",
+            sFirst: (res.raw?.OwnerInformation?.OwnerNames || "").split(" ")[0] || "",
+            sLast: (res.raw?.OwnerInformation?.OwnerNames || "").split(" ").slice(1).join(" ") || "",
           },
           escrow: {
             ...prev.escrow,
-            lender: data.LastMarketSaleInformation?.Lender || "",
+            lender: "",
           },
         }));
         setMs(1);
       }
     } catch (e) {
       setSearchErr("Search failed: " + (e as Error).message);
-    } finally {
-      setSearching(false);
     }
   };
 
@@ -179,7 +158,7 @@ export default function CreateOrderModal({
   const su = upd("search");
 
   return (
-    <div className="fixed inset-0 bg-black/55 flex items-center justify-center z-[999] p-4">
+    <div className="fixed inset-0 bg-black/55 flex items-center justify-center z-999 p-4">
       <div
         className="bg-white w-full rounded-[18px] overflow-hidden shadow-2xl flex flex-col max-h-[94vh] transition-[max-width] duration-300"
         style={{ maxWidth: ms === -1 ? 600 : ms === 0 ? 660 : 1100 }}
@@ -329,7 +308,7 @@ export default function CreateOrderModal({
             {[-1, 0, 1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-[5px] rounded-full transition-all duration-200"
+                className="h-1.25 rounded-full transition-all duration-200"
                 style={{
                   width: i === ms ? 18 : 5,
                   background:

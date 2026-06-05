@@ -5,11 +5,17 @@ import { baseQueryWithAuth } from "../baseQuery"
 
 interface GetReportBody {
   searchType: string
-  apn: string
-  zipCode: string
+  apn?: string
+  zipCode?: string
+  houseNumber?: string
+  streetName?: string
+  city?: string
+  state?: string
+  zip?: string
+  ownerName?: string
 }
 
-interface ReportResponse {
+export interface ReportResponse {
   found: boolean
   source: string
   propertyId: number
@@ -20,8 +26,17 @@ interface ReportResponse {
 export const propertyReportApi = createApi({
   reducerPath: "propertyReportApi",
   baseQuery: baseQueryWithAuth,
+  tagTypes: ["Report"],
   endpoints: (builder) => ({
     getReport: builder.query<ReportResponse, GetReportBody>({
+      query: (body) => ({
+        url: "/get-report",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    searchReport: builder.mutation<ReportResponse, GetReportBody>({
       query: (body) => ({
         url: "/get-report",
         method: "POST",
@@ -31,4 +46,4 @@ export const propertyReportApi = createApi({
   }),
 })
 
-export const { useGetReportQuery } = propertyReportApi
+export const { useGetReportQuery, useSearchReportMutation } = propertyReportApi

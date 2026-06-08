@@ -2,16 +2,26 @@
 
 import { createApi } from "@reduxjs/toolkit/query/react"
 import { baseQueryWithAuth } from "../baseQuery"
-import type { Order } from "@/app/components/feature/tables/types"
+import type { Order, PaginatedOrdersResponse } from "@/app/components/feature/tables/types"
 
 export const ordersApi = createApi({
   reducerPath: "ordersApi",
   baseQuery: baseQueryWithAuth,
   tagTypes: ["Orders"],
   endpoints: (builder) => ({
-    fetchOrders: builder.query<Order[], void>({
-      query: () => ({ url: "/orders", method: "GET" }),
+    fetchOrders: builder.query<PaginatedOrdersResponse, { page?: number; pageSize?: number }>({
+      query: ({ page = 1, pageSize = 50 } = {}) => ({
+        url: "/orders",
+        method: "GET",
+        params: { page, pageSize },
+      }),
       providesTags: ["Orders"],
+      transformResponse: (response: Order[] | PaginatedOrdersResponse) => {
+        if (Array.isArray(response)) {
+          return { data: response, total: response.length, page: 1, pageSize: response.length, totalPages: 1 };
+        }
+        return response;
+      },
     }),
 
     updateOrderRush: builder.mutation<Order, { no: string; rush: boolean }>({

@@ -3,7 +3,6 @@
 import Icon from "@/components/common/icon";
 import { Button, Spinner } from "@/components/ui";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/auth-context";
 import { useGetReportQuery } from "@/app/store/api/propertyReportApi";
 import { useFetchOrdersQuery, useUpdateOrderRushMutation } from "@/app/store/api/ordersApi";
@@ -18,7 +17,8 @@ import {
   StepDocuments,
   StepReview,
 } from "./steps";
-import { NAV_ICONS } from "./consts";
+import Sidebar from "@/components/common/sidebar";
+import Navbar from "@/components/common/navbar";
 import { PrelimPreviewModal } from "./models";
 import { DEFAULT_SHARED_STATE } from "./temp";
 import type { Order, OrderLock } from "@/app/components/feature/tables/types";
@@ -47,11 +47,10 @@ function flattenReportRaw(raw: Record<string, any>) {
 }
 
 export default function Dashboard() {
-  const { logout, user } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   const currentUserName = user ? `${user.firstName} ${user.lastName}` : "Unknown";
 
-  const { data: ordersData, isLoading: isLoadingOrders } = useFetchOrdersQuery();
+  const { data: ordersData, isLoading: isLoadingOrders } = useFetchOrdersQuery({ page: 1, pageSize: 500 });
   const [updateOrderRush] = useUpdateOrderRushMutation();
 
   const [reportParams, setReportParams] = useState<{
@@ -230,135 +229,11 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f1f5f9]">
-      {/* ── Sidebar ── */}
-      <aside
-        className="w-[52px] shrink-0 bg-[#1e2130] flex flex-col items-center py-3 px-1.5 gap-1 z-20"
-        style={{ boxShadow: "2px 0 12px rgba(0,0,0,.18)" }}
-      >
-        <div className="w-9 h-9 bg-[#8B0000] rounded-[10px] flex items-center justify-center mb-2.5">
-          <Icon name="building" size={17} className="text-white" />
-        </div>
-        {NAV_ICONS.map(({ name, label, active }) => (
-          <div
-            key={name}
-            title={label}
-            className="w-9 h-9 rounded-lg flex items-center justify-center cursor-pointer transition-[background] duration-150"
-            style={{
-              background: active ? "#8B0000" : "transparent",
-              color: active ? "#fff" : "#94a3b8",
-            }}
-            onMouseEnter={(e) => {
-              if (!active) {
-                e.currentTarget.style.background = "#2d3348";
-                e.currentTarget.style.color = "#fff";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!active) {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "#94a3b8";
-              }
-            }}
-          >
-            <Icon name={name} size={16} />
-          </div>
-        ))}
-        <div className="flex-1" />
-        <Icon
-          name="help"
-          size={16}
-          className="text-[#64748b] cursor-pointer mb-1.5"
-        />
-        <div
-          onClick={() => router.push("/profile")}
-          className="w-7 h-7 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold cursor-pointer"
-        >
-          {user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : "U"}
-        </div>
-      </aside>
+    <div className="flex h-screen overflow-hidden bg-bg-page">
+      <Sidebar />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* ── Header ── */}
-        <header
-          className="bg-[#1e2130] flex items-center gap-2.5 px-4 h-[42px] shrink-0 z-10"
-          style={{ boxShadow: "0 2px 8px rgba(0,0,0,.2)" }}
-        >
-          <div className="flex items-center gap-1.5 mr-2">
-            <Icon name="building" size={15} style={{ color: "#f87171" }} />
-            <div>
-              <div className="text-white text-[12px] font-extrabold tracking-wide">
-                805Title
-              </div>
-              <div className="text-[#f87171] text-[8px] tracking-[0.18em] font-bold">
-                SEARCH
-              </div>
-            </div>
-          </div>
-          {[
-            "Dashboard",
-            "Orders",
-            "Search",
-            "Title Chain",
-            "Documents",
-            "Tasks",
-            "Reports",
-            "Admin",
-          ].map((item) => (
-            <button
-              key={item}
-              onClick={item === "Dashboard" ? handleCloseOrder : undefined}
-              className={`border-none text-[11px] font-medium px-2 py-1 rounded-[5px] cursor-pointer ${item === "Tasks" ? "bg-white/10 text-white" : "bg-transparent text-[#94a3b8]"}`}
-            >
-              {item}
-            </button>
-          ))}
-          <div className="flex-1 mx-2">
-            <div className="relative">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#64748b] flex">
-                <Icon name="search" size={12} />
-              </span>
-              <input
-                placeholder="Quick Search (APN, Address, Order, Instrument…)"
-                className="w-full pl-7.5 pr-2.5 py-1.25 rounded-md text-[11px] outline-none box-border"
-                style={{
-                  background: "rgba(100,116,139,.25)",
-                  border: "1px solid #475569",
-                  color: "#cbd5e1",
-                }}
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <div className="relative cursor-pointer text-[#94a3b8]">
-              <Icon name="bell" size={15} />
-              <span className="absolute -top-1 -right-1 bg-[#dc2626] text-white text-[8px] font-bold w-3.25 h-3.25 rounded-full flex items-center justify-center">
-                0
-              </span>
-            </div>
-            <div
-              className="flex items-center gap-1.5 cursor-pointer"
-              onClick={() => router.push("/profile")}
-            >
-              <div className="w-6.5 h-6.5 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold">
-                {user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : "U"}
-              </div>
-              <div>
-                <div className="text-white text-[11px] font-semibold">
-                  {user ? `${user.firstName} ${user.lastName}` : "User"}
-                </div>
-                <div className="text-[#64748b] text-[9px]">Online</div>
-              </div>
-            </div>
-            <button
-              onClick={logout}
-              className="bg-transparent border-none text-[#94a3b8] hover:text-white cursor-pointer transition-colors p-1"
-              title="Sign out"
-            >
-              <Icon name="arrowRight" size={14} />
-            </button>
-          </div>
-        </header>
+        <Navbar onDashboardClick={handleCloseOrder} />
 
         {/* ═══════════════════════════════════════════
             DASHBOARD MODE — no order selected
@@ -366,13 +241,13 @@ export default function Dashboard() {
         {!selectedOrder && (
           <>
             {/* dashboard header bar */}
-            <div className="bg-white border-b border-[#e2e8f0] flex items-center px-5 h-[38px] shrink-0 gap-2.5">
-              <Icon name="dashboard" size={13} style={{ color: "#8B0000" }} />
-              <span className="text-[12px] font-bold text-[#1e293b]">
+            <div className="bg-white border-b border-border flex items-center px-5 h-9.5 shrink-0 gap-2.5">
+              <Icon name="dashboard" size={13} style={{ color: "var(--brand-primary)" }} />
+              <span className="text-[12px] font-bold text-text">
                 Dashboard
               </span>
-              <span className="text-[#e2e8f0]">|</span>
-              <span className="text-[11px] text-[#94a3b8]">
+              <span className="text-border">|</span>
+              <span className="text-[11px] text-text-muted">
                 Select a file to open the title workflow
               </span>
             </div>
@@ -384,7 +259,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <StepDashboard
-                  orders={ordersData ? mapOrdersResponse(ordersData) : []}
+                  orders={ordersData ? mapOrdersResponse(ordersData.data) : []}
                   onSelect={handleSelectOrder}
                   getOrderStatus={getOrderStatus}
                   getLock={getLock}
@@ -401,42 +276,42 @@ export default function Dashboard() {
         {selectedOrder && (
           <>
             {/* order bar */}
-            <div className="bg-white border-b border-[#e2e8f0] flex items-center px-5 h-[38px] shrink-0 gap-2.5">
+            <div className="bg-white border-b border-border flex items-center px-5 h-9.5 shrink-0 gap-2.5">
               <button
                 onClick={handleCloseOrder}
-                className="flex items-center gap-1 bg-transparent border-none text-[#8B0000] text-[11px] font-semibold cursor-pointer pr-2.5 mr-1.5 border-r border-[#e2e8f0]"
+                className="flex items-center gap-1 bg-transparent border-none text-brand text-[11px] font-semibold cursor-pointer pr-2.5 mr-1.5 border-r border-border"
               >
                 <Icon name="arrowLeft" size={11} />
                 All Files
               </button>
-              <span className="text-[11px] text-[#94a3b8]">Order #:</span>
-              <span className="text-[11px] font-bold text-[#1e293b]">
+              <span className="text-[11px] text-text-muted">Order #:</span>
+              <span className="text-[11px] font-bold text-text">
                 {selectedOrder.no}
               </span>
-              <span className="text-[#e2e8f0]">|</span>
-              <span className="text-[11px] text-[#94a3b8]">
+              <span className="text-border">|</span>
+              <span className="text-[11px] text-text-muted">
                 {selectedOrder.addr}
               </span>
-              <span className="text-[#e2e8f0]">|</span>
-              <span className="text-[11px] text-[#94a3b8]">
+              <span className="text-border">|</span>
+              <span className="text-[11px] text-text-muted">
                 {selectedOrder.owner}
               </span>
-              <span className="text-[#e2e8f0]">|</span>
+              <span className="text-border">|</span>
               {/* live status badge */}
               {(() => {
                 const st = getOrderStatus(selectedOrder.no);
                 const dotColor =
                   st === "In Review"
-                    ? "#f59e0b"
+                    ? "var(--status-warning-border)"
                     : st === "Closed"
-                      ? "#6366f1"
-                      : "#22c55e";
+                      ? "var(--status-info-bg)"
+                      : "var(--status-success-dark)";
                 const txtColor =
                   st === "In Review"
-                    ? "#92400e"
+                    ? "var(--status-warning-text)"
                     : st === "Closed"
-                      ? "#3730a3"
-                      : "#16a34a";
+                      ? "var(--status-info-text)"
+                      : "var(--status-success-emerald-dark)";
                 return (
                   <span
                     className="flex items-center gap-1 text-[11px] font-semibold"
@@ -452,7 +327,7 @@ export default function Dashboard() {
               })()}
               {/* lock indicator */}
               {isLockedByMe(selectedOrder.no) && (
-                <span className="flex items-center gap-1 bg-[#fffbeb] border border-[#fde68a] rounded-full px-2.5 py-0.5 text-[10px] font-bold text-[#92400e]">
+                <span className="flex items-center gap-1 bg-status-warning-subtle border border-status-warning-border rounded-full px-2.5 py-0.5 text-[10px] font-bold text-status-warning-text">
                   <svg
                     width="11"
                     height="11"
@@ -470,7 +345,7 @@ export default function Dashboard() {
                 </span>
               )}
               {isLoadingReport && (
-                <span className="flex items-center gap-1.5 text-[#94a3b8] text-[10px]">
+                <span className="flex items-center gap-1.5 text-text-muted text-[10px]">
                   <Spinner size="xs" variant="default" />
                   Loading property data…
                 </span>
@@ -486,7 +361,7 @@ export default function Dashboard() {
             </div>
 
             {/* work-step tabs */}
-            <div className="bg-white border-b border-[#e2e8f0] shrink-0">
+            <div className="bg-white border-b border-border shrink-0">
               <div className="flex px-4.5">
                 {WORK_STEPS.map((s, i) => {
                   const idx = i + 1;
@@ -499,17 +374,17 @@ export default function Dashboard() {
                       className="flex items-center gap-1.5 px-3.5 py-2.75 text-[11px] font-semibold border-none cursor-pointer relative transition-all duration-150"
                       style={{
                         borderBottom: active
-                          ? "2px solid #8B0000"
+                          ? "2px solid var(--brand-primary)"
                           : done
-                            ? "2px solid #10b981"
+                            ? "2px solid var(--status-success-emerald)"
                             : "2px solid transparent",
                         color: active
-                          ? "#8B0000"
+                          ? "var(--brand-primary)"
                           : done
-                            ? "#059669"
-                            : "#64748b",
+                            ? "var(--status-success-emerald-dark)"
+                            : "var(--text-tertiary)",
                         background: active
-                          ? "rgba(139,0,0,.03)"
+                          ? "var(--brand-primary-subtle)"
                           : "transparent",
                       }}
                     >
@@ -517,11 +392,11 @@ export default function Dashboard() {
                         className="w-4.5 h-4.5 rounded-full shrink-0 flex items-center justify-center text-[9px] font-bold transition-[background] duration-150"
                         style={{
                           background: active
-                            ? "#8B0000"
+                            ? "var(--brand-primary)"
                             : done
-                              ? "#10b981"
-                              : "#e2e8f0",
-                          color: active || done ? "#fff" : "#64748b",
+                              ? "var(--status-success-emerald)"
+                              : "var(--border-primary)",
+                          color: active || done ? "var(--color-white)" : "var(--text-tertiary)",
                         }}
                       >
                         {done ? <Icon name="check" size={9} /> : idx}
@@ -531,7 +406,7 @@ export default function Dashboard() {
                         <Icon
                           name="chevRight"
                           size={11}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 text-[#e2e8f0]"
+                          className="absolute right-0 top-1/2 -translate-y-1/2 text-border"
                         />
                       )}
                     </button>
@@ -545,18 +420,18 @@ export default function Dashboard() {
               {/* step heading */}
               <div className="px-5 pt-3.5 pb-0 shrink-0">
                 <div className="flex items-center gap-2.75 max-w-300 mx-auto">
-                  <div className="w-8 h-8 bg-[#8B0000] rounded-lg flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0">
                     <Icon
                       name={WORK_STEPS[step - 1].icon}
                       size={15}
-                      className="text-white"
+                      className="text-header-text"
                     />
                   </div>
                   <div>
-                    <h1 className="m-0 text-[15px] font-bold text-[#1e293b]">
+                    <h1 className="m-0 text-[15px] font-bold text-text">
                       {WORK_STEPS[step - 1].label}
                     </h1>
-                    <p className="m-0 text-[10px] text-[#94a3b8]">
+                    <p className="m-0 text-[10px] text-text-muted">
                       Step {step} of {WORK_STEPS.length}
                     </p>
                   </div>
@@ -570,10 +445,10 @@ export default function Dashboard() {
                           width: i + 1 === step ? 22 : 10,
                           background:
                             i + 1 === step
-                              ? "#8B0000"
+                              ? "var(--brand-primary)"
                               : i + 1 < step
-                                ? "#34d399"
-                                : "#e2e8f0",
+                                ? "var(--ui-progress-complete)"
+                                : "var(--ui-progress-bg)",
                         }}
                       />
                     ))}
@@ -624,69 +499,69 @@ export default function Dashboard() {
         )}
         {lockAttempt && (
           <div
-            className="fixed inset-0 bg-black/55 flex items-center justify-center z-[999] p-6"
+            className="fixed inset-0 bg-black/55 flex items-center justify-center z-999 p-6"
             onClick={() => setLockAttempt(null)}
           >
-            <div
-              className="bg-white w-[420px] rounded-2xl overflow-hidden"
-              style={{ boxShadow: "0 24px 64px rgba(0,0,0,.3)" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="bg-[#92400e] px-5 py-3.5 flex items-center gap-2.5">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#fff"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0110 0v4" />
-                </svg>
-                <span className="text-[14px] font-bold text-white">
-                  Order Locked
-                </span>
-              </div>
-              <div className="p-5.5 flex flex-col gap-3.5">
-                <p className="m-0 text-[12px] text-[#475569] leading-[1.6]">
-                  Order{" "}
-                  <strong className="text-[#1e293b]">#{lockAttempt.no}</strong>{" "}
-                  is currently locked and in review by:
-                </p>
-                <div className="bg-[#fffbeb] border border-[#fde68a] rounded-[10px] px-4 py-3 flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full bg-[#f59e0b] flex items-center justify-center text-white text-[13px] font-bold shrink-0">
-                    {lockAttempt.lock.user[0]}
-                  </div>
-                  <div>
-                    <div className="text-[13px] font-bold text-[#92400e]">
-                      {lockAttempt.lock.user}
-                    </div>
-                    <div className="text-[11px] text-[#94a3b8]">
-                      Locked since {lockAttempt.lock.since}
-                    </div>
-                  </div>
+              <div
+                className="bg-white w-105 rounded-2xl overflow-hidden"
+                style={{ boxShadow: "var(--modal-shadow-strong)" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="bg-status-warning-text px-5 py-3.5 flex items-center gap-2.5">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="var(--color-white)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0110 0v4" />
+                  </svg>
+                  <span className="text-[14px] font-bold text-(--color-white)">
+                    Order Locked
+                  </span>
                 </div>
-                <p className="m-0 text-[11px] text-[#94a3b8] leading-[1.5]">
-                  This order will become available once the examiner saves and
-                  closes the file. Please try again later or contact the
-                  examiner directly.
-                </p>
-                <Button
-                  onClick={() => setLockAttempt(null)}
-                  style={{
-                    background: "#8B0000",
-                    justifyContent: "center",
-                    fontSize: 12,
-                    padding: "9px",
-                  }}
-                >
-                  OK, Got It
-                </Button>
+                <div className="p-5.5 flex flex-col gap-3.5">
+                  <p className="m-0 text-[12px] text-text-secondary leading-[1.6]">
+                    Order{" "}
+                    <strong className="text-text">#{lockAttempt.no}</strong>{" "}
+                    is currently locked and in review by:
+                  </p>
+                  <div className="bg-status-warning-subtle border border-status-warning-border rounded-[10px] px-4 py-3 flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-full bg-status-warning-border flex items-center justify-center text-white text-[13px] font-bold shrink-0">
+                      {lockAttempt.lock.user[0]}
+                    </div>
+                    <div>
+                      <div className="text-[13px] font-bold text-status-warning-text">
+                        {lockAttempt.lock.user}
+                      </div>
+                      <div className="text-[11px] text-text-muted">
+                        Locked since {lockAttempt.lock.since}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="m-0 text-[11px] text-text-muted leading-normal">
+                    This order will become available once the examiner saves and
+                    closes the file. Please try again later or contact the
+                    examiner directly.
+                  </p>
+                  <Button
+                    onClick={() => setLockAttempt(null)}
+                    style={{
+                      background: "var(--brand-primary)",
+                      justifyContent: "center",
+                      fontSize: 12,
+                      padding: "9px",
+                    }}
+                  >
+                    OK, Got It
+                  </Button>
+                </div>
               </div>
-            </div>
           </div>
         )}
       </div>

@@ -1,3 +1,11 @@
+export interface PaginatedOrdersResponse {
+  data: Order[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 export interface Order {
   no: string;
   apn: string;

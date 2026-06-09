@@ -49,9 +49,6 @@ export default function IndexRow({
     entity: row.entity || "MISC",
     docTitle: row.docTitle || DOC_TITLES[0],
     examImg: null as string | null,
-    showCode: false,
-    code: "",
-    codes: [] as string[],
     showImgDrop: false,
     showRowMenu: false,
   });
@@ -95,16 +92,6 @@ export default function IndexRow({
     const reader = new FileReader();
     reader.onload = (ev) => set("examImg", String(ev.target?.result || ""));
     reader.readAsDataURL(file);
-  };
-
-  const addCode = () => {
-    if (!state.code.trim()) return;
-    setState((prev) => ({
-      ...prev,
-      codes: [...prev.codes, state.code.trim()],
-      code: "",
-      showCode: false,
-    }));
   };
 
   const abbrFull = ABBR_MAP.find((item) => item.abbr === state.abbr)?.full || "";
@@ -188,29 +175,7 @@ export default function IndexRow({
             className={`${inputClass} flex-1`}
           />
         </div>
-            {state.codes.length > 0 && (
-          <div className="mt-1 flex flex-wrap gap-0.75">
-            {state.codes.map((savedCode, index) => (
-              <span
-                key={`${savedCode}-${index}`}
-                className="inline-flex items-center gap-0.75 rounded-full border border-status-info-blue-border bg-status-info-subtle px-1.5 py-0.5 text-[9px] font-bold text-status-info-blue-text"
-              >
-                {savedCode}
-                <button
-                  onClick={() =>
-                    setState((prev) => ({
-                      ...prev,
-                      codes: prev.codes.filter((_, i) => i !== index),
-                    }))
-                  }
-                  className="border-none bg-transparent p-0 text-[10px] leading-none text-status-info-blue-text/60"
-                >
-                  x
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
+
       </td>
       <td className="border-t border-secondary px-2.5 py-2 align-middle min-w-[150px]">
         <select
@@ -344,24 +309,6 @@ export default function IndexRow({
           </div>
         )}
       </td>
-      <td className="w-[70px] border-t border-secondary px-2.5 py-2 text-center align-middle">
-        <button
-          onClick={() => set("showCode", !state.showCode)}
-          className="inline-flex items-center gap-0.75 rounded-md border px-1.75 py-1 text-[10px] font-semibold transition-colors"
-          style={{
-            background: state.showCode
-              ? "var(--brand-primary)"
-              : "var(--color-white)",
-            borderColor: state.showCode
-              ? "var(--brand-primary)"
-              : "var(--border-input)",
-            color: state.showCode ? "var(--color-white)" : "var(--text-secondary)",
-          }}
-        >
-          <Icon name="plus" size={10} />
-          Code
-        </button>
-      </td>
       <td
         ref={rowMenuRef}
         className="relative w-7 border-t border-secondary px-2.5 py-2 text-center align-middle"
@@ -397,11 +344,6 @@ export default function IndexRow({
           </div>
         )}
       </td>
-      {state.showCode && (
-        <td colSpan={10} className="hidden">
-          {state.code}
-        </td>
-      )}
     </>
   );
 }

@@ -163,4 +163,84 @@ export interface UploadCat {
   fields: UploadCatField[];
 }
 
-export const UPLOAD_CATS: UploadCat[] = [];
+export const UPLOAD_CATS: UploadCat[] = [
+  {
+    key: "assessorPage",
+    label: "Assessor Page",
+    accent: "#0369a1",
+    fields: [
+      { k: "apn", lbl: "APN", t: "text", ph: "107-0-330-755" },
+      { k: "owner", lbl: "Owner Name", t: "text", ph: "RODRIGUEZ RAQUEL" },
+      {
+        k: "address",
+        lbl: "Situs Address",
+        t: "text",
+        ph: "2012 HARVEST LOOP, SANTA PAULA, CA",
+      },
+      { k: "assessed", lbl: "Assessed Value", t: "text", ph: "$652,575" },
+      { k: "taxYear", lbl: "Tax Year", t: "text", ph: "2025" },
+      { k: "landUse", lbl: "Land Use", t: "text", ph: "CONDOMINIUM" },
+    ],
+  },
+  {
+    key: "assessorMap",
+    label: "Assessor Map",
+    accent: "#0891b2",
+    fields: [
+      { k: "mapRef", lbl: "Map Reference", t: "text", ph: "169MR34" },
+      { k: "parcelNo", lbl: "Parcel No.", t: "text", ph: "107-0-330-755" },
+      { k: "mapDate", lbl: "Map Date", t: "date", ph: "" },
+      {
+        k: "notes",
+        lbl: "Notes",
+        t: "textarea",
+        ph: "Map notes or page reference",
+      },
+    ],
+  },
+  {
+    key: "tractMap",
+    label: "Tract Map",
+    accent: "#0d9488",
+    fields: [
+      { k: "tractNo", lbl: "Tract No.", t: "text", ph: "5991" },
+      { k: "bookPage", lbl: "Book / Page", t: "text", ph: "169M / 34-37" },
+      { k: "recDate", lbl: "Recorded Date", t: "date", ph: "" },
+      {
+        k: "subdivision",
+        lbl: "Subdivision Name",
+        t: "text",
+        ph: "Harvest Meadows",
+      },
+    ],
+  },
+  {
+    key: "titleChain",
+    label: "Title Chain Review",
+    accent: "#0369a1",
+    fields: [
+      { k: "docType", lbl: "Document Type", t: "text", ph: "Grant Deed" },
+      {
+        k: "instrumentNo",
+        lbl: "Instrument No.",
+        t: "text",
+        ph: "2024-0012345",
+      },
+      { k: "recDate", lbl: "Recording Date", t: "date", ph: "" },
+      { k: "grantor", lbl: "Grantor", t: "text", ph: "" },
+      { k: "grantee", lbl: "Grantee", t: "text", ph: "" },
+    ],
+  },
+  {
+    key: "taxCert",
+    label: "Tax Cert",
+    accent: "#65a30d",
+    fields: [
+      { k: "taxYear", lbl: "Tax Year", t: "text", ph: "2025" },
+      { k: "taxAmount", lbl: "Tax Amount", t: "text", ph: "$10,820.98" },
+      { k: "delinquent", lbl: "Delinquent Year", t: "text", ph: "" },
+      { k: "paidBy", lbl: "Paid By", t: "text", ph: "" },
+    ],
+  },
+];
+

@@ -162,7 +162,7 @@ export const IDX_COLS = [
   "Instrument / Book-Page",
   "Entity / Doc Title",
   "Image",
-  "Add Code",
+  // "Add Code",
 ];
 
 export const INDEX_SECTIONS = [

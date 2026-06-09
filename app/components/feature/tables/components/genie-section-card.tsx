@@ -28,6 +28,7 @@ const DEFAULT_CODES: GenieCodeItem[] = [];
 export default function GenieSectionCard({ title, sub, accent, codes }: GenieSectionCardProps) {
   const [open, setOpen] = useState(true);
   const [addedCodes, setAddedCodes] = useState<AddedCode[]>([]);
+  const [codeInput, setCodeInput] = useState("");
 
   const items = codes || DEFAULT_CODES;
 
@@ -36,6 +37,14 @@ export default function GenieSectionCard({ title, sub, accent, codes }: GenieSec
       ...c,
       { ...item, id: Date.now(), editing: false, expanded: true, verbiage: item.body },
     ]);
+    setCodeInput("");
+  };
+
+  const addCodeByInput = (input: string) => {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    const match = items.find((c) => c.code === trimmed);
+    addCode(match || { code: trimmed, label: trimmed, body: "" });
   };
 
   const removeCode = (id: number) => setAddedCodes((c) => c.filter((x) => x.id !== id));
@@ -50,7 +59,7 @@ export default function GenieSectionCard({ title, sub, accent, codes }: GenieSec
   const isAdded = (code: string) => addedCodes.some((c) => c.code === code);
 
   return (
-    <div className="bg-white border border-[#e2e8f0] rounded-xl overflow-hidden">
+    <div className="bg-white border border-border rounded-xl overflow-hidden">
       <div
         className="flex items-center justify-between px-4 py-2.75 cursor-pointer"
         style={{
@@ -62,8 +71,8 @@ export default function GenieSectionCard({ title, sub, accent, codes }: GenieSec
         <div className="flex items-center gap-2.5">
           <div style={{ width: 3, height: 28, background: accent, borderRadius: 2, flexShrink: 0 }} />
           <div>
-            <div className="text-[13px] font-bold text-[#1e293b]">{title}</div>
-            {sub && <div className="text-[10px] text-[#94a3b8] mt-0.25">{sub}</div>}
+            <div className="text-[13px] font-bold text-text">{title}</div>
+            {sub && <div className="text-[10px] text-text-muted mt-0.25">{sub}</div>}
           </div>
           {addedCodes.length > 0 && (
             <span className="bg-[#f0fdf4] text-[#166634] border border-[#bbf7d0] text-[10px] font-semibold px-2 py-0.5 rounded-full ml-1">
@@ -77,7 +86,7 @@ export default function GenieSectionCard({ title, sub, accent, codes }: GenieSec
       {open && (
         <div className="p-4 flex flex-col gap-3.5">
           <div>
-            <div className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider mb-2">
+            <div className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider mb-2">
               Select Codes to Include
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -98,8 +107,8 @@ export default function GenieSectionCard({ title, sub, accent, codes }: GenieSec
                     className="inline-flex items-center gap-1.25 px-2.5 py-1.25 rounded-lg text-[10px] font-bold border cursor-pointer transition-all duration-150"
                     style={{
                       background: added ? (saved ? "#f0fdf4" : "#eff6ff") : "#fff",
-                      borderColor: added ? (saved ? "#86efac" : "#bfdbfe") : "#e2e8f0",
-                      color: added ? (saved ? "#166634" : "#1d4ed8") : "#475569",
+                      borderColor: added ? (saved ? "#86efac" : "#bfdbfe") : "var(--border)",
+                      color: added ? (saved ? "#166634" : "#1d4ed8") : "var(--text-secondary)",
                     }}
                   >
                     <span style={{ fontFamily: "'Courier New', monospace", fontSize: 9, fontWeight: 800, color: added ? (saved ? "#166634" : "#1d4ed8") : accent }}>
@@ -114,16 +123,30 @@ export default function GenieSectionCard({ title, sub, accent, codes }: GenieSec
                 );
               })}
             </div>
-            {addedCodes.some((c) => !c.expanded) && (
-              <p className="text-[10px] text-[#94a3b8] mt-1.75 mb-0 italic">
-                ✓ Saved codes are collapsed — click the code badge to expand again
-              </p>
-            )}
+          </div>
+
+          <div className="flex items-center gap-1.75">
+            <input
+              value={codeInput}
+              onChange={(e) => setCodeInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") addCodeByInput(codeInput);
+              }}
+              placeholder="Or type a new code\u2026"
+              className="flex-1 text-[11px] border border-border-input-alt rounded-lg px-2.5 py-1.25 outline-none bg-white text-text"
+            />
+            <button
+              onClick={() => addCodeByInput(codeInput)}
+              className="text-white text-[11px] font-semibold px-3.5 py-1.25 rounded-lg border-none cursor-pointer"
+              style={{ background: accent }}
+            >
+              Add
+            </button>
           </div>
 
           {addedCodes.length > 0 && (
             <div className="flex flex-col gap-2">
-              <div className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">
+              <div className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider">
                 Added Codes
               </div>
               {addedCodes.map((c) => (
@@ -131,7 +154,7 @@ export default function GenieSectionCard({ title, sub, accent, codes }: GenieSec
                   key={c.id}
                   className="border rounded-xl overflow-hidden transition-all duration-150"
                   style={{
-                    borderColor: c.expanded ? "#e2e8f0" : "#bbf7d0",
+                    borderColor: c.expanded ? "var(--border)" : "#bbf7d0",
                     background: c.expanded ? "#fafafa" : "#f0fdf4",
                   }}
                 >
@@ -144,7 +167,7 @@ export default function GenieSectionCard({ title, sub, accent, codes }: GenieSec
                       <span style={{ fontFamily: "'Courier New', monospace", fontSize: 9, fontWeight: 800, color: accent }}>
                         {c.code}
                       </span>
-                      <span className="text-[11px] text-[#475569]">{c.label}</span>
+                      <span className="text-[11px] text-text-secondary">{c.label}</span>
                       {c.expanded ? (
                         <Icon name="chevDown" size={10} style={{ color: "#94a3b8" }} />
                       ) : (
@@ -163,13 +186,13 @@ export default function GenieSectionCard({ title, sub, accent, codes }: GenieSec
                         <>
                           <button
                             onClick={(e) => { e.stopPropagation(); startEdit(c.id); }}
-                            className="bg-transparent text-[#64748b] border border-[#e2e8f0] text-[9px] font-bold px-2 py-0.75 rounded cursor-pointer"
+                            className="bg-transparent text-text-secondary border border-border text-[9px] font-bold px-2 py-0.75 rounded cursor-pointer"
                           >
                             <Icon name="fileCheck" size={9} /> Edit
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); removeCode(c.id); }}
-                            className="bg-transparent text-[#ef4444] border border-[#fecaca] text-[9px] font-bold px-1.5 py-0.75 rounded cursor-pointer"
+                            className="bg-transparent text-status-error border border-status-error-border text-[9px] font-bold px-1.5 py-0.75 rounded cursor-pointer"
                           >
                             <Icon name="trash" size={9} />
                           </button>
@@ -183,7 +206,7 @@ export default function GenieSectionCard({ title, sub, accent, codes }: GenieSec
                         rows={4}
                         value={c.editing ? c.verbiage : c.verbiage}
                         onChange={(e) => updateVerbiage(c.id, e.target.value)}
-                        className="w-full border border-[#dbe3ee] rounded-lg px-2.5 py-2 text-[11px] text-[#334155] bg-white outline-none resize-none font-mono leading-relaxed"
+                        className="w-full border border-border-input-alt rounded-lg px-2.5 py-2 text-[11px] text-ui-code bg-white outline-none resize-none font-mono leading-relaxed"
                         readOnly={!c.editing}
                         style={c.editing ? {} : { opacity: 0.75 }}
                       />

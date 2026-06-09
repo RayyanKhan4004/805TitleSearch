@@ -57,6 +57,14 @@ export const ordersApi = createApi({
       providesTags: ["CodeBook"],
     }),
 
+    fetchCodeBookByCode: builder.query<CodeBookEntry, string>({
+      query: (code) => ({
+        url: `/codebook/${code}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, code) => [{ type: "CodeBook", id: code }],
+    }),
+
     updateOrder: builder.mutation<
       OrderDetail,
       { id: string; body: Partial<OrderDetail> }
@@ -83,4 +91,4 @@ export const ordersApi = createApi({
   }),
 });
 
-export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation } = ordersApi
+export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation } = ordersApi

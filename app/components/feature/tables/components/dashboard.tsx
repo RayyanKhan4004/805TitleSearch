@@ -4,6 +4,7 @@ import Icon from "@/components/common/icon";
 import { Button, Spinner } from "@/components/ui";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/auth-context";
+import { useRouter } from "next/navigation";
 import { useGetReportQuery } from "@/app/store/api/propertyReportApi";
 import { useFetchOrdersQuery, useUpdateOrderRushMutation } from "@/app/store/api/ordersApi";
 import { mapApiToForm } from "@/app/services/datatree-api";
@@ -22,6 +23,7 @@ import Navbar from "@/components/common/navbar";
 import { PrelimPreviewModal } from "./models";
 import { DEFAULT_SHARED_STATE } from "./temp";
 import type { Order, OrderLock } from "@/app/components/feature/tables/types";
+import { NAV_ICONS } from "./consts";
 
 const WORK_STEPS = [
   { id: 1, label: "Title Chain Review", short: "Chain", icon: "link" },
@@ -47,7 +49,8 @@ function flattenReportRaw(raw: Record<string, any>) {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { logout, user } = useAuth();
+    const router = useRouter();
   const currentUserName = user ? `${user.firstName} ${user.lastName}` : "Unknown";
 
   const { data: ordersData, isLoading: isLoadingOrders } = useFetchOrdersQuery({ page: 1, pageSize: 500 });
@@ -229,11 +232,135 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-bg-page">
-      <Sidebar />
+    <div className="flex h-screen overflow-hidden bg-[#f1f5f9]">
+      {/* ── Sidebar ── */}
+      <aside
+        className="w-[52px] shrink-0 bg-[#1e2130] flex flex-col items-center py-3 px-1.5 gap-1 z-20"
+        style={{ boxShadow: "2px 0 12px rgba(0,0,0,.18)" }}
+      >
+        <div className="w-9 h-9 bg-[#8B0000] rounded-[10px] flex items-center justify-center mb-2.5">
+          <Icon name="building" size={17} className="text-white" />
+        </div>
+        {NAV_ICONS.map(({ name, label, active }) => (
+          <div
+            key={name}
+            title={label}
+            className="w-9 h-9 rounded-lg flex items-center justify-center cursor-pointer transition-[background] duration-150"
+            style={{
+              background: active ? "#8B0000" : "transparent",
+              color: active ? "#fff" : "#94a3b8",
+            }}
+            onMouseEnter={(e) => {
+              if (!active) {
+                e.currentTarget.style.background = "#2d3348";
+                e.currentTarget.style.color = "#fff";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!active) {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "#94a3b8";
+              }
+            }}
+          >
+            <Icon name={name} size={16} />
+          </div>
+        ))}
+        <div className="flex-1" />
+        <Icon
+          name="help"
+          size={16}
+          className="text-[#64748b] cursor-pointer mb-1.5"
+        />
+        <div
+          onClick={() => router.push("/profile")}
+          className="w-7 h-7 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold cursor-pointer"
+        >
+          {user ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() || "U" : "U"}
+        </div>
+      </aside>
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <Navbar onDashboardClick={handleCloseOrder} />
+        {/* ── Header ── */}
+        <header
+          className="bg-[#1e2130] flex items-center gap-2.5 px-4 h-[42px] shrink-0 z-10"
+          style={{ boxShadow: "0 2px 8px rgba(0,0,0,.2)" }}
+        >
+          <div className="flex items-center gap-1.5 mr-2">
+            <Icon name="building" size={15} style={{ color: "#f87171" }} />
+            <div>
+              <div className="text-white text-[12px] font-extrabold tracking-wide">
+                805Title
+              </div>
+              <div className="text-[#f87171] text-[8px] tracking-[0.18em] font-bold">
+                SEARCH
+              </div>
+            </div>
+          </div>
+          {[
+            "Dashboard",
+            "Orders",
+            "Search",
+            "Title Chain",
+            "Documents",
+            "Tasks",
+            "Reports",
+            "Admin",
+          ].map((item) => (
+            <button
+              key={item}
+              onClick={item === "Dashboard" ? handleCloseOrder : undefined}
+              className={`border-none text-[11px] font-medium px-2 py-1 rounded-[5px] cursor-pointer ${item === "Tasks" ? "bg-white/10 text-white" : "bg-transparent text-[#94a3b8]"}`}
+            >
+              {item}
+            </button>
+          ))}
+          <div className="flex-1 mx-2">
+            <div className="relative">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#64748b] flex">
+                <Icon name="search" size={12} />
+              </span>
+              <input
+                placeholder="Quick Search (APN, Address, Order, Instrument…)"
+                className="w-full pl-7.5 pr-2.5 py-1.25 rounded-md text-[11px] outline-none box-border"
+                style={{
+                  background: "rgba(100,116,139,.25)",
+                  border: "1px solid #475569",
+                  color: "#cbd5e1",
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <div className="relative cursor-pointer text-[#94a3b8]">
+              <Icon name="bell" size={15} />
+              <span className="absolute -top-1 -right-1 bg-[#dc2626] text-white text-[8px] font-bold w-3.25 h-3.25 rounded-full flex items-center justify-center">
+                0
+              </span>
+            </div>
+            <div
+              className="flex items-center gap-1.5 cursor-pointer"
+              onClick={() => router.push("/profile")}
+            >
+              <div className="w-6.5 h-6.5 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold">
+                {user ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() || "U" : "U"}
+              </div>
+              <div>
+                <div className="text-white text-[11px] font-semibold">
+                  {user ? `${user.firstName} ${user.lastName}` : "User"}
+                </div>
+                <div className="text-[#64748b] text-[9px]">Online</div>
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              className="bg-transparent border-none text-[#94a3b8] hover:text-white cursor-pointer transition-colors p-1"
+              title="Sign out"
+            >
+              <Icon name="arrowRight" size={14} />
+            </button>
+          </div>
+        </header>
 
         {/* ═══════════════════════════════════════════
             DASHBOARD MODE — no order selected

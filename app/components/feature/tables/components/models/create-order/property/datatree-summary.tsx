@@ -24,7 +24,7 @@ export default function DatatreeSummary({ apiResult, form }: DatatreeSummaryProp
         ["Lender", form._lender],
         ["1st Mtg", `${form._mtgAmt} @ ${form._mtgRate}`],
       ]
-        .filter(([, v]) => v && v !== "-" && !v?.startsWith("undefined"))
+        .filter(([, v]) => v && v !== "-" && !String(v).startsWith("undefined"))
         .map(([k, v]) => (
           <div key={k as string}>
             <div className="text-[8px] font-bold text-text-tertiary uppercase tracking-[0.06em]">{k}</div>

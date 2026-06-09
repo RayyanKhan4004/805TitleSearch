@@ -6,8 +6,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/auth-context";
 import { useRouter } from "next/navigation";
 import { useGetReportQuery } from "@/app/store/api/propertyReportApi";
-import { useFetchOrdersQuery, useUpdateOrderRushMutation } from "@/app/store/api/ordersApi";
-import { mapApiToForm } from "@/app/services/datatree-api";
+import { useFetchOrdersQuery, useUpdateOrderRushMutation, useFetchOrderQuery, useUpdateOrderMutation } from "@/app/store/api/ordersApi";
+import { mapApiToForm, mapOrderDetailToForm, mapOrderDetailToSharedState } from "@/app/services/datatree-api";
 import { mapOrdersResponse } from "./models/api-mappers";
 import toast from "react-hot-toast";
 import type { PropertyForm } from "@/app/components/feature/tables/types";
@@ -21,7 +21,7 @@ import {
 import Sidebar from "@/components/common/sidebar";
 import Navbar from "@/components/common/navbar";
 import { PrelimPreviewModal } from "./models";
-import { DEFAULT_SHARED_STATE } from "./temp";
+import { EMPTY_SHARED_STATE } from "./temp";
 import type { Order, OrderLock } from "@/app/components/feature/tables/types";
 import { NAV_ICONS } from "./consts";
 
@@ -55,6 +55,7 @@ export default function Dashboard() {
 
   const { data: ordersData, isLoading: isLoadingOrders } = useFetchOrdersQuery({ page: 1, pageSize: 500 });
   const [updateOrderRush] = useUpdateOrderRushMutation();
+  const [updateOrder, { isLoading: isSaving }] = useUpdateOrderMutation();
 
   const [reportParams, setReportParams] = useState<{
     searchType: string; apn: string; zipCode: string;
@@ -63,6 +64,10 @@ export default function Dashboard() {
     reportParams!,
     { skip: !reportParams },
   );
+  const [orderDetailId, setOrderDetailId] = useState<string | null>(null);
+  const { data: orderDetail } = useFetchOrderQuery(orderDetailId!, {
+    skip: !orderDetailId,
+  });
   const [propertyForm, setPropertyForm] = useState<PropertyForm | null>(null);
 
   /* null = no file open (dashboard only); object = selected order */
@@ -83,7 +88,7 @@ export default function Dashboard() {
   const [prelimData, setPrelimData] = useState(null); /* null = not showing */
 
   /* Shared state between Title Chain + TSRI */
-  const [shared, setShared] = useState(DEFAULT_SHARED_STATE);
+  const [shared, setShared] = useState(EMPTY_SHARED_STATE);
 
   /* Generated documents from TSRI */
   const [generatedDocs, setGeneratedDocs] = useState<
@@ -182,12 +187,34 @@ export default function Dashboard() {
       setPropertyForm(pf);
       setShared((s) => ({
         ...s,
-        vesting: reportData.form.vestingText || s.vesting,
-        legal: reportData.form.shortLegal || s.legal,
+        vesting: reportData.form.vestingText ?? "",
+        legal: reportData.form.shortLegal ?? "",
         effectiveDate: new Date().toLocaleDateString("en-US"),
       }));
     }
   }, [reportData]);
+
+  /* Populate property form + shared state from order detail (GET /orders/:id) */
+  useEffect(() => {
+    if (orderDetail) {
+      const pf = mapOrderDetailToForm(orderDetail);
+      setPropertyForm(pf);
+      const odShared = mapOrderDetailToSharedState(orderDetail);
+      setShared((s) => ({
+        ...s,
+        vesting: odShared.vesting,
+        legal: odShared.legal,
+        leaseHold: odShared.leaseHold,
+        effectiveDate: odShared.effectiveDate,
+        typeDate: odShared.typeDate,
+        areaType: odShared.areaType,
+        cityName: odShared.cityName,
+        townshipName: odShared.townshipName,
+        unincorporatedName: odShared.unincorporatedName,
+        propertyClassification: odShared.propertyClassification,
+      }));
+    }
+  }, [orderDetail]);
 
   const handleSelectOrder = async (order: Order) => {
     const no = order.no.replace("#", "");
@@ -208,11 +235,35 @@ export default function Dashboard() {
     setStep(1);
 
     setPropertyForm(null);
+    setOrderDetailId(order.id ? String(order.id) : order.no.replace("#", ""));
     setReportParams({
       searchType: "APN",
       apn: order.apn1 || order.apn || "",
       zipCode: order.zipCode || "",
     });
+  };
+
+  /* Save — PATCH order detail with current title chain data */
+  const handleSave = async (dates?: { typeDate: string; effectiveDate: string }) => {
+    if (!orderDetailId) return;
+    const body: Record<string, any> = {
+      legalDescription: shared.legal || null,
+      vesting: shared.vesting || null,
+      shortLegal: propertyForm?.shortLegal || null,
+      leaseHoldInterest: shared.leaseHold || null,
+      effectiveDate: dates?.effectiveDate || shared.effectiveDate || null,
+      typeDate: dates?.typeDate || shared.typeDate || null,
+      city: shared.cityName || null,
+      cityTownshipName: shared.townshipName || null,
+      municipality: shared.unincorporatedName || null,
+      propertyClassification: shared.propertyClassification || null,
+    };
+    try {
+      await updateOrder({ id: orderDetailId, body: body as any }).unwrap();
+      toast.success("Order saved");
+    } catch {
+      toast.error("Failed to save order");
+    }
   };
 
   /* unlockAndClose — called ONLY from Save & Close button */
@@ -282,85 +333,7 @@ export default function Dashboard() {
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* ── Header ── */}
-        <header
-          className="bg-[#1e2130] flex items-center gap-2.5 px-4 h-[42px] shrink-0 z-10"
-          style={{ boxShadow: "0 2px 8px rgba(0,0,0,.2)" }}
-        >
-          <div className="flex items-center gap-1.5 mr-2">
-            <Icon name="building" size={15} style={{ color: "#f87171" }} />
-            <div>
-              <div className="text-white text-[12px] font-extrabold tracking-wide">
-                805Title
-              </div>
-              <div className="text-[#f87171] text-[8px] tracking-[0.18em] font-bold">
-                SEARCH
-              </div>
-            </div>
-          </div>
-          {[
-            "Dashboard",
-            "Orders",
-            "Search",
-            "Title Chain",
-            "Documents",
-            "Tasks",
-            "Reports",
-            "Admin",
-          ].map((item) => (
-            <button
-              key={item}
-              onClick={item === "Dashboard" ? handleCloseOrder : undefined}
-              className={`border-none text-[11px] font-medium px-2 py-1 rounded-[5px] cursor-pointer ${item === "Tasks" ? "bg-white/10 text-white" : "bg-transparent text-[#94a3b8]"}`}
-            >
-              {item}
-            </button>
-          ))}
-          <div className="flex-1 mx-2">
-            <div className="relative">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#64748b] flex">
-                <Icon name="search" size={12} />
-              </span>
-              <input
-                placeholder="Quick Search (APN, Address, Order, Instrument…)"
-                className="w-full pl-7.5 pr-2.5 py-1.25 rounded-md text-[11px] outline-none box-border"
-                style={{
-                  background: "rgba(100,116,139,.25)",
-                  border: "1px solid #475569",
-                  color: "#cbd5e1",
-                }}
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <div className="relative cursor-pointer text-[#94a3b8]">
-              <Icon name="bell" size={15} />
-              <span className="absolute -top-1 -right-1 bg-[#dc2626] text-white text-[8px] font-bold w-3.25 h-3.25 rounded-full flex items-center justify-center">
-                0
-              </span>
-            </div>
-            <div
-              className="flex items-center gap-1.5 cursor-pointer"
-              onClick={() => router.push("/profile")}
-            >
-              <div className="w-6.5 h-6.5 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold">
-                {user ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() || "U" : "U"}
-              </div>
-              <div>
-                <div className="text-white text-[11px] font-semibold">
-                  {user ? `${user.firstName} ${user.lastName}` : "User"}
-                </div>
-                <div className="text-[#64748b] text-[9px]">Online</div>
-              </div>
-            </div>
-            <button
-              onClick={logout}
-              className="bg-transparent border-none text-[#94a3b8] hover:text-white cursor-pointer transition-colors p-1"
-              title="Sign out"
-            >
-              <Icon name="arrowRight" size={14} />
-            </button>
-          </div>
-        </header>
+        <Navbar/>
 
         {/* ═══════════════════════════════════════════
             DASHBOARD MODE — no order selected
@@ -591,7 +564,8 @@ export default function Dashboard() {
                     setShared={setShared}
                     propertyForm={propertyForm ?? undefined}
                     reportRaw={reportData?.raw}
-                    isLoading={isLoadingReport}
+                    isLoading={isLoadingReport || isSaving}
+                    onSave={handleSave}
                     onSaveClose={unlockAndClose}
                   />
                 )}

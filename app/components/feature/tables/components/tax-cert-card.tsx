@@ -2,7 +2,24 @@
 
 import { useState, Fragment } from "react";
 import Icon from "@/components/common/icon";
-import { CATX_CODES, type CatxCode } from "./temp";
+import { useFetchCodeBookQuery } from "@/app/store/api/ordersApi";
+import type { CodeBookEntry } from "@/app/components/feature/tables/types";
+
+interface CatxCode {
+  code: string;
+  label: string;
+  verbiage: string;
+}
+
+function mapCodeBookToCatxCodes(entries: CodeBookEntry[]): CatxCode[] {
+  return entries
+    .filter((e) => e.isActive)
+    .map((e) => {
+      const dashIdx = e.code.indexOf(" - ");
+      const label = dashIdx !== -1 ? e.code.slice(dashIdx + 3).trim() : e.code;
+      return { code: e.code, label, verbiage: e.verbiage };
+    });
+}
 
 interface TaxCertCardProps {
   title: string;
@@ -19,6 +36,8 @@ interface AddedCode extends CatxCode {
 export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
   const [open, setOpen] = useState(true);
   const [addedCodes, setAddedCodes] = useState<AddedCode[]>([]);
+  const { data: codeBookEntries } = useFetchCodeBookQuery();
+  const catxCodes = codeBookEntries ? mapCodeBookToCatxCodes(codeBookEntries) : [];
 
   const addCode = (catx: CatxCode) =>
     setAddedCodes((c) => [...c, { ...catx, id: Date.now(), editing: false, expanded: true }]);
@@ -95,7 +114,7 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
               Select Tax Codes to Include
             </div>
             <div className="flex flex-wrap gap-1.75">
-              {CATX_CODES.map((catx) => {
+              {catxCodes.map((catx) => {
                 const added = isAdded(catx.code);
                 return (
                   <button

@@ -23,14 +23,7 @@ interface GenieSectionCardProps {
   codes?: GenieCodeItem[];
 }
 
-const DEFAULT_CODES: GenieCodeItem[] = [
-  { code: "CA A1", label: "ALTA Note", body: "None of the items shown in this report will cause the Company to decline to attach ALTA Endorsement Form 9." },
-  { code: "CA E1", label: "Easement", body: "An easement for public utilities and incidental purposes." },
-  { code: "CA C1", label: "CC&Rs", body: "Covenants, conditions, and restrictions as set forth in instrument recorded." },
-  { code: "CA L1", label: "Lien", body: "A lien for taxes or assessments not yet delinquent." },
-  { code: "CA MG1", label: "Mortgage", body: "A Deed of Trust to secure an indebtedness." },
-  { code: "CA NT1", label: "Notice", body: "A notice of completion or other statutory notice." },
-];
+const DEFAULT_CODES: GenieCodeItem[] = [];
 
 export default function GenieSectionCard({ title, sub, accent, codes }: GenieSectionCardProps) {
   const [open, setOpen] = useState(true);

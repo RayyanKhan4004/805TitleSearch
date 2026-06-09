@@ -30,13 +30,13 @@ export default function Navbar({ onDashboardClick }: NavbarProps) {
       </div>
       {[
         "Dashboard",
-        "Orders",
-        "Search",
-        "Title Chain",
-        "Documents",
+        // "Orders",
+        // "Search",
+        // "Title Chain",
+        // "Documents",
         "Tasks",
-        "Reports",
-        "Admin",
+        // "Reports",
+        // "Admin",
       ].map((item) => (
         <button
           key={item}

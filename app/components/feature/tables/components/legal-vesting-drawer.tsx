@@ -2,42 +2,32 @@
 
 import Icon from "@/components/common/icon";
 import { CardHead, Lbl } from "./shared-atoms";
-import { useState } from "react";
-import type { SharedState } from "@/app/components/feature/tables/types";
+import { useState, useEffect } from "react";
+import type { SharedState, PropertyForm } from "@/app/components/feature/tables/types";
 
 interface LegalVestingDrawerProps {
-  shared?: SharedState;
-  setShared?: React.Dispatch<React.SetStateAction<SharedState>>;
+  shared: SharedState;
+  setShared: React.Dispatch<React.SetStateAction<SharedState>>;
+  propertyForm?: PropertyForm;
   isLoading?: boolean;
 }
 
-export default function LegalVestingDrawer({ shared, setShared, isLoading }: LegalVestingDrawerProps) {
+export default function LegalVestingDrawer({ shared, setShared, propertyForm, isLoading }: LegalVestingDrawerProps) {
   const [openLegal, setOpenLegal] = useState(false);
   const [openVesting, setOpenVesting] = useState(false);
-  const [legal, setLegal] = useState(shared?.legal ?? "");
-  const [vesting, setVesting] = useState(shared?.vesting ?? "");
-  const [lease, setLease] = useState(shared?.leaseHold ?? "");
-  const [areaType, setAreaType] = useState("City");
-  const [areaName, setAreaName] = useState("Rialto");
-  const [propType, setPropType] = useState("Single Family Residence");
-  const [loading, setLoading] = useState(false);
-  const [updated, setUpdated] = useState(false);
+  const [areaType, setAreaType] = useState("");
+  const [areaName, setAreaName] = useState("");
+  const [propType, setPropType] = useState("");
 
-  const handleUpdate = () => {
-    setLoading(true);
-    setUpdated(false);
-    setTimeout(() => {
-      setShared?.((s) => ({
-        ...s,
-        legal,
-        vesting,
-        leaseHold: lease,
-      }));
-      setLoading(false);
-      setUpdated(true);
-      setTimeout(() => setUpdated(false), 3000);
-    }, 1500);
-  };
+  useEffect(() => {
+    setAreaType(shared.areaType || "City");
+    setAreaName(
+      shared.areaType === "City" ? shared.cityName
+      : shared.areaType === "Township" ? shared.townshipName
+      : shared.unincorporatedName
+    );
+    setPropType(shared.propertyClassification || "Single Family Residence");
+  }, [shared.areaType, shared.cityName, shared.townshipName, shared.unincorporatedName, shared.propertyClassification]);
 
   const triggerBtn = (
     label: string,
@@ -113,12 +103,23 @@ export default function LegalVestingDrawer({ shared, setShared, isLoading }: Leg
         </div>
       )}
       <div className="flex gap-2 items-center">
-        {triggerBtn("Legal Description", "fileCheck", "#8B0000", openLegal, () => setOpenLegal((v) => !v))}
-        {triggerBtn("Vesting", "user", "#0369a1", openVesting, () => setOpenVesting((v) => !v))}
+        {triggerBtn(
+          "Legal Description",
+          "fileCheck",
+          "#8B0000",
+          openLegal,
+          () => setOpenLegal((v) => !v),
+        )}
+        {triggerBtn("Vesting", "user", "#0369a1", openVesting, () =>
+          setOpenVesting((v) => !v),
+        )}
       </div>
 
       {openLegal &&
-        panelWrap("#8B0000", "Legal Description", () => setOpenLegal(false), (
+        panelWrap(
+          "#8B0000",
+          "Legal Description",
+          () => setOpenLegal(false),
           <div className={card}>
             <CardHead
               title="Legal Description"
@@ -136,23 +137,54 @@ export default function LegalVestingDrawer({ shared, setShared, isLoading }: Leg
               }
             />
             <div className="p-[18px] flex flex-col gap-2.5">
-              <textarea rows={10} value={legal} onChange={(e) => setLegal(e.target.value)} className={ta} disabled={isLoading} placeholder={isLoading ? "Loading property data..." : ""} />
+              <textarea
+                rows={10}
+                value={shared.legal}
+                onChange={(e) =>
+                  setShared((s) => ({ ...s, legal: e.target.value }))
+                }
+                className={ta}
+                disabled={isLoading}
+                placeholder={isLoading ? "Loading property data..." : ""}
+              />
               <div className="flex flex-wrap justify-between items-center gap-2">
                 <button className="bg-transparent border-none text-ui-link text-[11px] font-semibold cursor-pointer">
                   Convert to Fields
                 </button>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-text-muted">{legal.length} chars</span>
+                  <span className="text-[10px] text-text-muted">
+                    {shared.legal.length} chars
+                  </span>
                   <button
                     onClick={() => {
                       const sel = window.getSelection()?.toString() || "";
-                      const url = prompt("Enter URL to hyperlink selected text:", "https://");
-                      if (url && sel) setLegal((l) => l.replace(sel, `${sel} [${url}]`));
+                      const url = prompt(
+                        "Enter URL to hyperlink selected text:",
+                        "https://",
+                      );
+                      if (url && sel) {
+                        setShared((s) => ({
+                          ...s,
+                          legal: s.legal.replace(sel, `${sel} [${url}]`),
+                        }));
+                      }
                     }}
                     className="inline-flex items-center gap-1 px-2.5 py-1.25 text-[10px] font-semibold rounded-lg cursor-pointer"
-                    style={{ background: "var(--status-info-subtle)", border: "1px solid var(--status-info-blue-border)", color: "var(--status-info-blue)" }}
+                    style={{
+                      background: "var(--status-info-subtle)",
+                      border: "1px solid var(--status-info-blue-border)",
+                      color: "var(--status-info-blue)",
+                    }}
                   >
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    >
                       <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
                       <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
                     </svg>
@@ -160,14 +192,32 @@ export default function LegalVestingDrawer({ shared, setShared, isLoading }: Leg
                   </button>
                   <button
                     onClick={() =>
-                      setLegal((l) =>
-                        l.replace(/https?:\/\/[^\s\]]+/g, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/<a[^>]*>([^<]*)<\/a>/gi, "$1").replace(/[ \t]+/g, " ").trim(),
-                      )
+                      setShared((s) => ({
+                        ...s,
+                        legal: s.legal
+                          .replace(/https?:\/\/[^\s\]]+/g, "")
+                          .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+                          .replace(/<a[^>]*>([^<]*)<\/a>/gi, "$1")
+                          .replace(/[ \t]+/g, " ")
+                          .trim(),
+                      }))
                     }
                     className="inline-flex items-center gap-1 px-2.5 py-1.25 text-[10px] font-semibold rounded-lg cursor-pointer"
-                    style={{ background: "#fdf4ff", border: "1px solid #e9d5ff", color: "var(--accent-title-point)" }}
+                    style={{
+                      background: "#fdf4ff",
+                      border: "1px solid #e9d5ff",
+                      color: "var(--accent-title-point)",
+                    }}
                   >
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    >
                       <path d="M18.84 12.25l1.72-1.71h-.02a5.004 5.004 0 00-.12-7.07 5.006 5.006 0 00-6.95 0l-1.72 1.71" />
                       <path d="M5.17 11.75l-1.71 1.71a5.004 5.004 0 00.12 7.07 5.006 5.006 0 006.95 0l1.71-1.71" />
                       <line x1="8" y1="2" x2="8" y2="5" />
@@ -178,11 +228,14 @@ export default function LegalVestingDrawer({ shared, setShared, isLoading }: Leg
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          </div>,
+        )}
 
       {openVesting &&
-        panelWrap("#0369a1", "Vesting Box", () => setOpenVesting(false), (
+        panelWrap(
+          "#0369a1",
+          "Vesting Box",
+          () => setOpenVesting(false),
           <div className={card}>
             <CardHead
               title="Vesting Box"
@@ -200,18 +253,47 @@ export default function LegalVestingDrawer({ shared, setShared, isLoading }: Leg
               }
             />
             <div className="p-[18px] flex flex-col gap-3">
-              <textarea rows={4} value={vesting} onChange={(e) => setVesting(e.target.value)} className={ta} disabled={isLoading} placeholder={isLoading ? "Loading property data..." : ""} />
+              <textarea
+                rows={4}
+                value={shared.vesting}
+                onChange={(e) =>
+                  setShared((s) => ({ ...s, vesting: e.target.value }))
+                }
+                className={ta}
+                disabled={isLoading}
+                placeholder={isLoading ? "Loading property data..." : ""}
+              />
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => {
                     const sel = window.getSelection()?.toString() || "";
-                    const url = prompt("Enter URL to hyperlink selected text:", "https://");
-                    if (url && sel) setVesting((v) => v.replace(sel, `${sel} [${url}]`));
+                    const url = prompt(
+                      "Enter URL to hyperlink selected text:",
+                      "https://",
+                    );
+                    if (url && sel) {
+                      setShared((s) => ({
+                        ...s,
+                        vesting: s.vesting.replace(sel, `${sel} [${url}]`),
+                      }));
+                    }
                   }}
                   className="inline-flex items-center gap-1 px-2.5 py-1.25 text-[10px] font-semibold rounded-lg cursor-pointer"
-                  style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1d4ed8" }}
+                  style={{
+                    background: "#eff6ff",
+                    border: "1px solid #bfdbfe",
+                    color: "#1d4ed8",
+                  }}
                 >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  >
                     <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
                     <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
                   </svg>
@@ -219,14 +301,32 @@ export default function LegalVestingDrawer({ shared, setShared, isLoading }: Leg
                 </button>
                 <button
                   onClick={() =>
-                    setVesting((v) =>
-                      v.replace(/https?:\/\/[^\s\]]+/g, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/<a[^>]*>([^<]*)<\/a>/gi, "$1").replace(/[ \t]+/g, " ").trim(),
-                    )
+                    setShared((s) => ({
+                      ...s,
+                      vesting: s.vesting
+                        .replace(/https?:\/\/[^\s\]]+/g, "")
+                        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+                        .replace(/<a[^>]*>([^<]*)<\/a>/gi, "$1")
+                        .replace(/[ \t]+/g, " ")
+                        .trim(),
+                    }))
                   }
                   className="inline-flex items-center gap-1 px-2.5 py-1.25 text-[10px] font-semibold rounded-lg cursor-pointer"
-                  style={{ background: "#fdf4ff", border: "1px solid #e9d5ff", color: "#7c3aed" }}
+                  style={{
+                    background: "#fdf4ff",
+                    border: "1px solid #e9d5ff",
+                    color: "#7c3aed",
+                  }}
                 >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  >
                     <path d="M18.84 12.25l1.72-1.71h-.02a5.004 5.004 0 00-.12-7.07 5.006 5.006 0 00-6.95 0l-1.72 1.71" />
                     <path d="M5.17 11.75l-1.71 1.71a5.004 5.004 0 00.12 7.07 5.006 5.006 0 006.95 0l1.71-1.71" />
                     <line x1="8" y1="2" x2="8" y2="5" />
@@ -242,64 +342,64 @@ export default function LegalVestingDrawer({ shared, setShared, isLoading }: Leg
                   <span className={pill}>Jane R. Doe</span>
                 </div>
               </div>
-              <div className="flex justify-between items-center">
-                {updated ? (
-                  <span className="flex items-center gap-1 text-[10px] text-status-success-dark font-semibold">
-                    <Icon name="checkCircle" size={11} />
-                    Updated
-                  </span>
-                ) : (
-                  <span />
-                )}
-                <button
-                  onClick={handleUpdate}
-                  disabled={loading}
-                  className="inline-flex items-center gap-1 px-4 py-1.5 text-[11px] font-semibold border-none rounded-lg cursor-pointer transition-opacity"
-                  style={{
-                    background: "var(--brand-primary)",
-                    color: "#fff",
-                    opacity: loading ? 0.6 : 1,
-                    cursor: loading ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {loading ? (
-                    <>
-                      <Icon name="loader" size={11} className="spin" />
-                      Updating…
-                    </>
-                  ) : (
-                    <>
-                      <Icon name="refresh" size={11} />
-                      Update Vesting from Chain
-                    </>
-                  )}
-                </button>
-              </div>
             </div>
-          </div>
-        ))}
+          </div>,
+        )}
 
       <div className={card}>
-        <CardHead title="Lease Hold Interest" sub="Leasehold details and ownership remarks" />
+        <CardHead
+          title="Lease Hold Interest"
+          sub="Leasehold details and ownership remarks"
+        />
         <div className="p-[18px]">
-          <textarea rows={3} value={lease} onChange={(e) => setLease(e.target.value)} className={ta} disabled={isLoading} placeholder={isLoading ? "Loading property data..." : ""} />
+          <textarea
+            rows={3}
+            value={shared.leaseHold}
+            onChange={(e) =>
+              setShared((s) => ({ ...s, leaseHold: e.target.value }))
+            }
+            className={ta}
+            disabled={isLoading}
+            placeholder={isLoading ? "Loading property data..." : ""}
+          />
         </div>
       </div>
 
       <div className={card}>
-        <CardHead title="City / Township / Unincorporated Area" sub="Jurisdiction and area classification" />
+        <CardHead
+          title="City / Township / Unincorporated Area"
+          sub="Jurisdiction and area classification"
+        />
         <div className="p-[18px] grid grid-cols-2 gap-3.5">
           <div>
             <Lbl>Area Type</Lbl>
-            <select value={areaType} onChange={(e) => setAreaType(e.target.value)} className={inp}>
+            <select
+              value={areaType}
+              onChange={(e) => {
+                setAreaType(e.target.value);
+                setShared((s) => ({ ...s, areaType: e.target.value }));
+              }}
+              className={inp}
+            >
               <option>City</option>
               <option>Township</option>
               <option>Unincorporated Area</option>
             </select>
           </div>
           <div>
-            <Lbl>Area Name</Lbl>
-            <input value={areaName} onChange={(e) => setAreaName(e.target.value)} className={inp} />
+            <Lbl>{areaType || "Area"} Name</Lbl>
+            <input
+              value={areaName}
+              onChange={(e) => {
+                setAreaName(e.target.value);
+                setShared((s) => {
+                  const field = s.areaType === "City" ? "cityName" : s.areaType === "Township" ? "townshipName" : "unincorporatedName";
+                  return { ...s, [field]: e.target.value };
+                });
+              }}
+              className={inp}
+              placeholder={`Enter ${(areaType || "area").toLowerCase()} name...`}
+            />
           </div>
         </div>
       </div>
@@ -339,7 +439,13 @@ export default function LegalVestingDrawer({ shared, setShared, isLoading }: Leg
             <Lbl>Property Classification</Lbl>
             <select
               value={propType}
-              onChange={(e) => setPropType(e.target.value)}
+              onChange={(e) => {
+                setPropType(e.target.value);
+                setShared((s) => ({
+                  ...s,
+                  propertyClassification: e.target.value,
+                }));
+              }}
               className={`${inp} text-[12px] px-3 py-2.25`}
             >
               <option>Single Family Residence</option>

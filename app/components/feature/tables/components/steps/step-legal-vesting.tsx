@@ -25,15 +25,15 @@ export default function StepLegalVesting({
 }: StepLegalVestingProps) {
   const [legal, setLegal] = useState(
     shared?.legal ||
-      "LOT 22 OF TRACT 12345, IN THE CITY OF RIALTO, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA, AS PER MAP RECORDED IN BOOK 123, PAGE 45 OF MAPS, IN THE OFFICE OF THE COUNTY RECORDER OF SAID COUNTY.",
+      "",
   );
   const [vesting, setVesting] = useState(
     shared?.vesting ||
-      "John D. Doe and Jane R. Doe, husband and wife as community property, COUNTY OF SAN BERNARDINO, STATE OF CALIFORNIA.",
+      "",
   );
   const [lease, setLease] = useState(
     shared?.leaseHold ||
-      "Fee simple estate subject to leasehold interest as disclosed in supporting documents.",
+      "",
   );
   const [areaType, setAreaType] = useState("City");
   const [areaName, setAreaName] = useState("Rialto");

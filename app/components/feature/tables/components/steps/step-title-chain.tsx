@@ -9,22 +9,42 @@ import TaxCertCard from "../tax-cert-card";
 import AssessorCard from "../assessor-card";
 import SectionUploadModal from "../section-upload-modal";
 import { Button } from "@/components/ui";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ManualSearchModal from "../models/manual-search-modal";
-import { INDEX_SECTIONS, CAEXC_CODES, CAREQ_CODES } from "../consts";
+import { INDEX_SECTIONS } from "../consts";
 import { mapTransactionsToIndexRows } from "@/app/services/transaction-mapper";
+import { useFetchCodeBookQuery } from "@/app/store/api/ordersApi";
 import type {
   SharedState,
   PropertyForm,
   ChainCode,
+  CodeBookEntry,
 } from "@/app/components/feature/tables/types";
 
+/* ── Map API CodeBookEntry to GenieSectionCard's expected shape ── */
+interface GenieCodeItem {
+  code: string;
+  label: string;
+  body: string;
+}
+
+function mapCodeBookToGenieItems(entries: CodeBookEntry[]): GenieCodeItem[] {
+  return entries
+    .filter((e) => e.isActive)
+    .map((e) => {
+      const dashIdx = e.code.indexOf(" - ");
+      const label = dashIdx !== -1 ? e.code.slice(dashIdx + 3).trim() : e.code;
+      return { code: e.code, label, body: e.verbiage };
+    });
+}
+
 interface StepTitleChainProps {
-  shared?: SharedState;
-  setShared?: React.Dispatch<React.SetStateAction<SharedState>>;
+  shared: SharedState;
+  setShared: React.Dispatch<React.SetStateAction<SharedState>>;
   propertyForm?: PropertyForm;
   reportRaw?: Record<string, any>;
   isLoading?: boolean;
+  onSave?: (dates?: { typeDate: string; effectiveDate: string }) => void;
   onSaveClose?: () => void;
 }
 
@@ -34,6 +54,7 @@ export default function StepTitleChain({
   propertyForm,
   reportRaw,
   isLoading,
+  onSave,
   onSaveClose,
 }: StepTitleChainProps) {
   const apiChainRows = reportRaw?.Transactions
@@ -42,8 +63,15 @@ export default function StepTitleChain({
   const [showSearch, setShowSearch] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [typeDate, setTypeDate] = useState("");
-  const [effectiveDate, setEffectiveDate] = useState("2026-04-28");
+  const [effectiveDate, setEffectiveDate] = useState("");
   const [codes, setCodes] = useState<ChainCode[]>(shared?.chainCodes || []);
+  const { data: codeBookEntries } = useFetchCodeBookQuery();
+  const genieCodes = codeBookEntries ? mapCodeBookToGenieItems(codeBookEntries) : [];
+
+  useEffect(() => {
+    setTypeDate(shared.typeDate || "");
+    setEffectiveDate(shared.effectiveDate || "");
+  }, [shared.typeDate, shared.effectiveDate]);
 
   const addCode = (code: ChainCode) => {
     const next = [...codes, code];
@@ -59,6 +87,7 @@ export default function StepTitleChain({
       <LegalVestingDrawer
         shared={shared}
         setShared={setShared}
+        propertyForm={propertyForm}
         isLoading={isLoading}
       />
 
@@ -190,7 +219,7 @@ export default function StepTitleChain({
                 title={sec.title}
                 sub="Schedule B Exceptions — from Genie Code Book"
                 accent={sec.accent}
-                codes={CAEXC_CODES}
+                codes={genieCodes}
               />
             );
           if (sec.title === "Other Requirements")
@@ -200,7 +229,7 @@ export default function StepTitleChain({
                 title={sec.title}
                 sub="Informational Notes & Requirements — from Genie Code Book"
                 accent={sec.accent}
-                codes={CAREQ_CODES}
+                codes={genieCodes}
               />
             );
           const isTitleChain = sec.title === "Title Chain Review";
@@ -242,12 +271,18 @@ export default function StepTitleChain({
           Upload
         </button>
         <div className="flex-1" />
-        <button className="inline-flex items-center gap-1.25 bg-white text-text-secondary border border-border rounded-lg px-4 py-1.75 text-[12px] font-semibold cursor-pointer">
+        <button
+          onClick={() => onSave?.({ typeDate, effectiveDate })}
+          className="inline-flex items-center gap-1.25 bg-white text-text-secondary border border-border rounded-lg px-4 py-1.75 text-[12px] font-semibold cursor-pointer"
+        >
           <Icon name="save" size={12} />
           Save
         </button>
         <button
-          onClick={onSaveClose}
+          onClick={() => {
+            onSave?.({ typeDate, effectiveDate });
+            onSaveClose?.();
+          }}
           className="inline-flex items-center gap-1.25 bg-header text-white border-none rounded-lg px-4 py-1.75 text-[12px] font-semibold cursor-pointer"
         >
           <Icon name="save" size={12} />

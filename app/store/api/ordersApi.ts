@@ -2,14 +2,17 @@
 
 import { createApi } from "@reduxjs/toolkit/query/react"
 import { baseQueryWithAuth } from "../baseQuery"
-import type { Order, PaginatedOrdersResponse } from "@/app/components/feature/tables/types"
+import type { Order, OrderDetail, PaginatedOrdersResponse, CodeBookEntry } from "@/app/components/feature/tables/types"
 
 export const ordersApi = createApi({
   reducerPath: "ordersApi",
   baseQuery: baseQueryWithAuth,
-  tagTypes: ["Orders"],
+  tagTypes: ["Orders", "CodeBook"],
   endpoints: (builder) => ({
-    fetchOrders: builder.query<PaginatedOrdersResponse, { page?: number; pageSize?: number }>({
+    fetchOrders: builder.query<
+      PaginatedOrdersResponse,
+      { page?: number; pageSize?: number }
+    >({
       query: ({ page = 1, pageSize = 50 } = {}) => ({
         url: "/orders",
         method: "GET",
@@ -18,7 +21,13 @@ export const ordersApi = createApi({
       providesTags: ["Orders"],
       transformResponse: (response: Order[] | PaginatedOrdersResponse) => {
         if (Array.isArray(response)) {
-          return { data: response, total: response.length, page: 1, pageSize: response.length, totalPages: 1 };
+          return {
+            data: response,
+            total: response.length,
+            page: 1,
+            pageSize: response.length,
+            totalPages: 1,
+          };
         }
         return response;
       },
@@ -33,6 +42,36 @@ export const ordersApi = createApi({
       invalidatesTags: ["Orders"],
     }),
 
+    fetchOrder: builder.query<OrderDetail, string>({
+      query: (id) => ({
+        url: `/orders/${id}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "Orders", id }],
+    }),
+    fetchCodeBook: builder.query<CodeBookEntry[], void>({
+      query: () => ({
+        url: `/codebook`,
+        method: "GET",
+      }),
+      providesTags: ["CodeBook"],
+    }),
+
+    updateOrder: builder.mutation<
+      OrderDetail,
+      { id: string; body: Partial<OrderDetail> }
+    >({
+      query: ({ id, body }) => ({
+        url: `/orders/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        "Orders",
+        { type: "Orders", id },
+      ],
+    }),
+
     createOrder: builder.mutation<Order, Record<string, any>>({
       query: (body) => ({
         url: "/orders",
@@ -42,6 +81,6 @@ export const ordersApi = createApi({
       invalidatesTags: ["Orders"],
     }),
   }),
-})
+});
 
-export const { useFetchOrdersQuery, useUpdateOrderRushMutation, useCreateOrderMutation } = ordersApi
+export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation } = ordersApi

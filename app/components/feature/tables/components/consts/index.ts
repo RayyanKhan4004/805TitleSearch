@@ -144,12 +144,12 @@ export const STEPS = [
 
 export const NAV_ICONS = [
   { name: "dashboard", label: "Dashboard", active: false },
-  { name: "orders", label: "Orders", active: false },
-  { name: "search", label: "Search", active: false },
-  { name: "link", label: "Title Chain", active: false },
-  { name: "file", label: "Documents", active: false },
-  { name: "tasks", label: "Tasks", active: true },
-  { name: "chart", label: "Reports", active: false },
+  // { name: "orders", label: "Orders", active: false },
+  // { name: "search", label: "Search", active: false },
+  // { name: "link", label: "Title Chain", active: false },
+  // { name: "file", label: "Documents", active: false },
+  // { name: "tasks", label: "Tasks", active: true },
+  // { name: "chart", label: "Reports", active: false },
   { name: "settings", label: "Admin", active: false },
 ];
 
@@ -177,18 +177,7 @@ export const INDEX_SECTIONS = [
   { title: "Title Chain Review", sub: "Full chain of title — deeds, liens, easements", accent: "#8B0000", rows: [] },
 ];
 
-export const COUNTIES = [
-  "Los Angeles",
-  "San Bernardino",
-  "Riverside",
-  "Orange",
-  "San Diego",
-  "Ventura",
-  "Sacramento",
-  "Fresno",
-  "Kern",
-  "Alameda",
-];
+export const COUNTIES: string[] = [];
 
 export const DOC_SEARCH_TYPES = [
   "Grant Deed",
@@ -209,93 +198,11 @@ export interface GenieCodeItem {
   body: string;
 }
 
-export const CAEXC_CODES: GenieCodeItem[] = [
-  {
-    code: "CAA20",
-    label: "Facts / Claims Not in Public Records",
-    body: "Any facts, rights, interest, or claims which are not shown by the Public Records but which could be ascertained by an inspection of the Land or which may be asserted by persons in possession thereof.",
-  },
-  {
-    code: "CAA21",
-    label: "Survey Discrepancies",
-    body: "Discrepancies, conflicts in boundary lines, shortage in area, encroachments, or any other facts which a correct survey would disclose, and which are not shown by the Public Records.",
-  },
-  {
-    code: "CAA22",
-    label: "Mining Claims / Water Rights / Special Assessments",
-    body: "(a) Unpatented mining claims; (b) reservations or exceptions in patents or in Acts authorizing the issuance thereof; (c) water rights, claims or title to water, whether or not the matters excepted under (a), (b), or (c) are shown by the Public Records.\n\nAny liens or other assessments, bonds, or special district liens including without limitation, community facility districts, that arise by reason of any local, city, municipal or county project or special district.",
-  },
-  {
-    code: "CAA12",
-    label: "Water Rights",
-    body: "Water rights, claims or title to water in or under said land, whether or not shown by the public records.",
-  },
-  {
-    code: "CARQ20",
-    label: "Statement of Information Required",
-    body: "The Company required a Statement of Information from the vestee(s) named below, as we are unable to determine of record the marital status of said vestee(s) at the time of acquisition of title.\n\nVestee(s): *\n\nIf the above required Statement of Information discloses that said vestee was married at the time of acquisition of title, the interest of the spouse needs to be addressed. The Company reserves the right to make additional requirements upon receipt of the Statement of Information.",
-  },
-  {
-    code: "CAFINCENEX",
-    label: "FinCEN Report — Exception",
-    body: 'In the event that the contemplated transaction is a transaction for which a Real Estate Report is required to be submitted to the US Department of Treasury Financial Crimes Enforcement Network ("FinCEN Report"), then the parties to transaction (Seller(s) and Buyer(s)) shall, no later than the closing, provide to the Company the information and documentation necessary to enable the Company to complete the FinCEN Report. Such information and documentation includes full legal name, date of birth, residential street address, and the IRS taxpayer identification number of the beneficial owners of the Buyer(s), as further defined and described in Section 1010.821 of Chapter 31 of the Code of Federal Regulations ("Code"). NOTE: The FinCEN Report requires that certain residential real estate transactions purchased with all cash or without institutional lender financing, where at least one buyer/transferee is a legal entity, limited liability company, corporation, partnership, trust, trustee or other non natural person, must be reported to the United States Treasury Department\'s Financial Crimes Enforcement Network. If the required information is not timely provided to the Company, the Company may elect to withdraw as the settlement company or otherwise be involved in the transaction.',
-  },
-];
+export const CAEXC_CODES: GenieCodeItem[] = [];
 
-export const CAREQ_CODES: GenieCodeItem[] = [
-  {
-    code: "CAA1",
-    label: "ALTA Endorsement Form 9 — No Decline",
-    body: "Note: None of the items shown in this report will cause the Company to decline to attach ALTA Endorsement Form 9 to an Extended Coverage Loan Policy, when issued.",
-  },
-  {
-    code: "CAA3",
-    label: "CLTA Endorsement Form 116 — PUD",
-    body: "Note: The Company is not aware of any matters which would cause it to decline to attach CLTA Endorsement Form 116 indicating that there is located on said land * known as * to an Extended Coverage Loan Policy.",
-  },
-  {
-    code: "CANT2",
-    label: "No Conveyances in 24 Months",
-    body: "There are NO conveyances affecting said land, which recorded within the 24 month period of the date of this report.",
-  },
-  {
-    code: "CANT3",
-    label: "Conveyances in 24 Months — Detail",
-    body: "The only conveyances(s) affecting said land, which recorded within the 24 month period of the date of this report, are as follows:\nGrantor: *\nGrantee: *\nRecorded: *\nInstrument/File No.: * of Official Records.",
-  },
-  {
-    code: "CANT17",
-    label: "Documentary Transfer Tax Affidavit",
-    body: "Pursuant to Government Code Section 27388.1, as amended and effective as of 1-1-2018, a Documentary Transfer Tax (OTT) Affidavit may be required to be completed and submitted with each document when OTT is being paid or when an exemption is being claimed from paying the tax.",
-  },
-  {
-    code: "CANT18",
-    label: "Marijuana / Cannabis Prohibition",
-    body: "Notice: Please be aware that due to the conflict between federal and state laws concerning the cultivation, distribution, manufacture or sale of marijuana, the Company is not able to close or insure any transaction involving Land that is associated with these activities.",
-  },
-  {
-    code: "CANT19",
-    label: "Preliminary Change of Ownership",
-    body: "A Preliminary Change of Ownership form is required upon a change in ownership of the Land. Section 480 of the Revenue and Taxation Code of the State of California requires that a grantee of real property complete a Preliminary Change of Ownership statement, which is to be filed at the time that a grant deed is recorded.",
-  },
-  {
-    code: "CANT20",
-    label: "Sub-Escrow Loan Proceeds",
-    body: "NOTE: When this title order closes and if the Company is handling the loan proceeds through a sub-escrow, all title charges and expenses normally billed will be deducted from those loan proceeds.",
-  },
-  {
-    code: "CANT21",
-    label: "Unlawful Restrictions Statement",
-    body: "If a county recorder, title insurance company, escrow company, real estate agent or association provides a copy of the declaration, governing document or deed to any person, California law requires that the document provided shall include a statement regarding any unlawful restrictions.",
-  },
-];
+export const CAREQ_CODES: GenieCodeItem[] = [];
 
-export const CREATE_STEPS = [
-  "Search Property",
-  "Property Information",
-  "File Information",
-  "Transaction Parties",
-];
+export const CREATE_STEPS: string[] = [];
 
 export const EMPTY_FORM: PropertyForm = {
   addrNo: "",
@@ -306,7 +213,7 @@ export const EMPTY_FORM: PropertyForm = {
   unitType: "",
   unitNo: "",
   city: "",
-  state: "CA",
+  state: "",
   zip: "",
   county: "",
   apn1: "",
@@ -322,11 +229,11 @@ export const EMPTY_FORM: PropertyForm = {
   township: "",
   range: "",
   shortLegal: "",
-  municipality: "City",
+  municipality: "",
   jurisdiction: "",
   vestingText: "",
-  vestingType: "Community Property",
-  landUse: "Single Family Residential",
+  vestingType: "",
+  landUse: "",
 };
 
 export const DEFAULT_FORM: FormData = {
@@ -337,12 +244,12 @@ export const DEFAULT_FORM: FormData = {
     addrNum: "",
     addrStr: "",
     addrCity: "",
-    addrState: "CA",
+    addrState: "",
     addrZip: "",
     ownerName: "",
     propId: "",
     fullAddr: "",
-    advCounty: "ORANGE",
+    advCounty: "",
     advYear: "",
     advBeds: "",
   },
@@ -350,22 +257,22 @@ export const DEFAULT_FORM: FormData = {
   file: {
     clientName: "",
     clientFileNo: "",
-    transactionType: "Sale",
+    transactionType: "",
     productType: "",
     sourceOfBusiness: "",
     loanNumber: "",
     editMode: false,
     editOrderNo: "",
     editOpenDate: "",
-    editStatus: "Open",
+    editStatus: "",
     editRush: false,
     editClientFileNo: "",
     editSource: "",
     editCloseDate: "",
     editDelivery: "",
     editSegment: "",
-    editTransType: "Sale",
-    editProductType: "PRELIM/COMMITMENT - SALE",
+    editTransType: "",
+    editProductType: "",
     editUnderwriter: "",
     editSalePrice: "",
     editLoanAmt: "",
@@ -392,7 +299,7 @@ export const DEFAULT_FORM: FormData = {
     escrowCompany: "",
     titleOffice: "",
     escrowOffice: "",
-    branch: "South Cal",
+    branch: "",
     loanOfficer: "",
     lender: "",
   },
@@ -402,27 +309,27 @@ export const DEFAULT_FORM: FormData = {
     bFirst: "",
     bLast: "",
     bMid: "",
-    bVest: "Community Property",
+    bVest: "",
     bPhone: "",
     bEmail: "",
     bAddr: "",
     bCity: "",
-    bState: "CA",
+    bState: "",
     bZip: "",
-    bEntity: "Individual",
+    bEntity: "",
     bSSN: "",
     sFirst: "",
     sLast: "",
     sMid: "",
-    sVest: "Community Property",
+    sVest: "",
     sPhone: "",
     sEmail: "",
     sAddr: "",
-    sDeedType: "Grant Deed",
+    sDeedType: "",
     sDocNo: "",
     titleOffice: "",
     escrowOffice: "",
-    branch: "South Cal",
+    branch: "",
     titleOfficer: "",
     titleOfficerEmail: "",
     escrowOfficer: "",
@@ -435,7 +342,7 @@ export const DEFAULT_FORM: FormData = {
     laContDre: "",
     laAddr: "",
     laCity: "",
-    laState: "CA",
+    laState: "",
     laZip: "",
     laPhone: "",
     laFax: "",
@@ -448,7 +355,7 @@ export const DEFAULT_FORM: FormData = {
     saContDre: "",
     saAddr: "",
     saCity: "",
-    saState: "CA",
+    saState: "",
     saZip: "",
     saPhone: "",
     saFax: "",
@@ -461,7 +368,7 @@ export const DEFAULT_FORM: FormData = {
     lsaContDre: "",
     lsaAddr: "",
     lsaCity: "",
-    lsaState: "CA",
+    lsaState: "",
     lsaZip: "",
     lsaPhone: "",
     lsaFax: "",
@@ -474,7 +381,7 @@ export const DEFAULT_FORM: FormData = {
     ldContNmls: "",
     ldAddr: "",
     ldCity: "",
-    ldState: "CA",
+    ldState: "",
     ldZip: "",
     ldPhone: "",
     ldFax: "",
@@ -487,7 +394,7 @@ export const DEFAULT_FORM: FormData = {
     mbContNmls: "",
     mbAddr: "",
     mbCity: "",
-    mbState: "CA",
+    mbState: "",
     mbZip: "",
     mbPhone: "",
     mbFax: "",
@@ -500,7 +407,7 @@ export const DEFAULT_FORM: FormData = {
     pcContId: "",
     pcAddr1: "",
     pcCity: "",
-    pcState: "CA",
+    pcState: "",
     pcZip: "",
     pcPhone: "",
     pcEmail: "",
@@ -510,7 +417,7 @@ export const DEFAULT_FORM: FormData = {
     clContId: "",
     clAddr: "",
     clCity: "",
-    clState: "CA",
+    clState: "",
     clZip: "",
     clPhone: "",
     clEmail: "",

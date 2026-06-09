@@ -254,7 +254,13 @@ export interface SharedState {
   legal: string;
   leaseHold: string;
   effectiveDate: string;
+  typeDate: string;
   chainCodes: ChainCode[];
+  areaType: string;
+  cityName: string;
+  townshipName: string;
+  unincorporatedName: string;
+  propertyClassification: string;
 }
 
 export interface Document {
@@ -658,4 +664,139 @@ export interface FormData {
     clPhone: string;
     clEmail: string;
   };
+}
+
+/* ── Code Book entry (GET /codebook response) ── */
+export interface CodeBookEntry {
+  id: string;
+  code: string;
+  category: string;
+  verbiage: string;
+  fields: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/* ── Order detail (GET /orders/:id response) ── */
+export interface OrderDetailParty {
+  firstName?: string;
+  lastName?: string;
+  [key: string]: unknown;
+}
+
+export interface OrderDetail {
+  id: number;
+
+  /* address */
+  addrNo: string;
+  dirPrefix: string;
+  streetName: string;
+  suffix: string;
+  postDir: string;
+  unitType: string;
+  unitNo: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  county: string;
+
+  /* APN */
+  apn1: string;
+  apn2: string;
+  apn3: string;
+  apn4: string;
+
+  /* parcel / legal */
+  lot: string;
+  block: string;
+  tract: string;
+  mapBook: string;
+  page: string;
+  section: string;
+  township: string;
+  range: string;
+  shortLegal: string;
+  legalDescription: string | null;
+
+  /* vesting */
+  assessorVesting: string;
+  vesting: string | null;
+  vestingType: string;
+
+  /* property */
+  landUse: string;
+  municipality: string;
+  jurisdiction: string;
+  yearBuilt: string | null;
+  propertyTax: string | null;
+  leaseHoldInterest: string | null;
+
+  /* dates */
+  typeDate: string | null;
+  effectiveDate: string | null;
+  areaType: string | null;
+  cityTownshipName: string | null;
+  propertyClassification: string | null;
+
+  /* assessor data */
+  assessorOwner: string | null;
+  assessorLandUse: string | null;
+  assessorYearBuilt: string | null;
+  assessorPropertyTax: string | null;
+
+  /* runsheet */
+  runsheetPICount: number | null;
+  runsheetGINames: string | null;
+  runsheetGIEntries: string | null;
+
+  /* client / file info */
+  clientName: string;
+  clientFileNo: string;
+  transactionType: string;
+  productType: string;
+  sourceOfBusiness: string;
+  loanAmount: string;
+  loanNumber: string;
+  estimatedClosingDate: string;
+  expectedDelivery: string;
+  businessSegment: string;
+  underwriter: string;
+  salePrice: string;
+  insuredAmount: string;
+  premiumOwners: string;
+  premiumLenders: string;
+  premiumBinder: string;
+  ownersPolicyNo: string;
+  loanPolicyNo: string;
+  binderPolicyNo: string;
+  escrowCoRefNo: string;
+  titleOfficer: string;
+  titleOfficerEmail: string;
+  escrowOfficer: string;
+  escrowOfficerEmail: string;
+  titleRep: string;
+  titleRepEmail: string;
+  titleRepPercent: string;
+  fileSource: string;
+  titleOffice: string;
+  escrowOffice: string;
+  titleBranchReview: string;
+  loanOfficer: string;
+  lenderBank: string;
+
+  /* parties */
+  buyers: OrderDetailParty[];
+  sellers: OrderDetailParty[];
+  escrowTitles: Record<string, unknown>[];
+  listingAgents: Record<string, unknown>[];
+  sellingAgents: Record<string, unknown>[];
+  listingSellingAgents: Record<string, unknown>[];
+  lenders: Record<string, unknown>[];
+  mortgageBrokers: Record<string, unknown>[];
+  primaryContacts: Record<string, unknown>[];
+  clients: Record<string, unknown>[];
+
+  /* chain data */
+  titleChainReviews: Record<string, unknown>[];
 }

@@ -1,4 +1,4 @@
-import type { PropertyData, PropertyForm, IndexRow, AssessorData } from "@/app/components/feature/tables/types";
+import type { PropertyData, PropertyForm, IndexRow, AssessorData, OrderDetail } from "@/app/components/feature/tables/types";
 
 export function mapApiToForm(data: PropertyData): PropertyForm {
   const p = data.ParsedStreetAddress || {};
@@ -116,6 +116,80 @@ function extractNum(v: unknown): number {
   if (typeof v === "number") return v;
   const n = parseFloat(String(v).replace(/[^0-9.-]/g, ""));
   return isNaN(n) ? 0 : n;
+}
+
+/** Map GET /orders/:id response → PropertyForm */
+export function mapOrderDetailToForm(d: OrderDetail): PropertyForm {
+  return {
+    addrNo: d.addrNo ?? "",
+    dirPrefix: d.dirPrefix ?? "",
+    streetName: d.streetName ?? "",
+    suffix: d.suffix ?? "",
+    postDir: d.postDir ?? "",
+    unitType: d.unitType ?? "",
+    unitNo: d.unitNo ?? "",
+    city: d.city ?? "",
+    state: d.state ?? "",
+    zip: (d.zipCode ?? "").split("-")[0],
+    county: d.county ?? "",
+    apn1: d.apn1 ?? "",
+    apn2: d.apn2 ?? "",
+    apn3: d.apn3 ?? "",
+    apn4: d.apn4 ?? "",
+    lot: d.lot ?? "",
+    block: d.block ?? "",
+    tract: d.tract ?? "",
+    mapBook: d.mapBook ?? "",
+    page: d.page ?? "",
+    section: d.section ?? "",
+    township: d.township ?? "",
+    range: d.range ?? "",
+    shortLegal: d.shortLegal ?? "",
+    municipality: d.municipality ?? "City",
+    jurisdiction: d.jurisdiction ?? "",
+    vestingText:  d.vesting ?? "",
+    vestingType: d.vestingType,
+    landUse: d.landUse,
+    _yearBuilt: d.yearBuilt ?? undefined,
+    _livingArea: undefined,
+    _bedrooms: undefined,
+    _bathrooms: undefined,
+    _pool: undefined,
+    _garage: undefined,
+    _acreage: undefined,
+    _lotSqFt: undefined,
+    _floodZone: undefined,
+    _taxYear: undefined,
+    _assessedValue: undefined,
+    _annualTax: d.propertyTax ?? undefined,
+    _lastSaleDate: undefined,
+    _lastSalePrice: undefined,
+    _seller: undefined,
+    _buyer: undefined,
+    _deedType: undefined,
+    _docNo: undefined,
+    _lender: undefined,
+    _mtgAmt: undefined,
+    _mtgRate: undefined,
+    _neighborhood: undefined,
+  };
+}
+
+/** Extract SharedState fields from GET /orders/:id response */
+export function mapOrderDetailToSharedState(d: OrderDetail) {
+  return {
+    vesting:  d.vesting || "",
+    legal: d.shortLegal || d.legalDescription || "",
+    leaseHold: d.leaseHoldInterest || "",
+    effectiveDate: d.effectiveDate || "",
+    typeDate: d.typeDate || "",
+    areaType: (d as any).city ? "City" : d.cityTownshipName ? "Township" : d.municipality ? "Unincorporated Area" : "City",
+    cityName: (d as any).city || "",
+    townshipName: d.cityTownshipName || "",
+    unincorporatedName: d.municipality || "",
+    propertyClassification:
+      d.propertyClassification || d.landUse || "Single Family Residence",
+  };
 }
 
 export function mapRawToAssessorData(raw: Record<string, any>): AssessorData {

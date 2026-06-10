@@ -528,6 +528,7 @@ export default function Dashboard() {
                     setShared={setShared}
                     propertyForm={propertyForm ?? undefined}
                     reportRaw={reportData?.raw}
+                    orderDetail={orderDetail ?? undefined}
                     isLoading={isLoadingReport || isSaving}
                     onSave={handleSave}
                     onSaveClose={unlockAndClose}

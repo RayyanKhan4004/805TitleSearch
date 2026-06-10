@@ -146,6 +146,11 @@ export const EMPTY_SHARED_STATE: SharedState = {
   townshipName: "",
   unincorporatedName: "",
   propertyClassification: "",
+  proposedInsured: "",
+  effectiveTime: "",
+  additionalEasements: "",
+  additionalNotes: "",
+  assessorVesting: "",
 };
 
 export interface UploadCatField {
@@ -163,7 +168,7 @@ export interface UploadCat {
   fields: UploadCatField[];
 }
 
-const FIELDS: Record<string, UploadCatField[]> = {
+export const FIELDS: Record<string, UploadCatField[]> = {
   "Assessor Page": [
     { key: "apn", label: "APN", type: "text", placeholder: "107-0-330-755" },
     { key: "owner", label: "Owner Name", type: "text", placeholder: "RODRIGUEZ RAQUEL" },

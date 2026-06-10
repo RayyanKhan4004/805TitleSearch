@@ -147,10 +147,10 @@ export function mapOrderDetailToForm(d: OrderDetail): PropertyForm {
     shortLegal: d.shortLegal ?? d.legalDescription ?? "",
     municipality: d.municipality ?? "City",
     jurisdiction: d.jurisdiction ?? "",
-    vestingText: d.vesting ?? "",
+    vestingText: d.assessorVesting ?? d.vesting ?? "",
     vestingType: d.vestingType,
     landUse: d.landUse,
-    _yearBuilt: d.yearBuilt ?? undefined,
+    _yearBuilt: d.yearBuilt ?? d.assessorYearBuilt ?? undefined,
     _livingArea: undefined,
     _bedrooms: undefined,
     _bathrooms: undefined,
@@ -161,7 +161,7 @@ export function mapOrderDetailToForm(d: OrderDetail): PropertyForm {
     _floodZone: undefined,
     _taxYear: undefined,
     _assessedValue: undefined,
-    _annualTax: d.propertyTax ?? undefined,
+    _annualTax: d.propertyTax ?? d.assessorPropertyTax ?? undefined,
     _lastSaleDate: undefined,
     _lastSalePrice: undefined,
     _seller: undefined,
@@ -189,6 +189,11 @@ export function mapOrderDetailToSharedState(d: OrderDetail) {
     unincorporatedName: d.municipality || "",
     propertyClassification:
       d.propertyClassification || d.landUse || "Single Family Residence",
+    proposedInsured: d.proposedInsured || "",
+    effectiveTime: d.effectiveTime || "",
+    additionalEasements: d.additionalEasements || "",
+    additionalNotes: d.additionalNotes || "",
+    assessorVesting: d.assessorVesting || d.vesting || "",
   };
 }
 

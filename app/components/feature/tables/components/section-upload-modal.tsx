@@ -4,33 +4,152 @@ import { useState, useRef } from "react";
 import Icon from "@/components/common/icon";
 import { UPLOAD_CATS } from "./temp";
 import type { UploadCat } from "./temp";
+import { useUploadFileMutation, useUpdateOrderMutation } from "@/app/store/api/ordersApi";
+import toast from "react-hot-toast";
 
 interface SectionUploadModalProps {
   onClose: () => void;
+  orderId?: string;
 }
 
 export default function SectionUploadModal({
   onClose,
+  orderId,
 }: SectionUploadModalProps) {
   const [section, setSection] = useState("");
   const [form, setForm] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [uploadFile] = useUploadFileMutation();
+  const [updateOrder] = useUpdateOrderMutation();
 
   const cat: UploadCat | undefined = UPLOAD_CATS.find(
     (c) => c.label === section,
   );
   const accentColor = cat?.accent || "#8B0000";
 
+  /* ── FE form key → BE DTO field name ── */
+  const FIELD_TO_DTO: Record<string, Record<string, string>> = {
+    "Assessor Page": {
+      apn: "apn1",
+      owner: "assessorOwner",
+      assessed: "assessorPropertyTax",
+      landUse: "assessorLandUse",
+    },
+    "Assessor Map": {
+      mapRef: "tract",
+      parcelNo: "apn1",
+      notes: "additionalNotes",
+    },
+    "Tract Map": {
+      tractNo: "tract",
+      bookPage: "__split__",
+    },
+    "Tax Cert": {
+      apn: "apn1",
+    },
+    Runsheet: {
+      orderNo: "clientFileNo",
+      notes: "additionalNotes",
+      searchedBy: "additionalNotes",
+      searchDate: "additionalNotes",
+      geoCov: "additionalNotes",
+    },
+    Starters: {
+      policyNo: "remarks",
+      policyDate: "documentDate",
+      insured: "grantee",
+      company: "grantor",
+      amount: "amount",
+    },
+    "Title Chain Review": {
+      recDate: "recDate",
+      docDate: "documentDate",
+      instrNo: "instrument",
+      entityTitle: "entityTitle",
+      docTitle: "docTitle",
+      grantor: "grantor",
+      grantee: "grantee",
+      amount: "amount",
+      lienPos: "lienPosition",
+      notes: "remarks",
+    },
+  };
+
+  /* Sections that produce a titleChainReviews entry instead of top-level fields */
+  const TCR_SECTIONS = new Set(["Starters", "Title Chain Review"]);
+
   const upd = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!section) return;
-    setSaved(true);
-    setTimeout(() => {
-      setSaved(false);
-      onClose();
-    }, 800);
+    setUploading(true);
+    try {
+      let fileUrl = ""
+      if (selectedFile) {
+        const fd = new FormData()
+        fd.append("file", selectedFile)
+        fileUrl = await uploadFile(fd).unwrap()
+      }
+
+      /* PATCH order with uploaded data if we have an orderId */
+      if (orderId) {
+        const body: Record<string, unknown> = {}
+        const fieldMap = FIELD_TO_DTO[section] || {}
+
+        if (TCR_SECTIONS.has(section)) {
+          const chainEntry: Record<string, unknown> = {
+            documentSection: section === "Starters" ? "starters" : "title_chain_review",
+            isStarter: section === "Starters",
+          }
+          if (fileUrl) {
+            chainEntry.fileUrl = fileUrl
+            chainEntry.fileName = selectedFile?.name || null
+            chainEntry.fileKey = fileUrl.split("?")[0].split("/").slice(-2).join("/")
+            chainEntry.fileMimeType = selectedFile?.type || null
+          }
+          for (const [k, v] of Object.entries(form)) {
+            if (v) chainEntry[fieldMap[k] || k] = v
+          }
+          body.titleChainReviews = [chainEntry]
+        } else {
+          if (fileUrl) body.fileUrl = fileUrl
+          const runsheetParts: string[] = []
+          for (const [k, v] of Object.entries(form)) {
+            if (!v) continue
+            const mapped = fieldMap[k] || k
+            if (mapped === "__split__" && k === "bookPage") {
+              const parts = v.split(" / ")
+              if (parts[0]) body.mapBook = parts[0]
+              if (parts[1]) body.page = parts[1]
+            } else if (mapped === "additionalNotes" && section === "Runsheet") {
+              runsheetParts.push(`${k}: ${v}`)
+            } else {
+              body[mapped] = v
+            }
+          }
+          if (runsheetParts.length > 0) {
+            const existing = (body.additionalNotes as string) || ""
+            body.additionalNotes = existing
+              ? existing + "\n" + runsheetParts.join("\n")
+              : runsheetParts.join("\n")
+          }
+        }
+        await updateOrder({ id: orderId, body }).unwrap()
+      }
+
+      setSaved(true);
+      setTimeout(() => {
+        setSaved(false);
+        onClose();
+      }, 800);
+    } catch {
+      toast.error("Upload failed")
+    } finally {
+      setUploading(false);
+    }
   };
 
   const inpStyle: React.CSSProperties = {
@@ -224,7 +343,7 @@ export default function SectionUploadModal({
                 </div>
                 <div
                   className="border-2 border-dashed rounded-xl p-[18px_16px] cursor-pointer transition-all duration-200"
-                  style={{ borderColor: "#cbd5e1", background: "#fafafa" }}
+                  style={{ borderColor: selectedFile ? "#16a34a" : "#cbd5e1", background: selectedFile ? "#f0fdf4" : "#fafafa" }}
                   onClick={() => fileRef.current?.click()}
                 >
                   <input
@@ -232,29 +351,43 @@ export default function SectionUploadModal({
                     type="file"
                     accept="image/*,.pdf"
                     style={{ display: "none" }}
+                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                   />
-                  <div className="flex flex-col items-center gap-[7px]">
-                    <svg
-                      width="32"
-                      height="32"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#94a3b8"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    <span className="text-[11px] font-semibold text-[#334155]">
-                      Click to browse or drag a file here
-                    </span>
-                    <span className="text-[9px] text-[#94a3b8]">
-                      PDF, JPG, PNG, TIFF up to 25MB
-                    </span>
-                  </div>
+                  {selectedFile ? (
+                    <div className="flex items-center gap-2.5">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                      </svg>
+                      <span className="text-[11px] font-semibold text-[#166534]">{selectedFile.name}</span>
+                      <button onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }} className="ml-auto bg-transparent border-none text-[#94a3b8] cursor-pointer text-[14px]">×</button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-[7px]">
+                      <svg
+                        width="32"
+                        height="32"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#94a3b8"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                      <span className="text-[11px] font-semibold text-[#334155]">
+                        Click to browse or drag a file here
+                      </span>
+                      <span className="text-[9px] text-[#94a3b8]">
+                        PDF, JPG, PNG, TIFF up to 25MB
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
@@ -271,11 +404,15 @@ export default function SectionUploadModal({
           </button>
           <button
             onClick={handleSave}
-            disabled={!section}
+            disabled={!section || uploading}
             className="text-white border-none rounded-lg px-5 py-2 text-[12px] font-semibold cursor-pointer disabled:opacity-40"
             style={{ background: accentColor }}
           >
-            {saved ? (
+            {uploading ? (
+              <span className="flex items-center gap-1">
+                <Icon name="loader" size={11} className="animate-spin" /> Uploading…
+              </span>
+            ) : saved ? (
               <span className="flex items-center gap-1">
                 <Icon name="check" size={11} /> Saved
               </span>

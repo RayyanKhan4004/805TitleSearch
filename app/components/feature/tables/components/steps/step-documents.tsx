@@ -10,6 +10,8 @@ import UploadPopover from "../upload-popover";
 import { INIT_DOCS, INIT_NOTES } from "../temp";
 import type { DocItem, NoteItem } from "@/app/components/feature/tables/types";
 import { Button, Card, CardContent, Badge } from "@/components/ui";
+import { useUploadFileMutation } from "@/app/store/api/ordersApi";
+import toast from "react-hot-toast";
 
 interface StepDocumentsProps {
   extraDocs?: Array<{ name: string; date: string; size: string; type: string; body?: string }>;
@@ -18,6 +20,7 @@ interface StepDocumentsProps {
 
 export default function StepDocuments({ extraDocs = [], onSaveClose }: StepDocumentsProps) {
   const [docs, setDocs] = useState<DocItem[]>(INIT_DOCS);
+  const [uploadFile] = useUploadFileMutation();
 
   /* Merge extraDocs (generated prelims from TSRI) when they change */
   useEffect(() => {
@@ -100,18 +103,26 @@ export default function StepDocuments({ extraDocs = [], onSaveClose }: StepDocum
                   </Button>
                   {showUpload && (
                     <UploadPopover
-                      onUpload={(files) => {
-                        Array.from(files).forEach((f) => {
+                      onUpload={async (files) => {
+                        const file = files[0]
+                        if (!file) return
+                        const fd = new FormData()
+                        fd.append("file", file)
+                        try {
+                          const fileUrl = await uploadFile(fd).unwrap()
                           setDocs((d) => [
                             {
-                              name: f.name,
+                              name: file.name,
                               date: new Date().toLocaleDateString("en-US"),
-                              size: f.size > 1024 * 1024 ? `${(f.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(f.size / 1024)} KB`,
+                              size: file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(file.size / 1024)} KB`,
                               type: "document",
+                              fileUrl,
                             },
                             ...d,
                           ])
-                        })
+                        } catch {
+                          toast.error("Upload failed")
+                        }
                         setShowUpload(false)
                       }}
                       onClose={() => setShowUpload(false)}

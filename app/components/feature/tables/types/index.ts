@@ -261,6 +261,11 @@ export interface SharedState {
   townshipName: string;
   unincorporatedName: string;
   propertyClassification: string;
+  proposedInsured: string;
+  effectiveTime: string;
+  additionalEasements: string;
+  additionalNotes: string;
+  assessorVesting: string;
 }
 
 export interface Document {
@@ -317,6 +322,7 @@ export interface DocItem {
   date: string;
   size: string;
   type?: string;
+  fileUrl?: string;
 }
 
 export interface NoteItem {
@@ -784,6 +790,28 @@ export interface OrderDetail {
   titleBranchReview: string;
   loanOfficer: string;
   lenderBank: string;
+
+  /* TSRI fields */
+  proposedInsured: string;
+  effectiveTime: string;
+  additionalEasements: string;
+  additionalNotes: string;
+
+  /* Exceptions & Requirements from API */
+  tsriExceptions: Array<{
+    id: number;
+    type: string;
+    genieCode: string;
+    verbiage: string;
+    sortOrder: number;
+  }>;
+  tsriRequirements: Array<{
+    id: number;
+    type: string;
+    genieCode: string;
+    verbiage: string;
+    sortOrder: number;
+  }>;
 
   /* parties */
   buyers: OrderDetailParty[];

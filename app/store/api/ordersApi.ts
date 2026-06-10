@@ -88,7 +88,31 @@ export const ordersApi = createApi({
       }),
       invalidatesTags: ["Orders"],
     }),
+
+    uploadFile: builder.mutation<string, FormData>({
+      query: (body) => ({
+        url: "/orders/upload",
+        method: "POST",
+        body,
+        responseHandler: "text" as const,
+      }),
+    }),
+
+    updateOrderChainFile: builder.mutation<
+      OrderDetail,
+      { id: string; titleChainReviews: Record<string, unknown>[] }
+    >({
+      query: ({ id, titleChainReviews }) => ({
+        url: `/orders/${id}`,
+        method: "PATCH",
+        body: { titleChainReviews },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        "Orders",
+        { type: "Orders", id },
+      ],
+    }),
   }),
 });
 
-export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation } = ordersApi
+export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation, useUploadFileMutation, useUpdateOrderChainFileMutation } = ordersApi

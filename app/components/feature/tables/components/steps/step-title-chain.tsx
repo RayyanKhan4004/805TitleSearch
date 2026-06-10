@@ -7,18 +7,22 @@ import GenieSectionCard from "../genie-section-card";
 import RunsheetCard from "../runsheet-card";
 import TaxCertCard from "../tax-cert-card";
 import AssessorCard from "../assessor-card";
+import SectionFieldsCard from "../section-fields-card";
 import SectionUploadModal from "../section-upload-modal";
 import { Button } from "@/components/ui";
 import { useState, useEffect } from "react";
 import ManualSearchModal from "../models/manual-search-modal";
 import { INDEX_SECTIONS } from "../consts";
+import { FIELDS } from "../temp";
 import { mapTransactionsToIndexRows } from "@/app/services/transaction-mapper";
-import { useFetchCodeBookQuery } from "@/app/store/api/ordersApi";
+import { useFetchCodeBookQuery, useUploadFileMutation } from "@/app/store/api/ordersApi";
 import type {
   SharedState,
   PropertyForm,
   ChainCode,
   CodeBookEntry,
+  OrderDetail,
+  IndexRow,
 } from "@/app/components/feature/tables/types";
 
 /* ── Map API CodeBookEntry to GenieSectionCard's expected shape ── */
@@ -38,11 +42,42 @@ function mapCodeBookToGenieItems(entries: CodeBookEntry[]): GenieCodeItem[] {
     });
 }
 
+function mapTitleChainToIndexRows(chain: Record<string, unknown>[]): IndexRow[] {
+  return chain.map((item, i) => {
+    const abbr = String(item.abbr || "");
+    const category = String(item.category || "");
+    const bookPage = String(item.bookPage || "");
+    return {
+      _id: `tc-${i}`,
+      rec: String(item.recDate || ""),
+      abbr,
+      entity:
+        category === "Transfers"
+          ? "XFER"
+          : category === "DOTs"
+            ? "DOT"
+            : category === "Liens & Judgments"
+              ? "LIEN"
+              : category === "Easement & Restrictions"
+                ? "EASE"
+                : "MISC",
+      docTitle: String(item.docTitle || ""),
+      instr: String(item.instrument || ""),
+      book: bookPage.split("-")[0] || "",
+      pg: bookPage.split("-")[1] || "",
+      grantor: String(item.grantor || ""),
+      grantee: String(item.grantee || ""),
+      parentInstr: null,
+    };
+  });
+}
+
 interface StepTitleChainProps {
   shared: SharedState;
   setShared: React.Dispatch<React.SetStateAction<SharedState>>;
   propertyForm?: PropertyForm;
   reportRaw?: Record<string, any>;
+  orderDetail?: OrderDetail;
   isLoading?: boolean;
   onSave?: (dates?: { typeDate: string; effectiveDate: string }) => void;
   onSaveClose?: () => void;
@@ -53,13 +88,20 @@ export default function StepTitleChain({
   setShared,
   propertyForm,
   reportRaw,
+  orderDetail,
   isLoading,
   onSave,
   onSaveClose,
 }: StepTitleChainProps) {
-  const apiChainRows = reportRaw?.Transactions
-    ? mapTransactionsToIndexRows(reportRaw.Transactions)
+  const chainFromOrderDetail = orderDetail?.titleChainReviews
+    ? mapTitleChainToIndexRows(orderDetail.titleChainReviews as Record<string, unknown>[])
     : [];
+  const tx = reportRaw?.Transactions;
+  const apiChainRows =
+    tx && Array.isArray(tx) && tx.length > 0
+      ? mapTransactionsToIndexRows(tx)
+      : chainFromOrderDetail;
+
   const [showSearch, setShowSearch] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [typeDate, setTypeDate] = useState("");
@@ -67,6 +109,13 @@ export default function StepTitleChain({
   const [codes, setCodes] = useState<ChainCode[]>(shared?.chainCodes || []);
   const { data: codeBookEntries } = useFetchCodeBookQuery();
   const genieCodes = codeBookEntries ? mapCodeBookToGenieItems(codeBookEntries) : [];
+  const [uploadFile] = useUploadFileMutation();
+
+  const handleFileUpload = async (file: File): Promise<string> => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return uploadFile(fd).unwrap();
+  };
 
   useEffect(() => {
     setTypeDate(shared.typeDate || "");
@@ -80,6 +129,50 @@ export default function StepTitleChain({
       setShared((s) => ({ ...s, chainCodes: next }));
     }
   };
+
+  /* ── Derive values from orderDetail + propertyForm ── */
+  const assessorMapFields = FIELDS["Assessor Map"] || [];
+  const assessorMapValues = {
+    mapRef: orderDetail?.tract || propertyForm?.tract || "",
+    parcelNo: orderDetail?.apn1 || propertyForm?.apn1 || "",
+    mapDate: "",
+    notes: orderDetail?.additionalNotes || "",
+  };
+
+  const tractMapFields = FIELDS["Tract Map"] || [];
+  const tractMapValues = {
+    tractNo: orderDetail?.tract || propertyForm?.tract || "",
+    bookPage:
+      (orderDetail?.mapBook || propertyForm?.mapBook || "")
+        ? `${orderDetail?.mapBook || propertyForm?.mapBook}${(orderDetail?.page || propertyForm?.page) ? ` / ${orderDetail?.page || propertyForm?.page}` : ""}`
+        : "",
+    recDate: "",
+    subdivision: "",
+  };
+
+  const starterFields = FIELDS["Starters"] || [];
+  const starterEntry = Array.isArray(orderDetail?.titleChainReviews)
+    ? (orderDetail.titleChainReviews as Record<string, unknown>[]).find((r: any) => r.isStarter)
+    : null;
+  const starterValues: Record<string, string> = {
+    policyNo: (starterEntry as any)?.remarks || "",
+    policyDate: (starterEntry as any)?.documentDate || "",
+    insured: (starterEntry as any)?.grantee || "",
+    company: (starterEntry as any)?.grantor || "",
+    amount: (starterEntry as any)?.amount || "",
+  };
+
+  const initialExceptions =
+    orderDetail?.tsriExceptions?.map((e) => ({
+      code: e.genieCode || "",
+      verbiage: e.verbiage || "",
+    })) || [];
+
+  const initialRequirements =
+    orderDetail?.tsriRequirements?.map((e) => ({
+      code: e.genieCode || "",
+      verbiage: e.verbiage || "",
+    })) || [];
 
   return (
     <div className="flex flex-col gap-4">
@@ -194,6 +287,28 @@ export default function StepTitleChain({
                 isLoading={isLoading}
               />
             );
+          if (sec.title === "Assessor Map")
+            return (
+              <SectionFieldsCard
+                key={sec.title}
+                title={sec.title}
+                sub={sec.sub}
+                accent={sec.accent}
+                fields={assessorMapFields}
+                values={assessorMapValues}
+              />
+            );
+          if (sec.title === "Tract Map")
+            return (
+              <SectionFieldsCard
+                key={sec.title}
+                title={sec.title}
+                sub={sec.sub}
+                accent={sec.accent}
+                fields={tractMapFields}
+                values={tractMapValues}
+              />
+            );
           if (sec.title === "Tax Cert")
             return (
               <TaxCertCard
@@ -220,6 +335,7 @@ export default function StepTitleChain({
                 sub="Schedule B Exceptions — from Genie Code Book"
                 accent={sec.accent}
                 codes={genieCodes}
+                initialAddedCodes={initialExceptions}
               />
             );
           if (sec.title === "Other Requirements")
@@ -230,6 +346,18 @@ export default function StepTitleChain({
                 sub="Informational Notes & Requirements — from Genie Code Book"
                 accent={sec.accent}
                 codes={genieCodes}
+                initialAddedCodes={initialRequirements}
+              />
+            );
+          if (sec.title === "Starters")
+            return (
+              <SectionFieldsCard
+                key={sec.title}
+                title={sec.title}
+                sub={sec.sub}
+                accent={sec.accent}
+                fields={starterFields}
+                values={starterValues}
               />
             );
           const isTitleChain = sec.title === "Title Chain Review";
@@ -245,7 +373,8 @@ export default function StepTitleChain({
                   : sec.rows
               }
               allowAddRow={isTitleChain}
-              showCode={sec.title === "Tract Map"}
+              showCode={false}
+              onFileUpload={isTitleChain ? handleFileUpload : undefined}
             />
           );
         })}
@@ -299,7 +428,10 @@ export default function StepTitleChain({
 
       {showSearch && <ManualSearchModal onClose={() => setShowSearch(false)} />}
       {showUploadModal && (
-        <SectionUploadModal onClose={() => setShowUploadModal(false)} />
+        <SectionUploadModal
+          onClose={() => setShowUploadModal(false)}
+          orderId={orderDetail?.id ? String(orderDetail.id) : undefined}
+        />
       )}
     </div>
   );

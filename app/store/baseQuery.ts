@@ -7,7 +7,7 @@ import toast from "react-hot-toast"
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api",
   prepareHeaders: (headers, { getState, endpoint }) => {
-    const noAuthRequiredEndpoints = ["login", "signUp", "forgot-password", "verify-otp", "reset-password", "change-password"]
+    const noAuthRequiredEndpoints = ["login", "signUp", "forgot-password", "verify-otp", "reset-password", "change-password", "upload"]
     if (!noAuthRequiredEndpoints.some((e) => endpoint.includes(e))) {
       const token = (getState() as any)?.auth?.token
       if (token) {
@@ -25,7 +25,7 @@ export const baseQueryWithAuth = async (
 ) => {
   const result = await baseQuery(args, api, extraOptions)
 
-  const noAuthRequiredEndpoints = ["login", "signUp", "forgot-password", "verify-otp", "reset-password", "change-password"]
+  const noAuthRequiredEndpoints = ["login", "signUp", "forgot-password", "verify-otp", "reset-password", "change-password", "upload"]
 
   if (
     result.error &&

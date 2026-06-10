@@ -26,6 +26,7 @@ interface IndexRowProps {
   onRemove: () => void;
   depth?: number;
   zoomed?: boolean;
+  onFileUpload?: (file: File) => Promise<string>;
 }
 
 const inputClass =
@@ -37,6 +38,7 @@ export default function IndexRow({
   onRemove,
   depth = 0,
   zoomed = false,
+  onFileUpload,
 }: IndexRowProps) {
   const [state, setState] = useState({
     rec: row.rec || "",
@@ -86,12 +88,23 @@ export default function IndexRow({
     return () => document.removeEventListener("mousedown", handler);
   }, [state.showRowMenu]);
 
-  const handleExamImg = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExamImg = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => set("examImg", String(ev.target?.result || ""));
-    reader.readAsDataURL(file);
+    if (onFileUpload) {
+      try {
+        const url = await onFileUpload(file);
+        set("examImg", url);
+      } catch {
+        const reader = new FileReader();
+        reader.onload = (ev) => set("examImg", String(ev.target?.result || ""));
+        reader.readAsDataURL(file);
+      }
+    } else {
+      const reader = new FileReader();
+      reader.onload = (ev) => set("examImg", String(ev.target?.result || ""));
+      reader.readAsDataURL(file);
+    }
   };
 
   const abbrFull = ABBR_MAP.find((item) => item.abbr === state.abbr)?.full || "";

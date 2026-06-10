@@ -22,13 +22,27 @@ interface GenieSectionCardProps {
   sub: string;
   accent: string;
   codes?: GenieCodeItem[];
+  initialAddedCodes?: { code: string; verbiage: string }[];
 }
 
 const DEFAULT_CODES: GenieCodeItem[] = [];
 
-export default function GenieSectionCard({ title, sub, accent, codes }: GenieSectionCardProps) {
+function initAddedCodes(list?: { code: string; verbiage: string }[]): AddedCode[] {
+  if (!list || list.length === 0) return [];
+  return list.map((item, i) => ({
+    code: item.code,
+    label: item.code,
+    body: item.verbiage,
+    id: Date.now() + i,
+    editing: false,
+    expanded: false,
+    verbiage: item.verbiage,
+  }));
+}
+
+export default function GenieSectionCard({ title, sub, accent, codes, initialAddedCodes }: GenieSectionCardProps) {
   const [open, setOpen] = useState(true);
-  const [addedCodes, setAddedCodes] = useState<AddedCode[]>([]);
+  const [addedCodes, setAddedCodes] = useState<AddedCode[]>(() => initAddedCodes(initialAddedCodes));
   const [codeInput, setCodeInput] = useState("");
 
   const items = codes || DEFAULT_CODES;

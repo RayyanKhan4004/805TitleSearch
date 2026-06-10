@@ -29,25 +29,15 @@ export default function Navbar({ onDashboardClick }: NavbarProps) {
         </div>
       </div>
       {[
-        "Dashboard",
-        // "Orders",
-        // "Search",
-        // "Title Chain",
-        // "Documents",
-        "Tasks",
-        // "Reports",
-        // "Admin",
-      ].map((item) => (
+        { label: "Dashboard", onClick: onDashboardClick },
+        { label: "Code Book", onClick: () => router.push("/code-book") },
+      ].map(({ label, onClick }) => (
         <button
-          key={item}
-          onClick={item === "Dashboard" ? onDashboardClick : undefined}
-          className={`border-none text-[11px] font-medium px-2 py-1 rounded-[5px] cursor-pointer ${
-            item === "Tasks"
-              ? "bg-white/10 text-header-text"
-              : "bg-transparent text-sidebar-icon"
-          }`}
+          key={label}
+          onClick={onClick}
+          className="border-none text-[11px] font-medium px-2 py-1 rounded-[5px] cursor-pointer bg-transparent text-sidebar-icon hover:text-header-text transition-colors"
         >
-          {item}
+          {label}
         </button>
       ))}
       <div className="flex-1 mx-2">

@@ -122,14 +122,18 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                     onClick={() => !added && addCode(catx)}
                     disabled={added}
                     title={catx.label}
-                    className="inline-flex items-center gap-1.5 rounded-lg text-[11px] font-bold transition-all duration-150"
+                    className="flex  justify-center items-center gap-1.5 rounded-lg text-[11px] font-bold transition-all duration-150"
                     style={{
                       padding: "5px 12px",
                       border: "1px solid",
                       cursor: added ? "default" : "pointer",
                       background: added ? "var(--status-success-bg)" : "#fff",
-                      borderColor: added ? "var(--status-success-border)" : "var(--border-border)",
-                      color: added ? "var(--status-success-text)" : "var(--text-text-secondary)",
+                      borderColor: added
+                        ? "var(--status-success-border)"
+                        : "var(--border-border)",
+                      color: added
+                        ? "var(--status-success-text)"
+                        : "var(--text-text-secondary)",
                       opacity: added ? 0.8 : 1,
                     }}
                   >
@@ -144,10 +148,28 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                       {catx.code}
                     </span>
                     {added ? (
-                      <Icon name="checkCircle" size={10} className="text-status-success-text" />
+                      <Icon
+                        name="checkCircle"
+                        size={10}
+                        className="text-status-success-text"
+                      />
                     ) : (
                       <Icon name="plus" size={10} />
                     )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // removeCode(c.id);
+                      }}
+                      className="bg-transparent border-none cursor-pointer flex items-center justify-center h-fit mb-0.5 text-red-500"
+                      style={{
+                        fontSize: 12,
+                        // lineHeight: 0.1,
+                        opacity: 0.5,
+                      }}
+                    >
+                      ×
+                    </button>
                   </button>
                 );
               })}

@@ -149,11 +149,11 @@ export const EMPTY_SHARED_STATE: SharedState = {
 };
 
 export interface UploadCatField {
-  k: string;
-  lbl: string;
-  t: string;
-  ph: string;
-  opts?: string[];
+  key: string;
+  label: string;
+  type: string;
+  placeholder: string;
+  options?: string[];
 }
 
 export interface UploadCat {
@@ -163,84 +163,80 @@ export interface UploadCat {
   fields: UploadCatField[];
 }
 
-export const UPLOAD_CATS: UploadCat[] = [
-  {
-    key: "assessorPage",
-    label: "Assessor Page",
-    accent: "#0369a1",
-    fields: [
-      { k: "apn", lbl: "APN", t: "text", ph: "107-0-330-755" },
-      { k: "owner", lbl: "Owner Name", t: "text", ph: "RODRIGUEZ RAQUEL" },
-      {
-        k: "address",
-        lbl: "Situs Address",
-        t: "text",
-        ph: "2012 HARVEST LOOP, SANTA PAULA, CA",
-      },
-      { k: "assessed", lbl: "Assessed Value", t: "text", ph: "$652,575" },
-      { k: "taxYear", lbl: "Tax Year", t: "text", ph: "2025" },
-      { k: "landUse", lbl: "Land Use", t: "text", ph: "CONDOMINIUM" },
-    ],
-  },
-  {
-    key: "assessorMap",
-    label: "Assessor Map",
-    accent: "#0891b2",
-    fields: [
-      { k: "mapRef", lbl: "Map Reference", t: "text", ph: "169MR34" },
-      { k: "parcelNo", lbl: "Parcel No.", t: "text", ph: "107-0-330-755" },
-      { k: "mapDate", lbl: "Map Date", t: "date", ph: "" },
-      {
-        k: "notes",
-        lbl: "Notes",
-        t: "textarea",
-        ph: "Map notes or page reference",
-      },
-    ],
-  },
-  {
-    key: "tractMap",
-    label: "Tract Map",
-    accent: "#0d9488",
-    fields: [
-      { k: "tractNo", lbl: "Tract No.", t: "text", ph: "5991" },
-      { k: "bookPage", lbl: "Book / Page", t: "text", ph: "169M / 34-37" },
-      { k: "recDate", lbl: "Recorded Date", t: "date", ph: "" },
-      {
-        k: "subdivision",
-        lbl: "Subdivision Name",
-        t: "text",
-        ph: "Harvest Meadows",
-      },
-    ],
-  },
-  {
-    key: "titleChain",
-    label: "Title Chain Review",
-    accent: "#0369a1",
-    fields: [
-      { k: "docType", lbl: "Document Type", t: "text", ph: "Grant Deed" },
-      {
-        k: "instrumentNo",
-        lbl: "Instrument No.",
-        t: "text",
-        ph: "2024-0012345",
-      },
-      { k: "recDate", lbl: "Recording Date", t: "date", ph: "" },
-      { k: "grantor", lbl: "Grantor", t: "text", ph: "" },
-      { k: "grantee", lbl: "Grantee", t: "text", ph: "" },
-    ],
-  },
-  {
-    key: "taxCert",
-    label: "Tax Cert",
-    accent: "#65a30d",
-    fields: [
-      { k: "taxYear", lbl: "Tax Year", t: "text", ph: "2025" },
-      { k: "taxAmount", lbl: "Tax Amount", t: "text", ph: "$10,820.98" },
-      { k: "delinquent", lbl: "Delinquent Year", t: "text", ph: "" },
-      { k: "paidBy", lbl: "Paid By", t: "text", ph: "" },
-    ],
-  },
-];
+const FIELDS: Record<string, UploadCatField[]> = {
+  "Assessor Page": [
+    { key: "apn", label: "APN", type: "text", placeholder: "107-0-330-755" },
+    { key: "owner", label: "Owner Name", type: "text", placeholder: "RODRIGUEZ RAQUEL" },
+    { key: "address", label: "Situs Address", type: "text", placeholder: "2012 HARVEST LOOP, SANTA PAULA, CA" },
+    { key: "assessed", label: "Assessed Value", type: "text", placeholder: "$652,575" },
+    { key: "taxYear", label: "Tax Year", type: "text", placeholder: "2025" },
+    { key: "landUse", label: "Land Use", type: "text", placeholder: "CONDOMINIUM" },
+  ],
+  "Assessor Map": [
+    { key: "mapRef", label: "Map Reference", type: "text", placeholder: "169MR34" },
+    { key: "parcelNo", label: "Parcel No.", type: "text", placeholder: "107-0-330-755" },
+    { key: "mapDate", label: "Map Date", type: "date", placeholder: "" },
+    { key: "notes", label: "Notes", type: "textarea", placeholder: "Map notes or page reference" },
+  ],
+  "Tract Map": [
+    { key: "tractNo", label: "Tract No.", type: "text", placeholder: "5991" },
+    { key: "bookPage", label: "Book / Page", type: "text", placeholder: "169M / 34-37" },
+    { key: "recDate", label: "Recorded Date", type: "date", placeholder: "" },
+    { key: "subdivision", label: "Subdivision", type: "text", placeholder: "HARVEST AT LIMONEIRA" },
+  ],
+  "Tax Cert": [
+    { key: "taxYear", label: "Tax Year", type: "text", placeholder: "2025-2026" },
+    { key: "apn", label: "APN", type: "text", placeholder: "107-0-330-755" },
+    { key: "tra", label: "Tax Rate Area", type: "text", placeholder: "04-028" },
+    { key: "inst1", label: "1st Installment", type: "text", placeholder: "$5,410.49" },
+    { key: "inst2", label: "2nd Installment", type: "text", placeholder: "$5,410.49" },
+    { key: "pmtStatus", label: "Payment Status", type: "select", placeholder: "", options: ["Paid", "1st Open", "Both Open", "Delinquent", "Defaulted"] },
+  ],
+  Runsheet: [
+    { key: "orderNo", label: "Order No.", type: "text", placeholder: "20251823" },
+    { key: "searchedBy", label: "Searched By", type: "text", placeholder: "805TITLE INC" },
+    { key: "searchDate", label: "Search Date", type: "date", placeholder: "" },
+    { key: "geoCov", label: "Geo Coverage", type: "text", placeholder: "JAN 01, 1964 – OCT 03, 2025" },
+    { key: "notes", label: "Notes", type: "textarea", placeholder: "Additional search notes" },
+  ],
+  Starters: [
+    { key: "policyNo", label: "Prior Policy No.", type: "text", placeholder: "e.g. 1234-5678" },
+    { key: "policyDate", label: "Policy Date", type: "date", placeholder: "" },
+    { key: "insured", label: "Insured", type: "text", placeholder: "Prior insured name" },
+    { key: "company", label: "Title Company", type: "text", placeholder: "e.g. CHICAGO TITLE" },
+    { key: "amount", label: "Policy Amount", type: "text", placeholder: "$000,000" },
+  ],
+  "Title Chain Review": [
+    { key: "recDate", label: "Recorded Date", type: "date", placeholder: "" },
+    { key: "docDate", label: "Document Date", type: "date", placeholder: "" },
+    { key: "instrNo", label: "Instrument / Book-Page", type: "text", placeholder: "2025-85923" },
+    { key: "entityTitle", label: "Entity Title", type: "select", placeholder: "", options: ["", "Transfer", "DOTs", "Liens & Judgments", "Easement & Restrictions", "Miscellaneous"] },
+    { key: "docTitle", label: "Doc Title", type: "select", placeholder: "", options: ["", "Grant Deed", "Quitclaim Deed", "Interspousal Deed", "Trustee's Deed", "Sheriff's Deed", "Deed of Trust", "Reconveyance", "Modification of Deed of Trust", "Assignment of Deed of Trust", "Substitution of Trustee", "Mechanic's Lien", "Release of Mechanic's Lien", "Abstract of Judgment", "Release of Judgment", "Federal Tax Lien", "Release of Federal Tax Lien", "State Tax Lien", "Notice of Default", "Notice of Trustee's Sale", "Notice of Completion", "Notice of Cessation", "Easement", "CC&Rs", "Amendment to CC&Rs", "HOA Lien", "Lis Pendens", "Attachment Lien", "UCC Financing Statement", "Lease", "Other"] },
+    { key: "grantor", label: "Grantor", type: "text", placeholder: "Transferor / Borrower" },
+    { key: "grantee", label: "Grantee", type: "text", placeholder: "Transferee / Lender" },
+    { key: "amount", label: "Amount", type: "text", placeholder: "$83,450" },
+    { key: "lienPos", label: "Lien Position", type: "select", placeholder: "", options: ["", "1st", "2nd", "3rd", "Other"] },
+    { key: "notes", label: "Remarks / PTN", type: "textarea", placeholder: "Additional remarks" },
+  ],
+};
 
+const ACCENTS: Record<string, string> = {
+  "Assessor Page": "#0369a1",
+  "Assessor Map": "#0891b2",
+  "Tract Map": "#0d9488",
+  "Tax Cert": "#65a30d",
+  Runsheet: "#7c3aed",
+  Starters: "#475569",
+  "Title Chain Review": "#8B0000",
+};
+
+export const UPLOAD_CATS: UploadCat[] = Object.entries(FIELDS).map(([label, fields]) => ({
+  key: label.toLowerCase().replace(/\s+/g, ""),
+  label,
+  accent: ACCENTS[label] || "#0369a1",
+  fields,
+}));
+
+  
+
+ 

@@ -23,7 +23,6 @@ import Navbar from "@/components/common/navbar";
 import { PrelimPreviewModal } from "./models";
 import { EMPTY_SHARED_STATE } from "./temp";
 import type { Order, OrderLock } from "@/app/components/feature/tables/types";
-import { NAV_ICONS } from "./consts";
 
 const WORK_STEPS = [
   { id: 1, label: "Title Chain Review", short: "Chain", icon: "link" },
@@ -285,55 +284,11 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#f1f5f9]">
       {/* ── Sidebar ── */}
-      <aside
-        className="w-[52px] shrink-0 bg-[#1e2130] flex flex-col items-center py-3 px-1.5 gap-1 z-20"
-        style={{ boxShadow: "2px 0 12px rgba(0,0,0,.18)" }}
-      >
-        <div className="w-9 h-9 bg-[#8B0000] rounded-[10px] flex items-center justify-center mb-2.5">
-          <Icon name="building" size={17} className="text-white" />
-        </div>
-        {NAV_ICONS.map(({ name, label, active }) => (
-          <div
-            key={name}
-            title={label}
-            className="w-9 h-9 rounded-lg flex items-center justify-center cursor-pointer transition-[background] duration-150"
-            style={{
-              background: active ? "#8B0000" : "transparent",
-              color: active ? "#fff" : "#94a3b8",
-            }}
-            onMouseEnter={(e) => {
-              if (!active) {
-                e.currentTarget.style.background = "#2d3348";
-                e.currentTarget.style.color = "#fff";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!active) {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "#94a3b8";
-              }
-            }}
-          >
-            <Icon name={name} size={16} />
-          </div>
-        ))}
-        <div className="flex-1" />
-        <Icon
-          name="help"
-          size={16}
-          className="text-[#64748b] cursor-pointer mb-1.5"
-        />
-        <div
-          onClick={() => router.push("/profile")}
-          className="w-7 h-7 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold cursor-pointer"
-        >
-          {user ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() || "U" : "U"}
-        </div>
-      </aside>
+      <Sidebar />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* ── Header ── */}
-        <Navbar/>
+        <Navbar onDashboardClick={() => setSelectedOrder(null)} />
 
         {/* ═══════════════════════════════════════════
             DASHBOARD MODE — no order selected

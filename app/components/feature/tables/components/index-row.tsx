@@ -99,7 +99,7 @@ export default function IndexRow({
 
   return (
     <>
-      <td className="border-t border-secondary px-2.5 py-2 text-[11px] align-middle w-[92px]">
+      <td className="border-t border-secondary px-2.5 py-2 text-[11px] align-middle w-23">
         <input
           value={state.rec}
           onChange={(e) => set("rec", e.target.value)}
@@ -107,7 +107,7 @@ export default function IndexRow({
           className={inputClass}
         />
       </td>
-      <td className="border-t border-secondary px-2.5 py-2 align-middle w-[78px]">
+      <td className="border-t border-secondary px-2.5 py-2 align-middle w-19.5">
         <div
           className={`${inputClass} cursor-pointer font-mono font-bold text-center`}
           style={{
@@ -138,7 +138,7 @@ export default function IndexRow({
           {abbrFull}
         </div>
       </td>
-      <td className="border-t border-secondary px-2.5 py-2 align-middle min-w-[105px]">
+      <td className="border-t border-secondary px-2.5 py-2 align-middle min-w-26.25">
         <input
           value={state.grantor}
           onChange={(e) => set("grantor", e.target.value)}
@@ -146,7 +146,7 @@ export default function IndexRow({
           className={inputClass}
         />
       </td>
-      <td className="border-t border-secondary px-2.5 py-2 align-middle min-w-[105px]">
+      <td className="border-t border-secondary px-2.5 py-2 align-middle min-w-26.25">
         <input
           value={state.grantee}
           onChange={(e) => set("grantee", e.target.value)}
@@ -160,7 +160,7 @@ export default function IndexRow({
             value={state.instr}
             onChange={(e) => set("instr", e.target.value)}
             placeholder="Instrument No."
-            className={`${inputClass} flex-[2]`}
+            className={`${inputClass} flex-2`}
           />
           <input
             value={state.book}
@@ -177,7 +177,7 @@ export default function IndexRow({
         </div>
 
       </td>
-      <td className="border-t border-secondary px-2.5 py-2 align-middle min-w-[150px]">
+      <td className="border-t border-secondary px-2.5 py-2 align-middle min-w-37.5">
         <select
           value={state.entity}
           onChange={(e) => set("entity", e.target.value)}
@@ -202,7 +202,7 @@ export default function IndexRow({
       </td>
       <td
         ref={imgDropRef}
-        className="relative w-[110px] border-t border-secondary px-2.5 py-2 text-center align-middle"
+        className="relative w-27.5 border-t border-secondary px-2.5 py-2 text-center align-middle"
       >
         <div className="flex flex-col items-center gap-1">
           {state.examImg ? (
@@ -216,19 +216,19 @@ export default function IndexRow({
                 <img
                   src={state.examImg}
                   alt="examiner"
-                  className="block h-11 w-[62px] rounded-md border border-status-info-blue-border object-cover"
+                  className="block h-11 w-15.5 rounded-md border border-status-info-blue-border object-cover"
                 />
               </button>
               <button
                 onClick={() => set("examImg", null)}
                 title="Remove"
-                className="absolute -right-1.25 -top-1.25 h-[15px] w-[15px] rounded-full border-none bg-brand text-[9px] leading-[15px] text-white"
+                className="absolute -right-1.25 -top-1.25 h-3.75 w-3.75 rounded-full border-none bg-brand text-[9px] leading-3.75 text-white"
               >
                 x
               </button>
             </div>
           ) : (
-            <label className="inline-flex w-[62px] cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md border border-dashed border-border bg-bg-page px-2.5 py-1.25 text-[9px] font-semibold text-text-muted transition-colors hover:border-status-info-blue hover:text-status-info-blue-text">
+            <label className="inline-flex w-15.5 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md border border-dashed border-border bg-bg-page px-2.5 py-1.25 text-[9px] font-semibold text-text-muted transition-colors hover:border-status-info-blue hover:text-status-info-blue-text">
               <Icon name="upload" size={11} />
               <span>Attach</span>
               <input
@@ -260,8 +260,17 @@ export default function IndexRow({
             <Icon name="chevDown" size={8} />
           </button>
         </div>
-        {state.showImgDrop && (
-          <div className="absolute bottom-full left-1/2 z-[200] mb-1 min-w-[185px] -translate-x-1/2 overflow-hidden rounded-[10px] border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,.16)]">
+        {state.showImgDrop && imgDropRef.current && (
+          <div
+            style={{
+              position: "fixed",
+              top: imgDropRef.current.getBoundingClientRect().top - 8,
+              left: imgDropRef.current.getBoundingClientRect().left + imgDropRef.current.getBoundingClientRect().width / 2,
+              transform: "translate(-50%, -100%)",
+              zIndex: 9999,
+              minWidth: 185,
+            }}
+            className="overflow-hidden rounded-[10px] border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,.16)]">
             <div className="border-b border-light bg-table-header px-2.75 py-1.5 text-left text-[9px] font-extrabold uppercase tracking-[0.07em] text-text-muted">
               Image Options
             </div>
@@ -319,8 +328,17 @@ export default function IndexRow({
         >
           <Icon name="moreV" size={13} />
         </button>
-        {state.showRowMenu && (
-          <div className="absolute right-full top-0 z-[200] mr-1 min-w-[170px] overflow-hidden rounded-[9px] border border-border bg-white shadow-[0_6px_20px_rgba(0,0,0,.14)]">
+        {state.showRowMenu && rowMenuRef.current && (
+          <div
+            style={{
+              position: "fixed",
+              top: rowMenuRef.current.getBoundingClientRect().top,
+              left: rowMenuRef.current.getBoundingClientRect().left - 8,
+              transform: "translate(-100%, 0)",
+              zIndex: 9999,
+              minWidth: 170,
+            }}
+            className="overflow-hidden rounded-[9px] border border-border bg-white shadow-[0_6px_20px_rgba(0,0,0,.14)]">
             <button
               onClick={() => {
                 onAddChild();

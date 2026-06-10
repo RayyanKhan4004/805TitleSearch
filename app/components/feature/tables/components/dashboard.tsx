@@ -184,17 +184,19 @@ export default function Dashboard() {
       const propertyData = flattenReportRaw(reportData.raw);
       const pf = mapApiToForm(propertyData);
       setPropertyForm(pf);
+      const reportVesting =
+        reportData.form.vesting ||
+        reportData.form.vestingText ||
+        "";
+      const reportLegal =
+        reportData.form.legalDescription ||
+        reportData.form.shortLegal ||
+        "";
       setShared((s) => ({
         ...s,
-        vesting:
-          reportData.form.vesting ||
-          reportData.form.vestingText ||
-          "",
-        legal:
-          reportData.form.legalDescription ||
-          reportData.form.shortLegal ||
-          "",
-        effectiveDate: new Date().toLocaleDateString("en-US"),
+        vesting: s.vesting || reportVesting,
+        legal: s.legal || reportLegal,
+        effectiveDate: s.effectiveDate || new Date().toLocaleDateString("en-US"),
       }));
     }
   }, [reportData]);
@@ -240,6 +242,7 @@ export default function Dashboard() {
     setStep(1);
 
     setPropertyForm(null);
+    setShared(EMPTY_SHARED_STATE);
     setOrderDetailId(order.id ? String(order.id) : order.no.replace("#", ""));
     setReportParams({
       searchType: "APN",

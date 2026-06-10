@@ -177,7 +177,7 @@ export default function LegalVestingDrawer({ shared, setShared, propertyForm, is
             />
             <div className="p-[18px] flex flex-col gap-3">
               <RichEditor
-                value={shared.vesting || propertyForm?.vestingText || ""}
+                value={shared.vesting}
                 onChange={(v) => setShared((s) => ({ ...s, vesting: v }))}
               />
               <div>

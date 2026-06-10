@@ -4,7 +4,10 @@ import { useState, useRef } from "react";
 import Icon from "@/components/common/icon";
 import { UPLOAD_CATS } from "./temp";
 import type { UploadCat } from "./temp";
-import { useUploadFileMutation, useUpdateOrderMutation } from "@/app/store/api/ordersApi";
+import {
+  useUploadFileMutation,
+  useUpdateOrderMutation,
+} from "@/app/store/api/ordersApi";
 import toast from "react-hot-toast";
 
 interface SectionUploadModalProps {
@@ -87,57 +90,62 @@ export default function SectionUploadModal({
     if (!section) return;
     setUploading(true);
     try {
-      let fileUrl = ""
+      let fileUrl = "";
       if (selectedFile) {
-        const fd = new FormData()
-        fd.append("file", selectedFile)
-        fileUrl = await uploadFile(fd).unwrap()
+        const fd = new FormData();
+        fd.append("file", selectedFile);
+        fileUrl = await uploadFile(fd).unwrap();
       }
 
       /* PATCH order with uploaded data if we have an orderId */
       if (orderId) {
-        const body: Record<string, unknown> = {}
-        const fieldMap = FIELD_TO_DTO[section] || {}
+        const body: Record<string, unknown> = {};
+        const fieldMap = FIELD_TO_DTO[section] || {};
 
         if (TCR_SECTIONS.has(section)) {
           const chainEntry: Record<string, unknown> = {
-            documentSection: section === "Starters" ? "starters" : "title_chain_review",
+            documentSection:
+              section === "Starters" ? "starters" : "title_chain_review",
             isStarter: section === "Starters",
-          }
+          };
           if (fileUrl) {
-            chainEntry.fileUrl = fileUrl
-            chainEntry.fileName = selectedFile?.name || null
-            chainEntry.fileKey = fileUrl.split("?")[0].split("/").slice(-2).join("/")
-            chainEntry.fileMimeType = selectedFile?.type || null
+            chainEntry.fileUrl = fileUrl;
+            chainEntry.fileName = selectedFile?.name || null;
+            chainEntry.fileKey = fileUrl
+              .split("?")[0]
+              .split("/")
+              .slice(-2)
+              .join("/");
+            chainEntry.fileMimeType = selectedFile?.type || null;
           }
           for (const [k, v] of Object.entries(form)) {
-            if (v) chainEntry[fieldMap[k] || k] = v
+            if (v) chainEntry[fieldMap[k] || k] = v;
           }
-          body.titleChainReviews = [chainEntry]
+          body.titleChainReviews = [chainEntry];
         } else {
-          if (fileUrl) body.fileUrl = fileUrl
-          const runsheetParts: string[] = []
+          if (fileUrl) body.fileUrl = fileUrl;
+          const runsheetParts: string[] = [];
           for (const [k, v] of Object.entries(form)) {
-            if (!v) continue
-            const mapped = fieldMap[k] || k
+            if (!v) continue;
+            const mapped = fieldMap[k] || k;
             if (mapped === "__split__" && k === "bookPage") {
-              const parts = v.split(" / ")
-              if (parts[0]) body.mapBook = parts[0]
-              if (parts[1]) body.page = parts[1]
+              const parts = v.split(" / ");
+              if (parts[0]) body.mapBook = parts[0];
+              if (parts[1]) body.page = parts[1];
             } else if (mapped === "additionalNotes" && section === "Runsheet") {
-              runsheetParts.push(`${k}: ${v}`)
+              runsheetParts.push(`${k}: ${v}`);
             } else {
-              body[mapped] = v
+              body[mapped] = v;
             }
           }
           if (runsheetParts.length > 0) {
-            const existing = (body.additionalNotes as string) || ""
+            const existing = (body.additionalNotes as string) || "";
             body.additionalNotes = existing
               ? existing + "\n" + runsheetParts.join("\n")
-              : runsheetParts.join("\n")
+              : runsheetParts.join("\n");
           }
         }
-        await updateOrder({ id: orderId, body }).unwrap()
+        await updateOrder({ id: orderId, body }).unwrap();
       }
 
       setSaved(true);
@@ -146,7 +154,7 @@ export default function SectionUploadModal({
         onClose();
       }, 800);
     } catch {
-      toast.error("Upload failed")
+      toast.error("Upload failed");
     } finally {
       setUploading(false);
     }
@@ -170,7 +178,7 @@ export default function SectionUploadModal({
       style={{ background: "rgba(0,0,0,.55)", backdropFilter: "blur(3px)" }}
     >
       <div
-        className="bg-white w-full max-w-[640px] max-h-[90vh] flex flex-col overflow-hidden"
+        className="bg-white w-full max-w-160 max-h-[90vh] flex flex-col overflow-hidden"
         style={{ borderRadius: 16, boxShadow: "0 24px 64px rgba(0,0,0,.22)" }}
       >
         {/* header */}
@@ -182,7 +190,7 @@ export default function SectionUploadModal({
         >
           <div className="flex items-center gap-2.5">
             <div
-              className="w-[34px] h-[34px] rounded-lg flex items-center justify-center"
+              className="w-8.5 h-8.5 rounded-lg flex items-center justify-center"
               style={{ background: "rgba(255,255,255,.15)" }}
             >
               <svg
@@ -230,7 +238,7 @@ export default function SectionUploadModal({
         {/* body */}
         <div className="flex-1 overflow-y-auto p-5">
           {/* section dropdown */}
-          <div className="mb-[18px]">
+          <div className="mb-4.5">
             <label className="text-[10px] font-bold text-[#475569] uppercase tracking-[0.07em] block mb-1.5">
               Document Section *
             </label>
@@ -261,7 +269,7 @@ export default function SectionUploadModal({
           {/* section fields */}
           {cat && (
             <>
-              <div className="mb-[18px]">
+              <div className="mb-4.5">
                 <div className="flex items-center gap-1.5 mb-2.5">
                   <div
                     style={{
@@ -343,7 +351,10 @@ export default function SectionUploadModal({
                 </div>
                 <div
                   className="border-2 border-dashed rounded-xl p-[18px_16px] cursor-pointer transition-all duration-200"
-                  style={{ borderColor: selectedFile ? "#16a34a" : "#cbd5e1", background: selectedFile ? "#f0fdf4" : "#fafafa" }}
+                  style={{
+                    borderColor: selectedFile ? "#16a34a" : "#cbd5e1",
+                    background: selectedFile ? "#f0fdf4" : "#fafafa",
+                  }}
                   onClick={() => fileRef.current?.click()}
                 >
                   <input
@@ -351,18 +362,39 @@ export default function SectionUploadModal({
                     type="file"
                     accept="image/*,.pdf"
                     style={{ display: "none" }}
-                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    onChange={(e) =>
+                      setSelectedFile(e.target.files?.[0] || null)
+                    }
                   />
                   {selectedFile ? (
                     <div className="flex items-center gap-2.5">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#16a34a"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                         <polyline points="14 2 14 8 20 8" />
                         <line x1="16" y1="13" x2="8" y2="13" />
                         <line x1="16" y1="17" x2="8" y2="17" />
                       </svg>
-                      <span className="text-[11px] font-semibold text-[#166534]">{selectedFile.name}</span>
-                      <button onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }} className="ml-auto bg-transparent border-none text-[#94a3b8] cursor-pointer text-[14px]">×</button>
+                      <span className="text-[11px] font-semibold text-[#166534]">
+                        {selectedFile.name}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFile(null);
+                        }}
+                        className="ml-auto bg-transparent border-none text-[#94a3b8] cursor-pointer text-[14px]"
+                      >
+                        ×
+                      </button>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-[7px]">
@@ -410,7 +442,8 @@ export default function SectionUploadModal({
           >
             {uploading ? (
               <span className="flex items-center gap-1">
-                <Icon name="loader" size={11} className="animate-spin" /> Uploading…
+                <Icon name="loader" size={11} className="animate-spin" />{" "}
+                Uploading…
               </span>
             ) : saved ? (
               <span className="flex items-center gap-1">

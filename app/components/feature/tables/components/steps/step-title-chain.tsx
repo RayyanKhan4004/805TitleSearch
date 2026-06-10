@@ -4,10 +4,9 @@ import Icon from "@/components/common/icon";
 import IndexCard from "../index-card";
 import LegalVestingDrawer from "../legal-vesting-drawer";
 import GenieSectionCard from "../genie-section-card";
-import RunsheetCard from "../runsheet-card";
 import TaxCertCard from "../tax-cert-card";
 import AssessorCard from "../assessor-card";
-import SectionFieldsCard from "../section-fields-card";
+import SectionTableCard from "../section-table-card";
 import SectionUploadModal from "../section-upload-modal";
 import { Button } from "@/components/ui";
 import { useState, useEffect } from "react";
@@ -15,7 +14,10 @@ import ManualSearchModal from "../models/manual-search-modal";
 import { INDEX_SECTIONS } from "../consts";
 import { FIELDS } from "../temp";
 import { mapTransactionsToIndexRows } from "@/app/services/transaction-mapper";
-import { useFetchCodeBookQuery, useUploadFileMutation } from "@/app/store/api/ordersApi";
+import {
+  useFetchCodeBookQuery,
+  useUploadFileMutation,
+} from "@/app/store/api/ordersApi";
 import type {
   SharedState,
   PropertyForm,
@@ -42,7 +44,9 @@ function mapCodeBookToGenieItems(entries: CodeBookEntry[]): GenieCodeItem[] {
     });
 }
 
-function mapTitleChainToIndexRows(chain: Record<string, unknown>[]): IndexRow[] {
+function mapTitleChainToIndexRows(
+  chain: Record<string, unknown>[],
+): IndexRow[] {
   return chain.map((item, i) => {
     const abbr = String(item.abbr || "");
     const category = String(item.category || "");
@@ -94,7 +98,9 @@ export default function StepTitleChain({
   onSaveClose,
 }: StepTitleChainProps) {
   const chainFromOrderDetail = orderDetail?.titleChainReviews
-    ? mapTitleChainToIndexRows(orderDetail.titleChainReviews as Record<string, unknown>[])
+    ? mapTitleChainToIndexRows(
+        orderDetail.titleChainReviews as Record<string, unknown>[],
+      )
     : [];
   const tx = reportRaw?.Transactions;
   const apiChainRows =
@@ -108,7 +114,9 @@ export default function StepTitleChain({
   const [effectiveDate, setEffectiveDate] = useState("");
   const [codes, setCodes] = useState<ChainCode[]>(shared?.chainCodes || []);
   const { data: codeBookEntries } = useFetchCodeBookQuery();
-  const genieCodes = codeBookEntries ? mapCodeBookToGenieItems(codeBookEntries) : [];
+  const genieCodes = codeBookEntries
+    ? mapCodeBookToGenieItems(codeBookEntries)
+    : [];
   const [uploadFile] = useUploadFileMutation();
 
   const handleFileUpload = async (file: File): Promise<string> => {
@@ -129,30 +137,34 @@ export default function StepTitleChain({
       setShared((s) => ({ ...s, chainCodes: next }));
     }
   };
-
+  console.log(reportRaw);
   /* ── Derive values from orderDetail + propertyForm ── */
   const assessorMapFields = FIELDS["Assessor Map"] || [];
-  const assessorMapValues = {
+  const assessorMapValues: Record<string, string> = {
     mapRef: orderDetail?.tract || propertyForm?.tract || "",
     parcelNo: orderDetail?.apn1 || propertyForm?.apn1 || "",
     mapDate: "",
     notes: orderDetail?.additionalNotes || "",
+    fileUrl: reportRaw?.FileLink || "",
   };
 
   const tractMapFields = FIELDS["Tract Map"] || [];
-  const tractMapValues = {
+  const tractMapValues: Record<string, string> = {
     tractNo: orderDetail?.tract || propertyForm?.tract || "",
     bookPage:
-      (orderDetail?.mapBook || propertyForm?.mapBook || "")
-        ? `${orderDetail?.mapBook || propertyForm?.mapBook}${(orderDetail?.page || propertyForm?.page) ? ` / ${orderDetail?.page || propertyForm?.page}` : ""}`
+      orderDetail?.mapBook || propertyForm?.mapBook || ""
+        ? `${orderDetail?.mapBook || propertyForm?.mapBook}${orderDetail?.page || propertyForm?.page ? ` / ${orderDetail?.page || propertyForm?.page}` : ""}`
         : "",
     recDate: "",
     subdivision: "",
+    fileUrl: reportRaw?.FileLink || "",
   };
 
   const starterFields = FIELDS["Starters"] || [];
   const starterEntry = Array.isArray(orderDetail?.titleChainReviews)
-    ? (orderDetail.titleChainReviews as Record<string, unknown>[]).find((r: any) => r.isStarter)
+    ? (orderDetail.titleChainReviews as Record<string, unknown>[]).find(
+        (r: any) => r.isStarter,
+      )
     : null;
   const starterValues: Record<string, string> = {
     policyNo: (starterEntry as any)?.remarks || "",
@@ -160,6 +172,17 @@ export default function StepTitleChain({
     insured: (starterEntry as any)?.grantee || "",
     company: (starterEntry as any)?.grantor || "",
     amount: (starterEntry as any)?.amount || "",
+    fileUrl: (starterEntry as any)?.fileUrl || "",
+  };
+
+  const runsheetFields = FIELDS["Runsheet"] || [];
+  const runsheetValues: Record<string, string> = {
+    orderNo: orderDetail?.clientFileNo || "",
+    searchedBy: orderDetail?.runsheetGINames || "",
+    searchDate: "",
+    geoCov: "",
+    notes: orderDetail?.additionalNotes || "",
+    fileUrl: reportRaw?.FileLink || "",
   };
 
   const initialExceptions =
@@ -173,7 +196,7 @@ export default function StepTitleChain({
       code: e.genieCode || "",
       verbiage: e.verbiage || "",
     })) || [];
-
+console.log(starterValues , '-------------------------------------------------');
   return (
     <div className="flex flex-col gap-4">
       {/* ── Legal & Vesting — slide-down panel ── */}
@@ -289,24 +312,26 @@ export default function StepTitleChain({
             );
           if (sec.title === "Assessor Map")
             return (
-              <SectionFieldsCard
+              <SectionTableCard
                 key={sec.title}
                 title={sec.title}
                 sub={sec.sub}
                 accent={sec.accent}
                 fields={assessorMapFields}
                 values={assessorMapValues}
+                onFileUpload={handleFileUpload}
               />
             );
           if (sec.title === "Tract Map")
             return (
-              <SectionFieldsCard
+              <SectionTableCard
                 key={sec.title}
                 title={sec.title}
                 sub={sec.sub}
                 accent={sec.accent}
                 fields={tractMapFields}
                 values={tractMapValues}
+                onFileUpload={handleFileUpload}
               />
             );
           if (sec.title === "Tax Cert")
@@ -320,11 +345,14 @@ export default function StepTitleChain({
             );
           if (sec.title === "Runsheet")
             return (
-              <RunsheetCard
+              <SectionTableCard
                 key={sec.title}
                 title={sec.title}
                 sub={sec.sub}
                 accent={sec.accent}
+                fields={runsheetFields}
+                values={runsheetValues}
+                onFileUpload={handleFileUpload}
               />
             );
           if (sec.title === "Other Exceptions")
@@ -351,13 +379,14 @@ export default function StepTitleChain({
             );
           if (sec.title === "Starters")
             return (
-              <SectionFieldsCard
+              <SectionTableCard
                 key={sec.title}
                 title={sec.title}
                 sub={sec.sub}
                 accent={sec.accent}
                 fields={starterFields}
                 values={starterValues}
+                onFileUpload={handleFileUpload}
               />
             );
           const isTitleChain = sec.title === "Title Chain Review";

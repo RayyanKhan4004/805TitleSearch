@@ -18,6 +18,14 @@ import {
   Badge,
 } from "@/components/ui";
 
+function sanitizeHtml(html: string): string {
+  return html
+    // .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    // .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    // .replace(/href\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/gi, 'href="#"')
+    // .replace(/src\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/gi, 'src="#"');
+}
+
 interface StepTSRIProps {
   shared: SharedState;
   setShared: React.Dispatch<React.SetStateAction<SharedState>>;
@@ -397,7 +405,7 @@ Authorized Signatory: _________________________
             </CardContent>
           </Card>
 
-          {/* Vesting */}
+          {/* Vesting — read-only HTML render */}
           <Card>
             <CardHead
               title="Vesting"
@@ -411,17 +419,15 @@ Authorized Signatory: _________________________
             />
             <CardContent>
               <Lbl>Vesting as it will appear in Schedule A</Lbl>
-              <Textarea
-                rows={4}
-                value={vesting}
-                onChange={(e) => setVesting(e.target.value)}
-                size="mono"
-                placeholder="Vesting from deed…"
+              <div
+                className="w-full rounded-lg border border-border-input-alt bg-white px-3 py-2.5 text-[11px] text-text font-mono leading-relaxed"
+                style={{ whiteSpace: "pre-wrap", minHeight: 60 }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(vesting) }}
               />
             </CardContent>
           </Card>
 
-          {/* Legal Description */}
+          {/* Legal Description — read-only HTML render */}
           <Card>
             <CardHead
               title="Legal Description"
@@ -440,16 +446,12 @@ Authorized Signatory: _________________________
               }
             />
             <CardContent>
-              <Textarea
-                size="mono"
-                rows={6}
-                value={legal}
-                onChange={(e) => setLegal(e.target.value)}
+              <div
+                className="w-full rounded-lg border border-border-input-alt bg-white px-3 py-2.5 text-[11px] text-text font-mono leading-relaxed"
+                style={{ whiteSpace: "pre-wrap", minHeight: 100 }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(legal) }}
               />
               <div className="flex justify-between items-center mt-1.5">
-                <button className="bg-transparent border-none text-status-info-blue-text text-[11px] font-semibold cursor-pointer">
-                  Convert to Fields
-                </button>
                 <span className="text-[10px] text-text-muted">
                   {legal.length} chars
                 </span>

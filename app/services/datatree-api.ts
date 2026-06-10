@@ -144,10 +144,10 @@ export function mapOrderDetailToForm(d: OrderDetail): PropertyForm {
     section: d.section ?? "",
     township: d.township ?? "",
     range: d.range ?? "",
-    shortLegal: d.shortLegal ?? "",
+    shortLegal: d.shortLegal ?? d.legalDescription ?? "",
     municipality: d.municipality ?? "City",
     jurisdiction: d.jurisdiction ?? "",
-    vestingText:  d.vesting ?? "",
+    vestingText: d.vesting ?? "",
     vestingType: d.vestingType,
     landUse: d.landUse,
     _yearBuilt: d.yearBuilt ?? undefined,
@@ -178,8 +178,8 @@ export function mapOrderDetailToForm(d: OrderDetail): PropertyForm {
 /** Extract SharedState fields from GET /orders/:id response */
 export function mapOrderDetailToSharedState(d: OrderDetail) {
   return {
-    vesting:  d.vesting || "",
-    legal: d.shortLegal || d.legalDescription || "",
+    vesting: d.vesting || "",
+    legal: d.legalDescription || d.shortLegal || "",
     leaseHold: d.leaseHoldInterest || "",
     effectiveDate: d.effectiveDate || "",
     typeDate: d.typeDate || "",

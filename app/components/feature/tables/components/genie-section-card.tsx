@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Icon from "@/components/common/icon";
+import RichEditor from "@/components/common/text-toolbar";
 
 interface GenieCodeItem {
   code: string;
@@ -255,48 +256,13 @@ export default function GenieSectionCard({ title, sub, accent, codes }: GenieSec
                   {c.expanded && (
                     <div className="p-3">
                       {c.editing ? (
-                        <textarea
-                          rows={4}
-                          value={c.verbiage}
-                          onChange={(e) => updateVerbiage(c.id, e.target.value)}
-                          className="w-full border border-border-input-alt rounded-lg px-2.5 py-2 text-[11px] text-ui-code bg-white outline-none resize-none font-mono leading-relaxed"
-                        />
+                        <RichEditor value={c.verbiage} onChange={(v) => updateVerbiage(c.id, v)} />
                       ) : (
-                        <>
-                          <p className="m-0 text-[11px] text-text leading-relaxed whitespace-pre-wrap font-mono">
-                            {c.verbiage}
-                          </p>
-                          <div className="flex gap-1.5 mt-2 pt-2" style={{ borderTop: "1px solid var(--border-secondary)" }}>
-                            <button
-                              onClick={() => {
-                                const sel = window.getSelection()?.toString() || "";
-                                const url = prompt("Enter URL to hyperlink selected text:", "https://");
-                                if (url && sel) updateVerbiage(c.id, c.verbiage.replace(sel, `${sel} [${url}]`));
-                              }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.25 text-[10px] font-semibold rounded-lg cursor-pointer"
-                              style={{ background: "var(--status-info-subtle)", border: "1px solid var(--status-info-blue-border)", color: "var(--status-info-blue)" }}
-                            >
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-                                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-                              </svg>
-                              Hyperlink
-                            </button>
-                            <button
-                              onClick={() => updateVerbiage(c.id, c.verbiage.replace(/ \[[^\]]*\]/g, "").trim())}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.25 text-[10px] font-semibold rounded-lg cursor-pointer"
-                              style={{ background: "var(--status-info-subtle)", border: "1px solid var(--status-info-blue-border)", color: "var(--accent-title-point)" }}
-                            >
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                                <path d="M18.84 12.25l1.72-1.71h-.02a5.004 5.004 0 00-.12-7.07 5.006 5.006 0 00-6.95 0l-1.72 1.71" />
-                                <path d="M5.17 11.75l-1.71 1.71a5.004 5.004 0 00.12 7.07 5.006 5.006 0 006.95 0l1.71-1.71" />
-                                <line x1="8" y1="2" x2="8" y2="5" />
-                                <line x1="2" y1="8" x2="5" y2="8" />
-                              </svg>
-                              Remove Hyperlink
-                            </button>
-                          </div>
-                        </>
+                        <div
+                          className="text-[11px] text-text leading-relaxed font-mono"
+                          dangerouslySetInnerHTML={{ __html: c.verbiage }}
+                          style={{ whiteSpace: "pre-wrap" }}
+                        />
                       )}
                     </div>
                   )}

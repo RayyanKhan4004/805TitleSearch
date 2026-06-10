@@ -186,8 +186,14 @@ export default function Dashboard() {
       setPropertyForm(pf);
       setShared((s) => ({
         ...s,
-        vesting: reportData.form.vestingText ?? "",
-        legal: reportData.form.shortLegal ?? "",
+        vesting:
+          reportData.form.vesting ||
+          reportData.form.vestingText ||
+          "",
+        legal:
+          reportData.form.legalDescription ||
+          reportData.form.shortLegal ||
+          "",
         effectiveDate: new Date().toLocaleDateString("en-US"),
       }));
     }

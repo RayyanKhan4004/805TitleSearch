@@ -65,6 +65,37 @@ export const ordersApi = createApi({
       providesTags: (result, error, code) => [{ type: "CodeBook", id: code }],
     }),
 
+    deleteCodeBook: builder.mutation<null, string>({
+      query: (id) => ({
+        url: `/codebook/${id}`,
+        method: "DELETE",
+        responseHandler: async (response: Response) =>
+          response.status === 204 || response.headers.get("content-length") === "0"
+            ? null
+            : response.json(),
+      }),
+      transformResponse: () => null,
+      invalidatesTags: ["CodeBook"],
+    }),
+
+    createCodeBook: builder.mutation<CodeBookEntry, { code: string; verbiage: string }>({
+      query: (body) => ({
+        url: "/codebook",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["CodeBook"],
+    }),
+
+    updateCodeBook: builder.mutation<CodeBookEntry, { code: string; verbiage?: string }>({
+      query: ({ code, ...body }) => ({
+        url: `/codebook/${encodeURIComponent(code)}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["CodeBook"],
+    }),
+
     updateOrder: builder.mutation<
       OrderDetail,
       { id: string; body: Partial<OrderDetail> }
@@ -115,4 +146,4 @@ export const ordersApi = createApi({
   }),
 });
 
-export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation, useUploadFileMutation, useUpdateOrderChainFileMutation } = ordersApi
+export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation, useUploadFileMutation, useUpdateOrderChainFileMutation, useCreateCodeBookMutation, useUpdateCodeBookMutation, useDeleteCodeBookMutation } = ordersApi

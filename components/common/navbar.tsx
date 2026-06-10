@@ -69,7 +69,7 @@ export default function Navbar({ onDashboardClick }: NavbarProps) {
         >
           <div className="w-6.5 h-6.5 rounded-full bg-[var(--ui-avatar-bg)] flex items-center justify-center text-[var(--ui-avatar-text)] text-[10px] font-bold">
             {user
-              ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+              ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() || "U"
               : "U"}
           </div>
           <div>

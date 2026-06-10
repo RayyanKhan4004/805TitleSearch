@@ -16,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased" style={{ fontFamily: "'Segoe UI', 'San Francisco', 'Helvetica Neue', Arial, sans-serif" }}>
-      <body className="min-h-full flex flex-col m-0 overflow-hidden bg-[#f1f5f9]">
+      <body suppressHydrationWarning className="min-h-full flex flex-col m-0 overflow-hidden bg-[#f1f5f9]">
         <StoreProvider>
           <AuthProvider>
             {children}

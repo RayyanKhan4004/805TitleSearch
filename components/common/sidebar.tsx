@@ -62,7 +62,7 @@ export default function Sidebar() {
         onClick={() => router.push("/profile")}
         className="w-7 h-7 rounded-full bg-ui-avatar flex items-center justify-center text-ui-avatar-text text-[10px] font-bold cursor-pointer"
       >
-        {user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : "U"}
+        {user ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase() || "U" : "U"}
       </div>
     </aside>
   );

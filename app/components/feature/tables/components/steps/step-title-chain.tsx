@@ -137,7 +137,6 @@ export default function StepTitleChain({
       setShared((s) => ({ ...s, chainCodes: next }));
     }
   };
-  console.log(reportRaw);
   /* ── Derive values from orderDetail + propertyForm ── */
   const assessorMapFields = FIELDS["Assessor Map"] || [];
   const assessorMapValues: Record<string, string> = {
@@ -196,7 +195,6 @@ export default function StepTitleChain({
       code: e.genieCode || "",
       verbiage: e.verbiage || "",
     })) || [];
-console.log(starterValues , '-------------------------------------------------');
   return (
     <div className="flex flex-col gap-4">
       {/* ── Legal & Vesting — slide-down panel ── */}

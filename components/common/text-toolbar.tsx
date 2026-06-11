@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import LinkExtension from "@tiptap/extension-link";
+import Icon from "@/components/common/icon";
 
 interface RichEditorProps {
   value?: string;
@@ -120,10 +121,7 @@ export default function RichEditor({
 
           <button type="button" onClick={handleAddHyperlink} className={btnBase}
             style={{ background: "var(--status-info-subtle, #eff6ff)", border: "1px solid var(--status-info-blue-border, #bfdbfe)", color: "var(--status-info-blue, #2563eb)" }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-            </svg>
+            <Icon name="link" size={11} />
             Add Hyperlink
           </button>
 

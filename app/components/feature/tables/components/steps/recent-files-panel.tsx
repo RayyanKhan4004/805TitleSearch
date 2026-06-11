@@ -34,11 +34,9 @@ export default function RecentFilesPanel({ orders, onSelect, getOrderStatus, get
                 {getOrderStatus(f.no)}
               </span>
               {getLock(f.no) && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--amber-500)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <title>{`Locked by ${getLock(f.no)?.user}`}</title>
-                  <rect x="3" y="11" width="18" height="11" rx="2" />
-                  <path d="M7 11V7a5 5 0 0110 0v4" />
-                </svg>
+                <span title={`Locked by ${getLock(f.no)?.user}`}>
+                  <Icon name="lock" size={10} style={{ color: "var(--amber-500)" }} />
+                </span>
               )}
             </div>
           </div>

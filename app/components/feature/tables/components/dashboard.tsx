@@ -392,19 +392,7 @@ export default function Dashboard() {
               {/* lock indicator */}
               {isLockedByMe(selectedOrder.no) && (
                 <span className="flex items-center gap-1 bg-status-warning-subtle border border-status-warning-border rounded-full px-2.5 py-0.5 text-[10px] font-bold text-status-warning-text">
-                  <svg
-                    width="11"
-                    height="11"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0110 0v4" />
-                  </svg>
+                  <Icon name="lock" size={11} />
                   Locked by You
                 </span>
               )}
@@ -574,19 +562,7 @@ export default function Dashboard() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="bg-status-warning-text px-5 py-3.5 flex items-center gap-2.5">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="var(--color-white)"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0110 0v4" />
-                  </svg>
+                  <Icon name="lock" size={20} style={{ color: "var(--color-white)" }} />
                   <span className="text-[14px] font-bold text-(--color-white)">
                     Order Locked
                   </span>

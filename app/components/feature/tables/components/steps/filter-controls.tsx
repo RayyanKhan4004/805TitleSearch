@@ -1,5 +1,7 @@
 "use client";
 
+import Icon from "@/components/common/icon";
+
 interface Props {
   showFunnel: boolean;
   setShowFunnel: (v: boolean) => void;
@@ -71,9 +73,7 @@ export default function FilterControls({
                 {statusFilter.length > 0 && (
                   <span className="text-[10px] font-bold text-white px-1.5 py-0.25 rounded-full" style={{ background: "var(--brand-primary)" }}>{statusFilter.length}</span>
                 )}
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transform: expandedSection === "status" ? "rotate(90deg)" : "none", transition: "transform .15s" }}>
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
+                <Icon name="chevRight" size={10} style={{ transform: expandedSection === "status" ? "rotate(90deg)" : "none", transition: "transform .15s" }} />
               </span>
             </button>
             {expandedSection === "status" && (
@@ -113,9 +113,7 @@ export default function FilterControls({
                 {countryFilter.length > 0 && (
                   <span className="text-[10px] font-bold text-white px-1.5 py-0.25 rounded-full" style={{ background: "var(--brand-primary)" }}>{countryFilter.length}</span>
                 )}
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transform: expandedSection === "country" ? "rotate(90deg)" : "none", transition: "transform .15s" }}>
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
+                <Icon name="chevRight" size={10} style={{ transform: expandedSection === "country" ? "rotate(90deg)" : "none", transition: "transform .15s" }} />
               </span>
             </button>
             {expandedSection === "country" && (

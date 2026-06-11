@@ -29,7 +29,6 @@ export default function SectionTableCard({
   const nonEmpty = fields.filter((f) => values[f.key] && values[f.key] !== "");
   const [showImgDrop, setShowImgDrop] = useState(false);
   const imgDropRef = useRef<HTMLTableCellElement>(null);
-console.log(Object.keys(values), "values");
   useEffect(() => {
     if (!showImgDrop) return;
     const handler = (event: MouseEvent) => {
@@ -183,87 +182,21 @@ function isAllValuesEmpty(obj : any) {
                           />
                         </label>
                       )}
-                      {/* <button
-                        onClick={() => setShowImgDrop(!showImgDrop)}
-                        title="File options"
-                        className="inline-flex items-center gap-0.5 rounded-[5px] border px-1.75 py-0.75 text-[9px] font-semibold transition-colors"
-                        style={{
-                          background: showImgDrop
-                            ? "var(--brand-primary)"
-                            : "var(--color-white)",
-                          borderColor: showImgDrop
-                            ? "var(--brand-primary)"
-                            : "var(--border-input)",
-                          color: showImgDrop
-                            ? "var(--color-white)"
-                            : "var(--text-secondary)",
-                        }}
-                      >
-                        <Icon name="file" size={9} />
-                        Options
-                        <Icon name="chevDown" size={8} />
-                      </button> */}
                     </div>
-                    {/* {showImgDrop && imgDropRef.current && (
-                      <div
-                        style={{
-                          position: "fixed",
-                          top:
-                            imgDropRef.current.getBoundingClientRect().top - 8,
-                          left:
-                            imgDropRef.current.getBoundingClientRect().left +
-                            imgDropRef.current.getBoundingClientRect().width /
-                              2,
-                          transform: "translate(-50%, -100%)",
-                          zIndex: 9999,
-                          minWidth: 185,
-                        }}
-                        className="overflow-hidden rounded-[10px] border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,.16)]"
-                      >
-                        <div className="border-b border-light bg-table-header px-2.75 py-1.5 text-left text-[9px] font-extrabold uppercase tracking-[0.07em] text-text-muted">
-                          Attach Options
-                        </div>
-                        <label className="flex cursor-pointer items-center gap-2 border-b border-light px-3 py-2 text-left text-[11px] font-medium text-text hover:bg-bg-page">
-                          <Icon
-                            name="upload"
-                            size={12}
-                            className="text-status-info-blue-text"
-                          />
-                          <span>
-                            {attached ? "Re-attach File" : "Attach File"}
-                          </span>
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept="image/*,.pdf"
-                            onChange={(e) => {
-                              handleExamImg(e);
-                              setShowImgDrop(false);
-                            }}
-                          />
-                        </label>
-                         {attached && (
-                          <button
-                            onClick={() => setShowImgDrop(false)}
-                            className="flex w-full items-center gap-2 border-none bg-white px-3 py-2 text-left text-[11px] font-medium text-status-error-text hover:bg-status-error-bg"
-                          >
-                            <Icon
-                              name="trash"
-                              size={12}
-                              className="text-status-error-text"
-                            />
-                            Remove File
-                          </button>
-                        )} 
-                      </div>
-                    )} */}
                   </td>
                 </tr>
               </tbody>
             ) : (
-              <div className="ml-3 text-[11px] text-text-muted italic py-2">
-                nothing to show
-              </div>
+              <tbody>
+                <tr>
+                  <td
+                    colSpan={fields.length + 1}
+                    className="text-[11px] text-text-muted italic py-2 text-center"
+                  >
+                    nothing to show
+                  </td>
+                </tr>
+              </tbody>
             )}
           </table>
         </div>

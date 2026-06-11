@@ -165,7 +165,7 @@ export default function GenieSectionCard({ title, sub, accent, codes, initialAdd
                     ) : (
                       <Icon name="plus" size={10} />
                     )}
-                    <button
+                    <span
                       onClick={(e) => {
                         e.stopPropagation();
                         // removeCode(c.id);
@@ -173,12 +173,11 @@ export default function GenieSectionCard({ title, sub, accent, codes, initialAdd
                       className="bg-transparent border-none cursor-pointer flex items-center justify-center h-fit mb-0.5 text-red-500"
                       style={{
                         fontSize: 12,
-                        // lineHeight: 0.1,
                         opacity: 0.5,
                       }}
                     >
                       ×
-                    </button>
+                    </span>
                   </button>
                 );
               })}

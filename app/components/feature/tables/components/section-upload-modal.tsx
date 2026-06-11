@@ -174,7 +174,7 @@ export default function SectionUploadModal({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-5"
+      className="fixed inset-0 z-9999 flex items-center justify-center p-5"
       style={{ background: "rgba(0,0,0,.55)", backdropFilter: "blur(3px)" }}
     >
       <div
@@ -193,20 +193,7 @@ export default function SectionUploadModal({
               className="w-8.5 h-8.5 rounded-lg flex items-center justify-center"
               style={{ background: "rgba(255,255,255,.15)" }}
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#fff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
+              <Icon name="upload" size={16} style={{ color: "#fff" }} />
             </div>
             <div>
               <div className="text-[14px] font-bold text-white">
@@ -368,21 +355,7 @@ export default function SectionUploadModal({
                   />
                   {selectedFile ? (
                     <div className="flex items-center gap-2.5">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#16a34a"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="16" y1="13" x2="8" y2="13" />
-                        <line x1="16" y1="17" x2="8" y2="17" />
-                      </svg>
+                      <Icon name="file" size={20} style={{ color: "#16a34a" }} />
                       <span className="text-[11px] font-semibold text-[#166534]">
                         {selectedFile.name}
                       </span>
@@ -397,21 +370,8 @@ export default function SectionUploadModal({
                       </button>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-[7px]">
-                      <svg
-                        width="32"
-                        height="32"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#94a3b8"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
-                      </svg>
+                    <div className="flex flex-col items-center gap-1.75">
+                      <Icon name="upload" size={32} style={{ color: "#94a3b8" }} />
                       <span className="text-[11px] font-semibold text-[#334155]">
                         Click to browse or drag a file here
                       </span>

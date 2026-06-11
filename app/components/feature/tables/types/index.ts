@@ -797,6 +797,22 @@ export interface OrderDetail {
   additionalEasements: string;
   additionalNotes: string;
 
+  taxCerts: Array<{
+    id: number;
+    code: string;
+    verbiage: string | null;
+  }>;
+  otherExceptions: Array<{
+    id: number;
+    code: string;
+    verbiage: string | null;
+  }>;
+  otherRequirements: Array<{
+    id: number;
+    code: string;
+    verbiage: string | null;
+  }>;
+
   /* Exceptions & Requirements from API */
   tsriExceptions: Array<{
     id: number;

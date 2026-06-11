@@ -26,6 +26,22 @@ interface TaxCertCardProps {
   title: string;
   sub: string;
   accent: string;
+  codes?: { code: string; verbiage?: string | null }[];
+  initialAddedCodes?: { code: string; verbiage: string }[];
+}
+
+function initAddedCodes(
+  list?: { code: string; verbiage: string }[],
+): AddedCode[] {
+  if (!list || list.length === 0) return [];
+  return list.map((item, i) => ({
+    code: item.code,
+    label: item.code,
+    verbiage: item.verbiage,
+    id: Date.now() + i,
+    editing: false,
+    expanded: false,
+  }));
 }
 
 interface AddedCode extends CatxCode {
@@ -34,28 +50,59 @@ interface AddedCode extends CatxCode {
   expanded: boolean;
 }
 
-export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
+export default function TaxCertCard({
+  title,
+  sub,
+  accent,
+  codes,
+  initialAddedCodes,
+}: TaxCertCardProps) {
   const [open, setOpen] = useState(true);
-  const [addedCodes, setAddedCodes] = useState<AddedCode[]>([]);
+  const [addedCodes, setAddedCodes] = useState<AddedCode[]>(() =>
+    initAddedCodes(initialAddedCodes),
+  );
   const { data: codeBookEntries } = useFetchCodeBookQuery();
-  const catxCodes = codeBookEntries ? mapCodeBookToCatxCodes(codeBookEntries) : [];
+  const catxCodes = codeBookEntries
+    ? mapCodeBookToCatxCodes(codeBookEntries)
+    : [];
+  const pickerCodes = codes
+    ? codes.map((c) => ({
+        code: c.code,
+        label: c.code,
+        verbiage: c.verbiage ?? "",
+      }))
+    : catxCodes;
 
   const addCode = (catx: CatxCode) =>
-    setAddedCodes((c) => [...c, { ...catx, id: Date.now(), editing: false, expanded: true }]);
+    setAddedCodes((c) => [
+      ...c,
+      { ...catx, id: Date.now(), editing: false, expanded: true },
+    ]);
 
-  const removeCode = (id: number) => setAddedCodes((c) => c.filter((x) => x.id !== id));
+  const removeCode = (id: number) =>
+    setAddedCodes((c) => c.filter((x) => x.id !== id));
 
   const updateVerbiage = (id: number, v: string) =>
-    setAddedCodes((c) => c.map((x) => (x.id === id ? { ...x, verbiage: v } : x)));
+    setAddedCodes((c) =>
+      c.map((x) => (x.id === id ? { ...x, verbiage: v } : x)),
+    );
 
   const toggleExpanded = (id: number) =>
-    setAddedCodes((c) => c.map((x) => (x.id === id ? { ...x, expanded: !x.expanded } : x)));
+    setAddedCodes((c) =>
+      c.map((x) => (x.id === id ? { ...x, expanded: !x.expanded } : x)),
+    );
 
   const startEdit = (id: number) =>
-    setAddedCodes((c) => c.map((x) => (x.id === id ? { ...x, editing: true, expanded: true } : x)));
+    setAddedCodes((c) =>
+      c.map((x) => (x.id === id ? { ...x, editing: true, expanded: true } : x)),
+    );
 
   const saveCode = (id: number) =>
-    setAddedCodes((c) => c.map((x) => (x.id === id ? { ...x, editing: false, expanded: false } : x)));
+    setAddedCodes((c) =>
+      c.map((x) =>
+        x.id === id ? { ...x, editing: false, expanded: false } : x,
+      ),
+    );
 
   const isAdded = (code: string) => addedCodes.some((c) => c.code === code);
 
@@ -84,16 +131,24 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
   return (
     <div
       className="overflow-hidden rounded-xl"
-      style={{ border: "1px solid var(--border-primary)", background: "var(--bg-card)" }}
+      style={{
+        border: "1px solid var(--border-primary)",
+        background: "var(--bg-card)",
+      }}
     >
       {/* header */}
       <div
         className="flex items-center justify-between px-4 py-2.75 cursor-pointer select-none bg-bg-card-header"
-        style={{ borderBottom: open ? "1px solid var(--border-secondary)" : "none" }}
+        style={{
+          borderBottom: open ? "1px solid var(--border-secondary)" : "none",
+        }}
         onClick={() => setOpen(!open)}
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-0.75 h-7 rounded-sm shrink-0" style={{ background: accent }} />
+          <div
+            className="w-0.75 h-7 rounded-sm shrink-0"
+            style={{ background: accent }}
+          />
           <div>
             <div className="text-[13px] font-bold text-text">{title}</div>
             <div className="text-[10px] text-text-muted mt-0.5">{sub}</div>
@@ -104,7 +159,11 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
             </span>
           )}
         </div>
-        <Icon name={open ? "chevDown" : "chevRight"} size={13} className="text-text-muted" />
+        <Icon
+          name={open ? "chevDown" : "chevRight"}
+          size={13}
+          className="text-text-muted"
+        />
       </div>
 
       {open && (
@@ -115,7 +174,7 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
               Select Tax Codes to Include
             </div>
             <div className="flex flex-wrap gap-1.75">
-              {catxCodes.map((catx) => {
+              {pickerCodes.map((catx) => {
                 const added = isAdded(catx.code);
                 return (
                   <button
@@ -188,16 +247,24 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                   className="overflow-hidden rounded-[10px] transition-all duration-150"
                   style={{
                     border: "1px solid",
-                    borderColor: c.expanded ? "var(--border-border)" : "var(--status-success-border)",
-                    background: c.expanded ? "var(--bg-card-header)" : "var(--status-success-bg)",
+                    borderColor: c.expanded
+                      ? "var(--border-border)"
+                      : "var(--status-success-border)",
+                    background: c.expanded
+                      ? "var(--bg-card-header)"
+                      : "var(--status-success-bg)",
                   }}
                 >
                   {/* card header */}
                   <div
                     className="flex items-center justify-between px-3 py-2 cursor-pointer"
                     style={{
-                      background: c.expanded ? "#fff" : "var(--status-success-bg)",
-                      borderBottom: c.expanded ? "1px solid var(--border-secondary)" : "none",
+                      background: c.expanded
+                        ? "#fff"
+                        : "var(--status-success-bg)",
+                      borderBottom: c.expanded
+                        ? "1px solid var(--border-secondary)"
+                        : "none",
                     }}
                     onClick={() => !c.editing && toggleExpanded(c.id)}
                   >
@@ -216,14 +283,17 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                       >
                         {c.code}
                       </span>
-                      <span className="text-[10px] text-text-tertiary">{c.label}</span>
+                      <span className="text-[10px] text-text-tertiary">
+                        {c.label}
+                      </span>
                       {!c.expanded && (
                         <span className="text-[8px] font-bold px-1.5 py-0.25 rounded-full bg-status-success-bg text-status-success-text border border-status-success-border">
                           Saved
                         </span>
                       )}
                       {c.expanded && c.verbiage.includes("*") && !c.editing && (
-                        <span className="text-[9px] font-semibold px-1.75 py-0.25 rounded-full"
+                        <span
+                          className="text-[9px] font-semibold px-1.75 py-0.25 rounded-full"
                           style={{
                             background: "var(--status-warning-bg)",
                             color: "var(--status-warning-text)",
@@ -234,7 +304,10 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                    <div
+                      className="flex items-center gap-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {c.expanded && !c.editing && (
                         <button
                           onClick={() => startEdit(c.id)}
@@ -245,12 +318,16 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                             color: "var(--text-text-secondary)",
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = "var(--brand-primary)";
-                            e.currentTarget.style.color = "var(--brand-primary)";
+                            e.currentTarget.style.borderColor =
+                              "var(--brand-primary)";
+                            e.currentTarget.style.color =
+                              "var(--brand-primary)";
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = "var(--border-border)";
-                            e.currentTarget.style.color = "var(--text-text-secondary)";
+                            e.currentTarget.style.borderColor =
+                              "var(--border-border)";
+                            e.currentTarget.style.color =
+                              "var(--text-text-secondary)";
                           }}
                         >
                           Edit
@@ -260,7 +337,10 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                         <button
                           onClick={() => saveCode(c.id)}
                           className="inline-flex items-center gap-1 rounded-md border-none text-[10px] font-bold cursor-pointer text-white"
-                          style={{ background: "var(--bg-status-success-emerald)", padding: "2px 10px" }}
+                          style={{
+                            background: "var(--bg-status-success-emerald)",
+                            padding: "2px 10px",
+                          }}
                         >
                           <Icon name="save" size={10} />
                           Save
@@ -271,14 +351,21 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                           onClick={() => toggleExpanded(c.id)}
                           className="bg-transparent border-none cursor-pointer flex text-text-muted p-0.5"
                         >
-                          <Icon name={c.expanded ? "chevDown" : "chevRight"} size={12} />
+                          <Icon
+                            name={c.expanded ? "chevDown" : "chevRight"}
+                            size={12}
+                          />
                         </button>
                       )}
                       <button
                         onClick={() => removeCode(c.id)}
                         className="bg-transparent border-none cursor-pointer flex text-[#cbd5e1] transition-colors duration-150"
-                        onMouseEnter={(e) => (e.currentTarget.style.color = "#dc2626")}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = "#cbd5e1")}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.color = "#dc2626")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.color = "#cbd5e1")
+                        }
                       >
                         <Icon name="trash" size={13} />
                       </button>
@@ -289,7 +376,10 @@ export default function TaxCertCard({ title, sub, accent }: TaxCertCardProps) {
                   {c.expanded && (
                     <div className="px-3 py-2.5">
                       {c.editing ? (
-                        <RichEditor value={c.verbiage} onChange={(v) => updateVerbiage(c.id, v)} />
+                        <RichEditor
+                          value={c.verbiage}
+                          onChange={(v) => updateVerbiage(c.id, v)}
+                        />
                       ) : (
                         <div
                           style={{

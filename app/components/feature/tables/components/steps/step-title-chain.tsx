@@ -97,6 +97,7 @@ export default function StepTitleChain({
   onSave,
   onSaveClose,
 }: StepTitleChainProps) {
+  console.log(orderDetail);
   const chainFromOrderDetail = orderDetail?.titleChainReviews
     ? mapTitleChainToIndexRows(
         orderDetail.titleChainReviews as Record<string, unknown>[],
@@ -194,6 +195,26 @@ export default function StepTitleChain({
     orderDetail?.tsriRequirements?.map((e) => ({
       code: e.genieCode || "",
       verbiage: e.verbiage || "",
+    })) || [];
+
+  const initialTaxCerts =
+    orderDetail?.taxCerts?.map((e) => ({
+      code: e.code || "",
+      verbiage: e.verbiage || "",
+    })) || [];
+
+  const exceptionCodes: GenieCodeItem[] =
+    orderDetail?.otherExceptions?.map((e) => ({
+      code: e.code,
+      label: e.code,
+      body: e.verbiage ?? "",
+    })) || [];
+
+  const requirementCodes: GenieCodeItem[] =
+    orderDetail?.otherRequirements?.map((e) => ({
+      code: e.code,
+      label: e.code,
+      body: e.verbiage ?? "",
     })) || [];
   return (
     <div className="flex flex-col gap-4">
@@ -339,6 +360,8 @@ export default function StepTitleChain({
                 title={sec.title}
                 sub={sec.sub}
                 accent={sec.accent}
+                codes={orderDetail && orderDetail?.taxCerts}
+                initialAddedCodes={initialTaxCerts}
               />
             );
           if (sec.title === "Runsheet")
@@ -360,21 +383,21 @@ export default function StepTitleChain({
                 title={sec.title}
                 sub="Schedule B Exceptions — from Genie Code Book"
                 accent={sec.accent}
-                codes={genieCodes}
+                codes={exceptionCodes}
                 initialAddedCodes={initialExceptions}
-              />
-            );
-          if (sec.title === "Other Requirements")
-            return (
-              <GenieSectionCard
-                key={sec.title}
-                title={sec.title}
-                sub="Informational Notes & Requirements — from Genie Code Book"
-                accent={sec.accent}
-                codes={genieCodes}
-                initialAddedCodes={initialRequirements}
-              />
-            );
+                />
+              );
+              if (sec.title === "Other Requirements")
+                return (
+                  <GenieSectionCard
+                    key={sec.title}
+                    title={sec.title}
+                    sub="Informational Notes & Requirements — from Genie Code Book"
+                    accent={sec.accent}
+                    codes={requirementCodes}
+                    initialAddedCodes={initialRequirements}
+                  />
+                );
           if (sec.title === "Starters")
             return (
               <SectionTableCard

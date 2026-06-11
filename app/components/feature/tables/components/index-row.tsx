@@ -57,8 +57,10 @@ export default function IndexRow({
   const imgDropRef = useRef<HTMLTableCellElement>(null);
   const rowMenuRef = useRef<HTMLTableCellElement>(null);
 
-  const set = <K extends keyof typeof state>(key: K, value: (typeof state)[K]) =>
-    setState((prev) => ({ ...prev, [key]: value }));
+  const set = <K extends keyof typeof state>(
+    key: K,
+    value: (typeof state)[K],
+  ) => setState((prev) => ({ ...prev, [key]: value }));
 
   useEffect(() => {
     if (!state.showImgDrop) return;
@@ -107,7 +109,8 @@ export default function IndexRow({
     }
   };
 
-  const abbrFull = ABBR_MAP.find((item) => item.abbr === state.abbr)?.full || "";
+  const abbrFull =
+    ABBR_MAP.find((item) => item.abbr === state.abbr)?.full || "";
   const entityCss = entityStyle(state.entity);
 
   return (
@@ -188,7 +191,6 @@ export default function IndexRow({
             className={`${inputClass} flex-1`}
           />
         </div>
-
       </td>
       <td className="border-t border-secondary px-2.5 py-2 align-middle min-w-37.5">
         <select
@@ -221,7 +223,9 @@ export default function IndexRow({
           {state.examImg ? (
             <div className="relative inline-block">
               <button
-                onClick={() => window.open(state.examImg ?? undefined, "_blank")}
+                onClick={() =>
+                  window.open(state.examImg ?? undefined, "_blank")
+                }
                 className="block border-none bg-transparent p-0"
                 title="View full size"
               >
@@ -278,12 +282,15 @@ export default function IndexRow({
             style={{
               position: "fixed",
               top: imgDropRef.current.getBoundingClientRect().top - 8,
-              left: imgDropRef.current.getBoundingClientRect().left + imgDropRef.current.getBoundingClientRect().width / 2,
+              left:
+                imgDropRef.current.getBoundingClientRect().left +
+                imgDropRef.current.getBoundingClientRect().width / 2,
               transform: "translate(-50%, -100%)",
               zIndex: 9999,
               minWidth: 185,
             }}
-            className="overflow-hidden rounded-[10px] border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,.16)]">
+            className="overflow-hidden rounded-[10px] border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,.16)]"
+          >
             <div className="border-b border-light bg-table-header px-2.75 py-1.5 text-left text-[9px] font-extrabold uppercase tracking-[0.07em] text-text-muted">
               Image Options
             </div>
@@ -293,7 +300,9 @@ export default function IndexRow({
                 size={12}
                 className="text-status-info-blue-text"
               />
-              {state.examImg ? "Re-attach Examiner Image" : "Attach Examiner Image"}
+              {state.examImg
+                ? "Re-attach Examiner Image"
+                : "Attach Examiner Image"}
               <input
                 type="file"
                 className="hidden"
@@ -351,7 +360,8 @@ export default function IndexRow({
               zIndex: 9999,
               minWidth: 170,
             }}
-            className="overflow-hidden rounded-[9px] border border-border bg-white shadow-[0_6px_20px_rgba(0,0,0,.14)]">
+            className="overflow-hidden rounded-[9px] border border-border bg-white shadow-[0_6px_20px_rgba(0,0,0,.14)]"
+          >
             <button
               onClick={() => {
                 onAddChild();

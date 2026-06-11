@@ -143,7 +143,7 @@ function isAllValuesEmpty(obj : any) {
                       <div className={inputClass}>
                         {values[f.key] && values[f.key] !== ""
                           ? values[f.key]
-                          : ""}
+                          : "--"}
                       </div>
                     </td>
                   ))}

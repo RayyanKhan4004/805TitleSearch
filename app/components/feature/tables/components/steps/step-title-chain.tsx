@@ -81,6 +81,7 @@ interface StepTitleChainProps {
   setShared: React.Dispatch<React.SetStateAction<SharedState>>;
   propertyForm?: PropertyForm;
   reportRaw?: Record<string, any>;
+  transactions?: Record<string, any>[];
   orderDetail?: OrderDetail;
   isLoading?: boolean;
   onSave?: (dates?: { typeDate: string; effectiveDate: string }) => void;
@@ -92,6 +93,7 @@ export default function StepTitleChain({
   setShared,
   propertyForm,
   reportRaw,
+  transactions,
   orderDetail,
   isLoading,
   onSave,
@@ -326,6 +328,7 @@ export default function StepTitleChain({
                 key="Assessor Page"
                 data={propertyForm}
                 dataRaw={reportRaw}
+                transactions={transactions}
                 isLoading={isLoading}
               />
             );

@@ -4,11 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/auth-context";
 import Icon from "./icon";
 
-interface NavbarProps {
-  onDashboardClick?: () => void;
-}
-
-export default function Navbar({ onDashboardClick }: NavbarProps) {
+export default function Navbar() {
   const { logout, user } = useAuth();
   const router = useRouter();
 
@@ -29,7 +25,7 @@ export default function Navbar({ onDashboardClick }: NavbarProps) {
         </div>
       </div>
       {[
-        { label: "Dashboard", onClick: onDashboardClick },
+        { label: "Dashboard", onClick: () => router.push("/table") },
         { label: "Code Book", onClick: () => router.push("/code-book") },
       ].map(({ label, onClick }) => (
         <button

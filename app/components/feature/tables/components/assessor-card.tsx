@@ -9,6 +9,7 @@ import AssessorModal from "./assessor-modal";
 interface AssessorCardProps {
   data?: PropertyForm;
   dataRaw?: Record<string, any>;
+  transactions?: Record<string, any>[];
   isLoading?: boolean;
 }
 
@@ -29,7 +30,7 @@ const LoadingSkeleton = () => (
   </div>
 );
 
-export default function AssessorCard({ data, dataRaw, isLoading }: AssessorCardProps) {
+export default function AssessorCard({ data, dataRaw, transactions, isLoading }: AssessorCardProps) {
   const [open, setOpen] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const owner = data?.vestingText ?? "—";
@@ -137,7 +138,7 @@ export default function AssessorCard({ data, dataRaw, isLoading }: AssessorCardP
           ))}
       </div>
       {modalOpen && assessorData && (
-        <AssessorModal data={assessorData} onClose={() => setModalOpen(false)} />
+        <AssessorModal data={assessorData} transactions={transactions} onClose={() => setModalOpen(false)} />
       )}
     </>
   );

@@ -21,6 +21,7 @@ export interface ReportResponse {
   propertyId: number
   raw: Record<string, any>
   form: Record<string, any>
+  transactions?: Record<string, any>[]
 }
 
 export const propertyReportApi = createApi({

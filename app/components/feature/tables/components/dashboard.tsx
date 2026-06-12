@@ -47,9 +47,9 @@ function flattenReportRaw(raw: Record<string, any>) {
   };
 }
 
-export default function Dashboard() {
-  const { logout, user } = useAuth();
-    const router = useRouter();
+export default function Dashboard({ initialOrderId }: { initialOrderId?: string } = {}) {
+  const { user } = useAuth();
+  const router = useRouter();
   const currentUserName = user ? `${user.firstName} ${user.lastName}` : "Unknown";
 
   const { data: ordersData, isLoading: isLoadingOrders } = useFetchOrdersQuery({ page: 1, pageSize: 500 });
@@ -223,32 +223,69 @@ export default function Dashboard() {
     }
   }, [orderDetail]);
 
-  const handleSelectOrder = async (order: Order) => {
+  /* Core open logic — shared by click and initialOrderId auto-open */
+  const openOrder = (order: Order) => {
     const no = order.no.replace("#", "");
-    /* Block if locked by someone else */
     const lock = getLock(no);
     if (lock && lock.user !== currentUserName) {
       setLockAttempt({ no, lock });
       return;
     }
-    /* Change status Open → In Review */
     setOrderStatuses((s) => ({ ...s, [no]: "In Review" }));
-    /* Lock the order */
     setLockedBy((l) => ({
       ...l,
       [no]: { user: currentUserName, since: new Date().toLocaleTimeString() },
     }));
     setSelectedOrder({ ...order, no });
     setStep(1);
-
     setPropertyForm(null);
-    setShared(EMPTY_SHARED_STATE);
-    setOrderDetailId(order.id ? String(order.id) : order.no.replace("#", ""));
+
+    const newId = order.id ? String(order.id) : no;
+
+    // When reopening the same order, orderDetail is already cached so
+    // useEffect([orderDetail]) won't re-fire — apply the cached data directly.
+    if (orderDetail && orderDetailId === newId) {
+      const odShared = mapOrderDetailToSharedState(orderDetail);
+      setShared({
+        ...EMPTY_SHARED_STATE,
+        vesting: odShared.vesting,
+        legal: odShared.legal,
+        leaseHold: odShared.leaseHold,
+        effectiveDate: odShared.effectiveDate,
+        typeDate: odShared.typeDate,
+        areaType: odShared.areaType,
+        cityName: odShared.cityName,
+        townshipName: odShared.townshipName,
+        unincorporatedName: odShared.unincorporatedName,
+        propertyClassification: odShared.propertyClassification,
+      });
+    } else {
+      setShared(EMPTY_SHARED_STATE);
+    }
+
+    setOrderDetailId(newId);
     setReportParams({
       searchType: "APN",
       apn: order.apn1 || order.apn || "",
       zipCode: order.zipCode || "",
     });
+  };
+
+  /* Auto-open order when arriving via /order/[id] URL */
+  useEffect(() => {
+    if (!initialOrderId || !ordersData?.data?.length || selectedOrder) return;
+    const mapped = mapOrdersResponse(ordersData.data);
+    const order = mapped.find(
+      (o) => String(o.id) === initialOrderId || o.no === initialOrderId,
+    );
+    if (order) openOrder(order);
+  // openOrder intentionally omitted — it changes every render; orders + id are the real triggers
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialOrderId, ordersData?.data]);
+
+  const handleSelectOrder = (order: Order) => {
+    const newId = order.id ? String(order.id) : order.no.replace("#", "");
+    router.push(`/order/${newId}`);
   };
 
   /* Save — PATCH order detail with current title chain data */
@@ -282,12 +319,13 @@ export default function Dashboard() {
       setLockedBy((l) => ({ ...l, [no]: null }));
     }
     setSelectedOrder(null);
+    router.push("/table");
   };
 
   /* backToDashboard — called from ← All Files; keeps lock + In Review */
   const handleCloseOrder = () => {
     setSelectedOrder(null);
-    /* Status stays "In Review", lock stays active */
+    router.push("/table");
   };
 
   return (
@@ -297,7 +335,7 @@ export default function Dashboard() {
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* ── Header ── */}
-        <Navbar onDashboardClick={() => setSelectedOrder(null)} />
+        <Navbar />
 
         {/* ═══════════════════════════════════════════
             DASHBOARD MODE — no order selected
@@ -516,6 +554,7 @@ export default function Dashboard() {
                     setShared={setShared}
                     propertyForm={propertyForm ?? undefined}
                     reportRaw={reportData?.raw}
+                    transactions={reportData?.transactions}
                     orderDetail={orderDetail ?? undefined}
                     isLoading={isLoadingReport || isSaving}
                     onSave={handleSave}

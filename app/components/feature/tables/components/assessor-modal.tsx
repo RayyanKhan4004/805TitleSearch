@@ -6,10 +6,11 @@ import type { AssessorData } from "@/app/components/feature/tables/types";
 
 interface Props {
   data: AssessorData;
+  transactions?: Record<string, any>[];
   onClose: () => void;
 }
 
-export default function AssessorModal({ data, onClose }: Props) {
+export default function AssessorModal({ data, transactions, onClose }: Props) {
   const d = data;
   const ref = useRef<HTMLDivElement>(null);
 
@@ -358,6 +359,86 @@ export default function AssessorModal({ data, onClose }: Props) {
                 />
               </Grid>
             </div>
+
+            {transactions && transactions.length > 0 && (
+              <>
+                <div style={{ borderTop: "1px solid #e2e8f0", margin: "14px 0" }} />
+                <div style={{ marginBottom: 16 }}>
+                  <SectionHead title="Transaction History" />
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                      <thead>
+                        <tr style={{ background: "#f8fafc" }}>
+                          {["Date", "Type", "Doc Type", "Doc #", "Buyer / Borrower", "Seller / Lender", "Amount"].map((h) => (
+                            <th
+                              key={h}
+                              style={{
+                                padding: "5px 8px",
+                                textAlign: "left",
+                                fontSize: 9,
+                                fontWeight: 700,
+                                color: "#94a3b8",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.05em",
+                                borderBottom: "1px solid #e2e8f0",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transactions.map((tx, i) => {
+                          const typeColor =
+                            tx.TypeDescription === "SALE" ? "#0369a1"
+                            : tx.TypeDescription === "FINANCE" ? "#7c3aed"
+                            : tx.TypeDescription === "RELEASE" ? "#059669"
+                            : tx.TypeDescription === "ASSIGNMENT" ? "#d97706"
+                            : "#64748b";
+                          const date = tx.TxDate
+                            ? new Date(tx.TxDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+                            : "—";
+                          const buyer = tx.BuyerBorrower || tx.BuyerName || tx.Buyer1 || "—";
+                          const seller = tx.SellerLender || tx.SellerName || tx.Lender || "—";
+                          return (
+                            <tr
+                              key={i}
+                              style={{ borderBottom: "1px solid #f1f5f9", background: i % 2 === 0 ? "#fff" : "#fafafa" }}
+                            >
+                              <td style={{ padding: "5px 8px", color: "#475569", whiteSpace: "nowrap" }}>{date}</td>
+                              <td style={{ padding: "5px 8px", whiteSpace: "nowrap" }}>
+                                <span style={{
+                                  display: "inline-block",
+                                  fontSize: 9,
+                                  fontWeight: 700,
+                                  color: typeColor,
+                                  background: typeColor + "14",
+                                  border: `1px solid ${typeColor}33`,
+                                  borderRadius: 4,
+                                  padding: "1px 5px",
+                                  letterSpacing: "0.04em",
+                                }}>
+                                  {tx.TypeDescription}
+                                </span>
+                              </td>
+                              <td style={{ padding: "5px 8px", color: "#475569" }}>{tx.DocType || "—"}</td>
+                              <td style={{ padding: "5px 8px", color: "#1e293b", fontFamily: "'Courier New',monospace", fontWeight: 600 }}>{tx.DocId || "—"}</td>
+                              <td style={{ padding: "5px 8px", color: "#475569", maxWidth: 180 }}>{buyer}</td>
+                              <td style={{ padding: "5px 8px", color: "#475569", maxWidth: 180 }}>{seller}</td>
+                              <td style={{ padding: "5px 8px", color: "#1e293b", whiteSpace: "nowrap", fontWeight: 500 }}>
+                                {tx.Amount != null ? fmtD(tx.Amount) : "—"}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           <div

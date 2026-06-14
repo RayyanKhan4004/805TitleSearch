@@ -8,6 +8,7 @@ import "./styles/entity-colors.css";
 
 export type IndexRecord = {
   _id: string;
+  apiId?: number;
   rec?: string;
   abbr?: string;
   entity?: string;
@@ -18,12 +19,14 @@ export type IndexRecord = {
   grantor?: string;
   grantee?: string;
   parentInstr?: string | null;
+  fileUrl?: string;
 };
 
 interface IndexRowProps {
   row: IndexRecord;
   onAddChild: () => void;
   onRemove: () => void;
+  onDelete?: () => Promise<void>;
   depth?: number;
   zoomed?: boolean;
   onFileUpload?: (file: File) => Promise<string>;
@@ -32,10 +35,15 @@ interface IndexRowProps {
 const inputClass =
   "w-full rounded-[5px] border border-border-input bg-white px-1.5 py-1 text-[10px] text-text outline-none";
 
+function isImageUrl(url: string): boolean {
+  return /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|$)/i.test(url);
+}
+
 export default function IndexRow({
   row,
   onAddChild,
   onRemove,
+  onDelete,
   depth = 0,
   zoomed = false,
   onFileUpload,
@@ -50,9 +58,10 @@ export default function IndexRow({
     pg: row.pg || "",
     entity: row.entity || "MISC",
     docTitle: row.docTitle || DOC_TITLES[0],
-    examImg: null as string | null,
+    examImg: (row.fileUrl || null) as string | null,
     showImgDrop: false,
     showRowMenu: false,
+    deleting: false,
   });
   const imgDropRef = useRef<HTMLTableCellElement>(null);
   const rowMenuRef = useRef<HTMLTableCellElement>(null);
@@ -61,6 +70,11 @@ export default function IndexRow({
     key: K,
     value: (typeof state)[K],
   ) => setState((prev) => ({ ...prev, [key]: value }));
+
+  /* Sync examImg when the parent updates row.fileUrl after initial mount */
+  useEffect(() => {
+    if (row.fileUrl) set("examImg", row.fileUrl);
+  }, [row.fileUrl]);
 
   useEffect(() => {
     if (!state.showImgDrop) return;
@@ -222,20 +236,32 @@ export default function IndexRow({
         <div className="flex flex-col items-center gap-1">
           {state.examImg ? (
             <div className="relative inline-block">
-              <button
-                onClick={() =>
-                  window.open(state.examImg ?? undefined, "_blank")
-                }
-                className="block border-none bg-transparent p-0"
-                title="View full size"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={state.examImg}
-                  alt="examiner"
-                  className="block h-11 w-15.5 rounded-md border border-status-info-blue-border object-cover"
-                />
-              </button>
+              {isImageUrl(state.examImg) ? (
+                /* ── actual image thumbnail ── */
+                <button
+                  onClick={() => window.open(state.examImg ?? undefined, "_blank")}
+                  className="block border-none bg-transparent p-0"
+                  title="View full size"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={state.examImg}
+                    alt="examiner"
+                    className="block h-11 w-15.5 rounded-md border border-status-info-blue-border object-cover"
+                  />
+                </button>
+              ) : (
+                /* ── PDF / non-image file ── */
+                <button
+                  onClick={() => window.open(state.examImg ?? undefined, "_blank")}
+                  className="flex flex-col items-center justify-center gap-0.5 rounded-md border border-status-info-blue-border bg-[#eff6ff] px-2.5 py-1.5 text-[9px] font-semibold text-status-info-blue-text cursor-pointer"
+                  style={{ width: 62, height: 44 }}
+                  title="Open file"
+                >
+                  <Icon name="file" size={16} className="text-status-info-blue-text" />
+                  <span>View File</span>
+                </button>
+              )}
               <button
                 onClick={() => set("examImg", null)}
                 title="Remove"
@@ -337,6 +363,25 @@ export default function IndexRow({
               <Icon name="refresh" size={12} className="text-purple-700" />
               Override from Back Source
             </button>
+            {onDelete && (
+              <button
+                disabled={state.deleting}
+                onClick={async () => {
+                  set("showImgDrop", false);
+                  set("deleting", true);
+                  try {
+                    await onDelete();
+                    onRemove();
+                  } catch {
+                    set("deleting", false);
+                  }
+                }}
+                className="flex w-full items-center gap-2 border-none border-t border-light bg-white px-3 py-2 text-left text-[11px] font-medium text-status-error-text hover:bg-status-error-bg disabled:opacity-40"
+              >
+                <Icon name="trash" size={12} className="text-status-error-text" />
+                {state.deleting ? "Deleting…" : "Delete Record"}
+              </button>
+            )}
           </div>
         )}
       </td>
@@ -373,14 +418,25 @@ export default function IndexRow({
               Add Trailing Document
             </button>
             <button
-              onClick={() => {
-                onRemove();
+              disabled={state.deleting}
+              onClick={async () => {
                 set("showRowMenu", false);
+                if (onDelete) {
+                  set("deleting", true);
+                  try {
+                    await onDelete();
+                    onRemove();
+                  } catch {
+                    set("deleting", false);
+                  }
+                } else {
+                  onRemove();
+                }
               }}
-              className="flex w-full items-center gap-1.75 border-none bg-white px-3.25 py-2.25 text-left text-[11px] font-medium text-status-error-text hover:bg-status-error-bg"
+              className="flex w-full items-center gap-1.75 border-none bg-white px-3.25 py-2.25 text-left text-[11px] font-medium text-status-error-text hover:bg-status-error-bg disabled:opacity-40"
             >
               <Icon name="trash" size={12} className="text-status-error-text" />
-              Remove Row
+              {state.deleting ? "Deleting…" : "Delete Record"}
             </button>
           </div>
         )}

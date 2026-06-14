@@ -817,16 +817,16 @@ export interface OrderDetail {
   tsriExceptions: Array<{
     id: number;
     type: string;
-    genieCode: string;
-    verbiage: string;
-    sortOrder: number;
+    code: string;
+    verbiage: string | null;
+    sortOrder: number | null;
   }>;
   tsriRequirements: Array<{
     id: number;
     type: string;
-    genieCode: string;
-    verbiage: string;
-    sortOrder: number;
+    code: string;
+    verbiage: string | null;
+    sortOrder: number | null;
   }>;
 
   /* parties */
@@ -843,4 +843,44 @@ export interface OrderDetail {
 
   /* chain data */
   titleChainReviews: Record<string, unknown>[];
+
+  /* section document arrays (populated by section-specific POST endpoints) */
+  tractMaps: Array<{
+    id: number;
+    tractNo: string | null;
+    bookPage: string | null;
+    recordedDate: string | null;
+    subdivision: string | null;
+    fileUrl: string | null;
+    fileName: string | null;
+  }>;
+  assessorMaps: Array<{
+    id: number;
+    mapReference: string | null;
+    parcelNo: string | null;
+    mapDate: string | null;
+    notes: string | null;
+    fileUrl: string | null;
+    fileName: string | null;
+  }>;
+  starters: Array<{
+    id: number;
+    remarks: string | null;
+    documentDate: string | null;
+    grantee: string | null;
+    grantor: string | null;
+    amount: string | null;
+    fileUrl: string | null;
+    fileName: string | null;
+  }>;
+  runsheets: Array<{
+    id: number;
+    orderNo: string | null;
+    searchedBy: string | null;
+    searchDate: string | null;
+    geoCoverage: string | null;
+    notes: string | null;
+    fileUrl: string | null;
+    fileName: string | null;
+  }>;
 }

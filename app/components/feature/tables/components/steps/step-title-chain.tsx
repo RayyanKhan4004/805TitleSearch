@@ -17,6 +17,11 @@ import { mapTransactionsToIndexRows } from "@/app/services/transaction-mapper";
 import {
   useFetchCodeBookQuery,
   useUploadFileMutation,
+  useDeleteTitleChainReviewMutation,
+  useDeleteAssessorMapMutation,
+  useDeleteTractMapMutation,
+  useDeleteRunsheetMutation,
+  useDeleteStarterMutation,
 } from "@/app/store/api/ordersApi";
 import type {
   SharedState,
@@ -49,14 +54,15 @@ function mapTitleChainToIndexRows(
 ): IndexRow[] {
   return chain.map((item, i) => {
     const abbr = String(item.abbr || "");
-    const category = String(item.category || "");
+    const category = String(item.category || item.entityTitle || "");
     const bookPage = String(item.bookPage || "");
     return {
       _id: `tc-${i}`,
+      apiId: item.id != null ? Number(item.id) : undefined,
       rec: String(item.recDate || ""),
       abbr,
       entity:
-        category === "Transfers"
+        category === "Transfers" || category === "Transfer"
           ? "XFER"
           : category === "DOTs"
             ? "DOT"
@@ -72,6 +78,7 @@ function mapTitleChainToIndexRows(
       grantor: String(item.grantor || ""),
       grantee: String(item.grantee || ""),
       parentInstr: null,
+      fileUrl: item.fileUrl ? String(item.fileUrl) : undefined,
     };
   });
 }
@@ -121,6 +128,11 @@ export default function StepTitleChain({
     ? mapCodeBookToGenieItems(codeBookEntries)
     : [];
   const [uploadFile] = useUploadFileMutation();
+  const [deleteTitleChainReview] = useDeleteTitleChainReviewMutation();
+  const [deleteAssessorMap] = useDeleteAssessorMapMutation();
+  const [deleteTractMap] = useDeleteTractMapMutation();
+  const [deleteRunsheet] = useDeleteRunsheetMutation();
+  const [deleteStarter] = useDeleteStarterMutation();
 
   const handleFileUpload = async (file: File): Promise<string> => {
     const fd = new FormData();
@@ -142,60 +154,94 @@ export default function StepTitleChain({
   };
   /* ── Derive values from orderDetail + propertyForm ── */
   const assessorMapFields = FIELDS["Assessor Map"] || [];
-  const assessorMapValues: Record<string, string> = {
+  const assessorMapRows: Array<Record<string, string>> = (orderDetail?.assessorMaps || []).map((r) => ({
+    _apiId: String(r.id),
+    mapRef: r.mapReference || "",
+    parcelNo: r.parcelNo || "",
+    mapDate: r.mapDate || "",
+    notes: r.notes || "",
+    fileUrl: r.fileUrl || "",
+  }));
+  /* scalar fallback when no section records exist yet */
+  const assessorMapValues: Record<string, string> = assessorMapRows.length === 0 ? {
     mapRef: orderDetail?.tract || propertyForm?.tract || "",
     parcelNo: orderDetail?.apn1 || propertyForm?.apn1 || "",
     mapDate: "",
     notes: orderDetail?.additionalNotes || "",
     fileUrl: reportRaw?.FileLink || "",
-  };
+  } : {};
 
   const tractMapFields = FIELDS["Tract Map"] || [];
-  const tractMapValues: Record<string, string> = {
+  const tractMapRows: Array<Record<string, string>> = (orderDetail?.tractMaps || []).map((r) => ({
+    _apiId: String(r.id),
+    tractNo: r.tractNo || "",
+    bookPage: r.bookPage || "",
+    recDate: r.recordedDate || "",
+    subdivision: r.subdivision || "",
+    fileUrl: r.fileUrl || "",
+  }));
+  const tractMapValues: Record<string, string> = tractMapRows.length === 0 ? {
     tractNo: orderDetail?.tract || propertyForm?.tract || "",
     bookPage:
-      orderDetail?.mapBook || propertyForm?.mapBook || ""
+      orderDetail?.mapBook || propertyForm?.mapBook
         ? `${orderDetail?.mapBook || propertyForm?.mapBook}${orderDetail?.page || propertyForm?.page ? ` / ${orderDetail?.page || propertyForm?.page}` : ""}`
         : "",
     recDate: "",
     subdivision: "",
     fileUrl: reportRaw?.FileLink || "",
-  };
+  } : {};
 
   const starterFields = FIELDS["Starters"] || [];
-  const starterEntry = Array.isArray(orderDetail?.titleChainReviews)
-    ? (orderDetail.titleChainReviews as Record<string, unknown>[]).find(
-        (r: any) => r.isStarter,
-      )
+  const starterRows: Array<Record<string, string>> = (orderDetail?.starters || []).map((r) => ({
+    _apiId: String(r.id),
+    policyNo: r.remarks || "",
+    policyDate: r.documentDate || "",
+    insured: r.grantee || "",
+    company: r.grantor || "",
+    amount: r.amount || "",
+    fileUrl: r.fileUrl || "",
+  }));
+  /* scalar fallback from titleChainReviews when starters array is empty */
+  const starterEntry = starterRows.length === 0 && Array.isArray(orderDetail?.titleChainReviews)
+    ? (orderDetail.titleChainReviews as Record<string, unknown>[]).find((r: any) => r.isStarter)
     : null;
-  const starterValues: Record<string, string> = {
+  const starterValues: Record<string, string> = starterRows.length === 0 ? {
     policyNo: (starterEntry as any)?.remarks || "",
     policyDate: (starterEntry as any)?.documentDate || "",
     insured: (starterEntry as any)?.grantee || "",
     company: (starterEntry as any)?.grantor || "",
     amount: (starterEntry as any)?.amount || "",
     fileUrl: (starterEntry as any)?.fileUrl || "",
-  };
+  } : {};
 
   const runsheetFields = FIELDS["Runsheet"] || [];
-  const runsheetValues: Record<string, string> = {
+  const runsheetRows: Array<Record<string, string>> = (orderDetail?.runsheets || []).map((r) => ({
+    _apiId: String(r.id),
+    orderNo: r.orderNo || "",
+    searchedBy: r.searchedBy || "",
+    searchDate: r.searchDate || "",
+    geoCov: r.geoCoverage || "",
+    notes: r.notes || "",
+    fileUrl: r.fileUrl || "",
+  }));
+  const runsheetValues: Record<string, string> = runsheetRows.length === 0 ? {
     orderNo: orderDetail?.clientFileNo || "",
     searchedBy: orderDetail?.runsheetGINames || "",
     searchDate: "",
     geoCov: "",
     notes: orderDetail?.additionalNotes || "",
     fileUrl: reportRaw?.FileLink || "",
-  };
+  } : {};
 
   const initialExceptions =
     orderDetail?.tsriExceptions?.map((e) => ({
-      code: e.genieCode || "",
+      code: e.code || "",
       verbiage: e.verbiage || "",
     })) || [];
 
   const initialRequirements =
     orderDetail?.tsriRequirements?.map((e) => ({
-      code: e.genieCode || "",
+      code: e.code || "",
       verbiage: e.verbiage || "",
     })) || [];
 
@@ -206,14 +252,14 @@ export default function StepTitleChain({
     })) || [];
 
   const exceptionCodes: GenieCodeItem[] =
-    orderDetail?.otherExceptions?.map((e) => ({
+    orderDetail?.tsriExceptions?.map((e) => ({
       code: e.code,
       label: e.code,
       body: e.verbiage ?? "",
     })) || [];
 
   const requirementCodes: GenieCodeItem[] =
-    orderDetail?.otherRequirements?.map((e) => ({
+    orderDetail?.tsriRequirements?.map((e) => ({
       code: e.code,
       label: e.code,
       body: e.verbiage ?? "",
@@ -340,8 +386,14 @@ export default function StepTitleChain({
                 sub={sec.sub}
                 accent={sec.accent}
                 fields={assessorMapFields}
+                rows={assessorMapRows.length > 0 ? assessorMapRows : undefined}
                 values={assessorMapValues}
                 onFileUpload={handleFileUpload}
+                onDeleteRow={
+                  orderDetail?.id
+                    ? async (apiId) => { await deleteAssessorMap({ orderId: String(orderDetail.id), id: apiId }).unwrap(); }
+                    : undefined
+                }
               />
             );
           if (sec.title === "Tract Map")
@@ -352,19 +404,32 @@ export default function StepTitleChain({
                 sub={sec.sub}
                 accent={sec.accent}
                 fields={tractMapFields}
+                rows={tractMapRows.length > 0 ? tractMapRows : undefined}
                 values={tractMapValues}
                 onFileUpload={handleFileUpload}
+                onDeleteRow={
+                  orderDetail?.id
+                    ? async (apiId) => { await deleteTractMap({ orderId: String(orderDetail.id), id: apiId }).unwrap(); }
+                    : undefined
+                }
               />
             );
           if (sec.title === "Tax Cert")
             return (
               <TaxCertCard
-                key={sec.title}
+                key={`taxcert-${orderDetail?.id ?? "none"}`}
                 title={sec.title}
                 sub={sec.sub}
                 accent={sec.accent}
-                codes={orderDetail && orderDetail?.taxCerts}
-                initialAddedCodes={initialTaxCerts}
+                orderId={orderDetail?.id}
+                codes={orderDetail?.taxCerts}
+                initialAddedCodes={
+                  orderDetail?.taxCerts?.map((e) => ({
+                    id: e.id,
+                    code: e.code,
+                    verbiage: e.verbiage || "",
+                  })) || []
+                }
               />
             );
           if (sec.title === "Runsheet")
@@ -375,32 +440,52 @@ export default function StepTitleChain({
                 sub={sec.sub}
                 accent={sec.accent}
                 fields={runsheetFields}
+                rows={runsheetRows.length > 0 ? runsheetRows : undefined}
                 values={runsheetValues}
                 onFileUpload={handleFileUpload}
+                onDeleteRow={
+                  orderDetail?.id
+                    ? async (apiId) => { await deleteRunsheet({ orderId: String(orderDetail.id), id: apiId }).unwrap(); }
+                    : undefined
+                }
               />
             );
           if (sec.title === "Other Exceptions")
             return (
               <GenieSectionCard
-                key={sec.title}
+                key={`exceptions-${orderDetail?.id ?? "none"}`}
                 title={sec.title}
                 sub="Schedule B Exceptions — from Genie Code Book"
                 accent={sec.accent}
-                codes={exceptionCodes}
-                initialAddedCodes={initialExceptions}
-                />
-              );
-              if (sec.title === "Other Requirements")
-                return (
-                  <GenieSectionCard
-                    key={sec.title}
-                    title={sec.title}
-                    sub="Informational Notes & Requirements — from Genie Code Book"
-                    accent={sec.accent}
-                    codes={requirementCodes}
-                    initialAddedCodes={initialRequirements}
-                  />
-                );
+                orderId={orderDetail?.id ? String(orderDetail.id) : undefined}
+                sectionType="exception"
+                initialAddedCodes={
+                  orderDetail?.tsriExceptions?.map((e) => ({
+                    id: e.id,
+                    code: e.code,
+                    verbiage: e.verbiage || "",
+                  })) || []
+                }
+              />
+            );
+          if (sec.title === "Other Requirements")
+            return (
+              <GenieSectionCard
+                key={`requirements-${orderDetail?.id ?? "none"}`}
+                title={sec.title}
+                sub="Informational Notes & Requirements — from Genie Code Book"
+                accent={sec.accent}
+                orderId={orderDetail?.id ? String(orderDetail.id) : undefined}
+                sectionType="requirement"
+                initialAddedCodes={
+                  orderDetail?.tsriRequirements?.map((e) => ({
+                    id: e.id,
+                    code: e.code,
+                    verbiage: e.verbiage || "",
+                  })) || []
+                }
+              />
+            );
           if (sec.title === "Starters")
             return (
               <SectionTableCard
@@ -409,8 +494,14 @@ export default function StepTitleChain({
                 sub={sec.sub}
                 accent={sec.accent}
                 fields={starterFields}
+                rows={starterRows.length > 0 ? starterRows : undefined}
                 values={starterValues}
                 onFileUpload={handleFileUpload}
+                onDeleteRow={
+                  orderDetail?.id
+                    ? async (apiId) => { await deleteStarter({ orderId: String(orderDetail.id), id: apiId }).unwrap(); }
+                    : undefined
+                }
               />
             );
           const isTitleChain = sec.title === "Title Chain Review";
@@ -428,6 +519,16 @@ export default function StepTitleChain({
               allowAddRow={isTitleChain}
               showCode={false}
               onFileUpload={isTitleChain ? handleFileUpload : undefined}
+              onDeleteRow={
+                isTitleChain && orderDetail?.id
+                  ? async (apiId) => {
+                      await deleteTitleChainReview({
+                        orderId: String(orderDetail.id),
+                        id: apiId,
+                      }).unwrap();
+                    }
+                  : undefined
+              }
             />
           );
         })}
@@ -440,7 +541,7 @@ export default function StepTitleChain({
       >
         <button
           onClick={() => setShowSearch(true)}
-          className="inline-flex items-center gap-1.25 bg-brand text-white border-none rounded-lg px-[18px] py-2 text-[12px] font-semibold cursor-pointer"
+          className="inline-flex items-center gap-1.25 bg-brand text-white border-none rounded-lg px-4.5 py-2 text-[12px] font-semibold cursor-pointer"
         >
           <Icon name="search" size={12} />
           Manual Search

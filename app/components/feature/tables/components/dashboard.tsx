@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/auth-context";
 import { useRouter } from "next/navigation";
 import { useGetReportQuery } from "@/app/store/api/propertyReportApi";
-import { useFetchOrdersQuery, useUpdateOrderRushMutation, useFetchOrderQuery, useUpdateOrderMutation } from "@/app/store/api/ordersApi";
+import { useFetchOrdersQuery, useUpdateOrderRushMutation, useFetchOrderQuery, useUpdateOrderMutation, useDeleteOrderMutation } from "@/app/store/api/ordersApi";
 import { mapApiToForm, mapOrderDetailToForm, mapOrderDetailToSharedState } from "@/app/services/datatree-api";
 import { mapOrdersResponse } from "./models/api-mappers";
 import toast from "react-hot-toast";
@@ -55,6 +55,7 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
   const { data: ordersData, isLoading: isLoadingOrders } = useFetchOrdersQuery({ page: 1, pageSize: 500 });
   const [updateOrderRush] = useUpdateOrderRushMutation();
   const [updateOrder, { isLoading: isSaving }] = useUpdateOrderMutation();
+  const [deleteOrder] = useDeleteOrderMutation();
 
   const [reportParams, setReportParams] = useState<{
     searchType: string; apn: string; zipCode: string;
@@ -366,6 +367,14 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
                   getOrderStatus={getOrderStatus}
                   getLock={getLock}
                   onRushToggle={(no) => updateOrderRush({ no, rush: true })}
+                  onDelete={async (id) => {
+                    try {
+                      await deleteOrder(id).unwrap();
+                      toast.success("Order deleted");
+                    } catch {
+                      toast.error("Failed to delete order");
+                    }
+                  }}
                 />
               )}
             </div>

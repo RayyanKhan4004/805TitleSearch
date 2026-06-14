@@ -18,6 +18,7 @@ interface IndexCardProps {
   allowAddRow?: boolean;
   showCode?: boolean;
   onFileUpload?: (file: File) => Promise<string>;
+  onDeleteRow?: (apiId: number) => Promise<void>;
 }
 
 export default function IndexCard({
@@ -29,6 +30,7 @@ export default function IndexCard({
   allowAddRow = false,
   showCode = false,
   onFileUpload,
+  onDeleteRow,
 }: IndexCardProps) {
   const [open, setOpen] = useState(true);
   const [rows, setRows] = useState<(Record<string, any> & { _id: string; parentInstr: string | null })[]>(
@@ -163,6 +165,11 @@ export default function IndexCard({
               row={row}
               onAddChild={() => addChild(row)}
               onRemove={() => removeRow(row._id)}
+              onDelete={
+                onDeleteRow && row.apiId != null
+                  ? () => onDeleteRow(row.apiId as number)
+                  : undefined
+              }
               depth={depth}
               onFileUpload={onFileUpload}
             />

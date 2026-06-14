@@ -16,6 +16,7 @@ interface StepDashboardProps {
   getLock?: (no: string) => OrderLock | null;
   onRushToggle?: (no: string) => void;
   onStatusChange?: (no: string, status: Order["status"]) => void;
+  onDelete?: (id: string) => void;
 }
 
 export default function StepDashboard({
@@ -25,6 +26,7 @@ export default function StepDashboard({
   getLock,
   onRushToggle,
   onStatusChange,
+  onDelete,
 }: StepDashboardProps) {
   const [showModal, setShowModal] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -182,6 +184,7 @@ export default function StepDashboard({
           orderLock={orderLock}
           onRushToggle={(no) => onRushToggle?.(no)}
           onStatusChange={(no, status) => onStatusChange?.(no, status)}
+          onDelete={(id) => onDelete?.(id)}
           statusToColor={statusToColor}
         />
 

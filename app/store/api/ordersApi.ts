@@ -143,7 +143,194 @@ export const ordersApi = createApi({
         { type: "Orders", id },
       ],
     }),
+
+    deleteOrder: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/orders/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Orders"],
+    }),
+
+    searchCodeBook: builder.query<CodeBookEntry[], string>({
+      query: (search) => ({
+        url: "/codebook",
+        params: search ? { search } : undefined,
+      }),
+      providesTags: ["CodeBook"],
+    }),
+
+    createTsriException: builder.mutation<
+      { id: number; code: string; verbiage: string; type: string },
+      { orderId: string; code?: string; verbiage?: string; type?: string; sortOrder?: number }
+    >({
+      query: ({ orderId, ...body }) => ({
+        url: `/orders/${orderId}/tsri-exceptions`,
+        method: "POST",
+        body,
+      }),
+    }),
+
+    deleteTsriException: builder.mutation<{ message: string }, { orderId: string; id: number }>({
+      query: ({ orderId, id }) => ({
+        url: `/orders/${orderId}/tsri-exceptions/${id}`,
+        method: "DELETE",
+      }),
+    }),
+
+    createTsriRequirement: builder.mutation<
+      { id: number; code: string; verbiage: string; type: string },
+      { orderId: string; code?: string; verbiage?: string; type?: string; sortOrder?: number }
+    >({
+      query: ({ orderId, ...body }) => ({
+        url: `/orders/${orderId}/tsri-requirements`,
+        method: "POST",
+        body,
+      }),
+    }),
+
+    deleteTsriRequirement: builder.mutation<{ message: string }, { orderId: string; id: number }>({
+      query: ({ orderId, id }) => ({
+        url: `/orders/${orderId}/tsri-requirements/${id}`,
+        method: "DELETE",
+      }),
+    }),
+
+    createTractMap: builder.mutation<any, { orderId: string; data: FormData }>({
+      query: ({ orderId, data }) => ({
+        url: `/orders/${orderId}/tract-map`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
+    }),
+
+    createAssessorMap: builder.mutation<any, { orderId: string; data: FormData }>({
+      query: ({ orderId, data }) => ({
+        url: `/orders/${orderId}/assessor-map`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
+    }),
+
+    createRunsheet: builder.mutation<any, { orderId: string; data: FormData }>({
+      query: ({ orderId, data }) => ({
+        url: `/orders/${orderId}/runsheet`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
+    }),
+
+    createStarter: builder.mutation<any, { orderId: string; data: FormData }>({
+      query: ({ orderId, data }) => ({
+        url: `/orders/${orderId}/starters`,
+        method: "POST",
+        body: data,
+        responseHandler: async (response) => {
+          if (response.status === 204) return null;
+          const text = await response.text();
+          if (!text) return null;
+          try { return JSON.parse(text); } catch { return text; }
+        },
+      }),
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
+    }),
+
+    deleteStarter: builder.mutation<null, { orderId: string; id: number }>({
+      query: ({ orderId, id }) => ({
+        url: `/orders/${orderId}/starters/${id}`,
+        method: "DELETE",
+        responseHandler: async (response) =>
+          response.status === 204 || response.headers.get("content-length") === "0"
+            ? null : response.json(),
+      }),
+      transformResponse: () => null,
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
+    }),
+
+    createTitleChainDoc: builder.mutation<any, { orderId: string; data: FormData }>({
+      query: ({ orderId, data }) => ({
+        url: `/orders/${orderId}/title-chain-reviews`,
+        method: "POST",
+        body: data,
+        responseHandler: async (response) => {
+          if (response.status === 204) return null;
+          const text = await response.text();
+          if (!text) return null;
+          try { return JSON.parse(text); } catch { return text; }
+        },
+      }),
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
+    }),
+
+    deleteTitleChainReview: builder.mutation<null, { orderId: string; id: number }>({
+      query: ({ orderId, id }) => ({
+        url: `/orders/${orderId}/title-chain-reviews/${id}`,
+        method: "DELETE",
+        responseHandler: async (response) =>
+          response.status === 204 || response.headers.get("content-length") === "0"
+            ? null : response.json(),
+      }),
+      transformResponse: () => null,
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
+    }),
+
+    deleteTractMap: builder.mutation<null, { orderId: string; id: number }>({
+      query: ({ orderId, id }) => ({
+        url: `/orders/${orderId}/tract-map/${id}`,
+        method: "DELETE",
+        responseHandler: async (response) =>
+          response.status === 204 || response.headers.get("content-length") === "0"
+            ? null : response.json(),
+      }),
+      transformResponse: () => null,
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
+    }),
+
+    deleteAssessorMap: builder.mutation<null, { orderId: string; id: number }>({
+      query: ({ orderId, id }) => ({
+        url: `/orders/${orderId}/assessor-map/${id}`,
+        method: "DELETE",
+        responseHandler: async (response) =>
+          response.status === 204 || response.headers.get("content-length") === "0"
+            ? null : response.json(),
+      }),
+      transformResponse: () => null,
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
+    }),
+
+    deleteRunsheet: builder.mutation<null, { orderId: string; id: number }>({
+      query: ({ orderId, id }) => ({
+        url: `/orders/${orderId}/runsheet/${id}`,
+        method: "DELETE",
+        responseHandler: async (response) =>
+          response.status === 204 || response.headers.get("content-length") === "0"
+            ? null : response.json(),
+      }),
+      transformResponse: () => null,
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
+    }),
+
+    createTaxCert: builder.mutation<
+      { id: number; code: string; verbiage: string },
+      { code: string; verbiage?: string }
+    >({
+      query: (body) => ({
+        url: "/tax-certs",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    deleteTaxCert: builder.mutation<{ message: string }, { orderId: number | string; id: number }>({
+      query: ({ orderId, id }) => ({
+        url: `/orders/${orderId}/tax-certs/${id}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
-export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation, useUploadFileMutation, useUpdateOrderChainFileMutation, useCreateCodeBookMutation, useUpdateCodeBookMutation, useDeleteCodeBookMutation } = ordersApi
+export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation, useUploadFileMutation, useUpdateOrderChainFileMutation, useCreateCodeBookMutation, useUpdateCodeBookMutation, useDeleteCodeBookMutation, useDeleteOrderMutation, useSearchCodeBookQuery, useLazySearchCodeBookQuery, useCreateTaxCertMutation, useDeleteTaxCertMutation, useCreateTsriExceptionMutation, useDeleteTsriExceptionMutation, useCreateTsriRequirementMutation, useDeleteTsriRequirementMutation, useCreateTractMapMutation, useCreateAssessorMapMutation, useCreateRunsheetMutation, useCreateStarterMutation, useDeleteStarterMutation, useCreateTitleChainDocMutation, useDeleteTitleChainReviewMutation, useDeleteTractMapMutation, useDeleteAssessorMapMutation, useDeleteRunsheetMutation } = ordersApi

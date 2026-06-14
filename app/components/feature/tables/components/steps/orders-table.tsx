@@ -21,6 +21,7 @@ interface Props {
   orderLock: (no: string) => OrderLock | null;
   onRushToggle: (no: string) => void;
   onStatusChange: (no: string, status: Order["status"]) => void;
+  onDelete: (id: string) => void;
   statusToColor: (s: string) => { background: string; color: string };
 }
 
@@ -33,8 +34,10 @@ export default function OrdersTable({
   orderLock,
   onRushToggle,
   onStatusChange,
+  onDelete,
   statusToColor,
 }: Props) {
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const columnHelper = createColumnHelper<Order>();
   const columns = useMemo(
@@ -204,8 +207,9 @@ export default function OrdersTable({
         header: "Actions",
         cell: (info) => {
           const row = info.row.original;
+          const id = row.id ? String(row.id) : row.no;
           return (
-            <div onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }} onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -223,28 +227,47 @@ export default function OrdersTable({
                   cursor: "pointer",
                   border: "1px solid",
                   transition: "all .15s",
-                  background: row.rush
-                    ? "var(--status-error-dark)"
-                    : "var(--color-white)",
-                  borderColor: row.rush
-                    ? "var(--status-error-dark)"
-                    : "var(--border-primary)",
+                  background: row.rush ? "var(--status-error-dark)" : "var(--color-white)",
+                  borderColor: row.rush ? "var(--status-error-dark)" : "var(--border-primary)",
                   color: row.rush ? "var(--color-white)" : "var(--text-muted)",
                 }}
               >
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                 </svg>
                 Rush
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmDeleteId(id);
+                }}
+                title="Delete order"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 28,
+                  height: 28,
+                  borderRadius: 7,
+                  border: "1px solid var(--border-primary)",
+                  background: "var(--color-white)",
+                  color: "var(--text-muted)",
+                  cursor: "pointer",
+                  transition: "all .15s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = "#fef2f2";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "#dc2626";
+                  (e.currentTarget as HTMLButtonElement).style.color = "#dc2626";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = "var(--color-white)";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-primary)";
+                  (e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)";
+                }}
+              >
+                <Icon name="trash" size={12} />
               </button>
             </div>
           );
@@ -257,6 +280,7 @@ export default function OrdersTable({
       orderLock,
       onRushToggle,
       onStatusChange,
+      onDelete,
       statusToColor,
     ],
   );
@@ -271,6 +295,7 @@ export default function OrdersTable({
   });
 
   return (
+    <>
     <div
       style={{
         background: "var(--color-white)",
@@ -390,6 +415,42 @@ export default function OrdersTable({
         </table>
       </div>
     </div>
+
+
+    {confirmDeleteId && (
+      <div
+        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}
+        onClick={() => setConfirmDeleteId(null)}
+      >
+        <div
+          style={{ background: "#fff", borderRadius: 14, width: 360, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,.25)" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", background: "#fef2f2", borderBottom: "1px solid #fecaca" }}>
+            <Icon name="trash" size={15} style={{ color: "#dc2626" }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#dc2626" }}>Delete Order</span>
+          </div>
+          <div style={{ padding: "18px", fontSize: 12, color: "#475569", lineHeight: 1.6 }}>
+            Are you sure you want to delete order <strong style={{ color: "#1e293b" }}>#{confirmDeleteId}</strong>? This action cannot be undone.
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "0 18px 16px" }}>
+            <button
+              onClick={() => setConfirmDeleteId(null)}
+              style={{ padding: "7px 16px", fontSize: 12, fontWeight: 600, color: "#64748b", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 8, cursor: "pointer" }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => { onDelete(confirmDeleteId); setConfirmDeleteId(null); }}
+              style={{ padding: "7px 16px", fontSize: 12, fontWeight: 600, color: "#fff", background: "#dc2626", border: "none", borderRadius: 8, cursor: "pointer" }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 

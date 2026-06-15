@@ -22,6 +22,11 @@ import {
   useDeleteTractMapMutation,
   useDeleteRunsheetMutation,
   useDeleteStarterMutation,
+  usePatchAssessorMapMutation,
+  usePatchTractMapMutation,
+  usePatchRunsheetMutation,
+  usePatchStarterMutation,
+  usePatchTitleChainReviewMutation,
 } from "@/app/store/api/ordersApi";
 import type {
   SharedState,
@@ -133,6 +138,11 @@ export default function StepTitleChain({
   const [deleteTractMap] = useDeleteTractMapMutation();
   const [deleteRunsheet] = useDeleteRunsheetMutation();
   const [deleteStarter] = useDeleteStarterMutation();
+  const [patchAssessorMap] = usePatchAssessorMapMutation();
+  const [patchTractMap] = usePatchTractMapMutation();
+  const [patchRunsheet] = usePatchRunsheetMutation();
+  const [patchStarter] = usePatchStarterMutation();
+  const [patchTitleChainReview] = usePatchTitleChainReviewMutation();
 
   const handleFileUpload = async (file: File): Promise<string> => {
     const fd = new FormData();
@@ -383,6 +393,19 @@ export default function StepTitleChain({
                     ? async (apiId) => { await deleteAssessorMap({ orderId: String(orderDetail.id), id: apiId }).unwrap(); }
                     : undefined
                 }
+                onUpdateRow={
+                  orderDetail?.id
+                    ? async (apiId, vals, file) => {
+                        const fd = new FormData();
+                        if (vals.mapRef) fd.append("mapReference", vals.mapRef);
+                        if (vals.parcelNo) fd.append("parcelNo", vals.parcelNo);
+                        if (vals.mapDate) fd.append("mapDate", vals.mapDate);
+                        if (vals.notes) fd.append("notes", vals.notes);
+                        if (file) fd.append("file", file);
+                        await patchAssessorMap({ orderId: String(orderDetail.id), id: apiId, data: fd });
+                      }
+                    : undefined
+                }
               />
             );
           if (sec.title === "Tract Map")
@@ -399,6 +422,19 @@ export default function StepTitleChain({
                 onDeleteRow={
                   orderDetail?.id
                     ? async (apiId) => { await deleteTractMap({ orderId: String(orderDetail.id), id: apiId }).unwrap(); }
+                    : undefined
+                }
+                onUpdateRow={
+                  orderDetail?.id
+                    ? async (apiId, vals, file) => {
+                        const fd = new FormData();
+                        if (vals.tractNo) fd.append("tractNo", vals.tractNo);
+                        if (vals.bookPage) fd.append("bookPage", vals.bookPage);
+                        if (vals.recDate) fd.append("recordedDate", vals.recDate);
+                        if (vals.subdivision) fd.append("subdivision", vals.subdivision);
+                        if (file) fd.append("file", file);
+                        await patchTractMap({ orderId: String(orderDetail.id), id: apiId, data: fd });
+                      }
                     : undefined
                 }
               />
@@ -435,6 +471,20 @@ export default function StepTitleChain({
                 onDeleteRow={
                   orderDetail?.id
                     ? async (apiId) => { await deleteRunsheet({ orderId: String(orderDetail.id), id: apiId }).unwrap(); }
+                    : undefined
+                }
+                onUpdateRow={
+                  orderDetail?.id
+                    ? async (apiId, vals, file) => {
+                        const fd = new FormData();
+                        if (vals.orderNo) fd.append("orderNo", vals.orderNo);
+                        if (vals.searchedBy) fd.append("searchedBy", vals.searchedBy);
+                        if (vals.searchDate) fd.append("searchDate", vals.searchDate);
+                        if (vals.geoCov) fd.append("geoCoverage", vals.geoCov);
+                        if (vals.notes) fd.append("notes", vals.notes);
+                        if (file) fd.append("file", file);
+                        await patchRunsheet({ orderId: String(orderDetail.id), id: apiId, data: fd });
+                      }
                     : undefined
                 }
               />
@@ -491,6 +541,20 @@ export default function StepTitleChain({
                     ? async (apiId) => { await deleteStarter({ orderId: String(orderDetail.id), id: apiId }).unwrap(); }
                     : undefined
                 }
+                onUpdateRow={
+                  orderDetail?.id
+                    ? async (apiId, vals, file) => {
+                        const fd = new FormData();
+                        if (vals.policyNo) fd.append("priorPolicyNo", vals.policyNo);
+                        if (vals.policyDate) fd.append("policyDate", vals.policyDate);
+                        if (vals.insured) fd.append("insured", vals.insured);
+                        if (vals.company) fd.append("titleCompany", vals.company);
+                        if (vals.amount) fd.append("policyAmount", vals.amount);
+                        if (file) fd.append("file", file);
+                        await patchStarter({ orderId: String(orderDetail.id), id: apiId, data: fd });
+                      }
+                    : undefined
+                }
               />
             );
           const isTitleChain = sec.title === "Title Chain Review";
@@ -515,6 +579,27 @@ export default function StepTitleChain({
                         orderId: String(orderDetail.id),
                         id: apiId,
                       }).unwrap();
+                    }
+                  : undefined
+              }
+              onUpdateRow={
+                isTitleChain && orderDetail?.id
+                  ? async (apiId, vals, file) => {
+                      const fd = new FormData();
+                      if (vals.rec) fd.append("recDate", vals.rec);
+                      if (vals.abbr) fd.append("abbr", vals.abbr);
+                      if (vals.grantor) fd.append("grantor", vals.grantor);
+                      if (vals.grantee) fd.append("grantee", vals.grantee);
+                      if (vals.instr) fd.append("instrument", vals.instr);
+                      if (vals.book || vals.pg) fd.append("bookPage", `${vals.book || ""}-${vals.pg || ""}`);
+                      if (vals.entity) fd.append("entityTitle", vals.entity);
+                      if (vals.docTitle) fd.append("docTitle", vals.docTitle);
+                      if (file) fd.append("file", file);
+                      await patchTitleChainReview({
+                        orderId: String(orderDetail.id),
+                        id: apiId,
+                        data: fd,
+                      });
                     }
                   : undefined
               }

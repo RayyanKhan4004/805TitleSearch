@@ -15,6 +15,7 @@ interface SectionTableCardProps {
   rows?: Array<Record<string, string>>;
   onFileUpload?: (file: File) => Promise<string>;
   onDeleteRow?: (apiId: number) => Promise<void>;
+  onUpdateRow?: (apiId: number, values: Record<string, string>, file?: File | null) => Promise<void>;
 }
 
 const inputClass =
@@ -43,18 +44,21 @@ export default function SectionTableCard({
   rows,
   onFileUpload,
   onDeleteRow,
+  onUpdateRow,
 }: SectionTableCardProps) {
   const [open, setOpen] = useState(true);
   const [showImgDrop, setShowImgDrop] = useState(false);
   const imgDropRef = useRef<HTMLTableCellElement>(null);
 
-  /* Local copy so we can remove rows on delete without waiting for a parent re-render */
   const [localRows, setLocalRows] = useState<Array<Record<string, string>>>(
     () => buildDisplayRows(rows, values),
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [editFile, setEditFile] = useState<File | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  /* Sync when parent passes new rows (e.g. after order re-fetch) */
   useEffect(() => {
     setLocalRows(buildDisplayRows(rows, values));
   }, [rows, values]);
@@ -69,13 +73,34 @@ export default function SectionTableCard({
     return () => document.removeEventListener("mousedown", handler);
   }, [showImgDrop]);
 
-  const handleExamImg = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !onFileUpload) return;
+  const startEdit = (rowData: Record<string, string>) => {
+    const vals: Record<string, string> = {};
+    fields.forEach((f) => { vals[f.key] = rowData[f.key] || ""; });
+    setEditValues(vals);
+    setEditFile(null);
+    setEditingId(rowData._apiId);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValues({});
+    setEditFile(null);
+  };
+
+  const saveEdit = async (rowData: Record<string, string>) => {
+    const apiId = Number(rowData._apiId);
+    if (!apiId || !onUpdateRow) return;
+    setUpdatingId(rowData._apiId);
     try {
-      await onFileUpload(file);
+      await onUpdateRow(apiId, editValues, editFile);
+      toast.success("Record updated");
+      setEditingId(null);
+      setEditValues({});
+      setEditFile(null);
     } catch {
-      /* ignore */
+      toast.error("Failed to update record");
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -94,7 +119,7 @@ export default function SectionTableCard({
     }
   };
 
-  const showDeleteCol = onDeleteRow != null;
+  const showActionCol = onDeleteRow != null || onUpdateRow != null;
 
   return (
     <Card className="overflow-hidden">
@@ -141,10 +166,10 @@ export default function SectionTableCard({
                 >
                   Attach
                 </th>
-                {showDeleteCol && (
+                {showActionCol && (
                   <th
                     className="text-[10px] font-extrabold text-[#64748b] uppercase tracking-wider border-b border-secondary px-2.5 py-2 text-center whitespace-nowrap"
-                    style={{ background: "#f8fafc", width: 60 }}
+                    style={{ background: "#f8fafc", width: 80 }}
                   >
                     Action
                   </th>
@@ -155,7 +180,7 @@ export default function SectionTableCard({
               {localRows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={fields.length + (showDeleteCol ? 2 : 1)}
+                    colSpan={fields.length + (showActionCol ? 2 : 1)}
                     className="text-[11px] text-text-muted italic py-2 text-center"
                   >
                     nothing to show
@@ -165,27 +190,53 @@ export default function SectionTableCard({
                 localRows.map((rowData, idx) => {
                   const attached = rowData.fileUrl && rowData.fileUrl !== "";
                   const isDeleting = deletingId === rowData._apiId;
+                  const isEditing = editingId === rowData._apiId;
+                  const isUpdating = updatingId === rowData._apiId;
                   return (
                     <tr
                       key={rowData._apiId ?? idx}
-                      style={{ background: isDeleting ? "#fff5f5" : "#fff", transition: "background .1s" }}
-                      onMouseEnter={(e) => { if (!isDeleting) e.currentTarget.style.background = "#fafafa"; }}
-                      onMouseLeave={(e) => { if (!isDeleting) e.currentTarget.style.background = "#fff"; }}
+                      style={{
+                        background: isDeleting ? "#fff5f5" : isEditing ? "#f0f9ff" : "#fff",
+                        transition: "background .1s",
+                      }}
+                      onMouseEnter={(e) => { if (!isDeleting && !isEditing) e.currentTarget.style.background = "#fafafa"; }}
+                      onMouseLeave={(e) => { if (!isDeleting && !isEditing) e.currentTarget.style.background = "#fff"; }}
                     >
                       {fields.map((f) => (
                         <td key={f.key} className="border-t border-secondary px-2.5 py-2 align-middle">
-                          <div className={inputClass}>
-                            {rowData[f.key] && rowData[f.key] !== "" ? rowData[f.key] : "--"}
-                          </div>
+                          {isEditing ? (
+                            <input
+                              className={inputClass}
+                              value={editValues[f.key] || ""}
+                              onChange={(e) =>
+                                setEditValues((v) => ({ ...v, [f.key]: e.target.value }))
+                              }
+                            />
+                          ) : (
+                            <div className={inputClass} style={{ background: "#f8fafc", color: "#475569" }}>
+                              {rowData[f.key] && rowData[f.key] !== "" ? rowData[f.key] : "--"}
+                            </div>
+                          )}
                         </td>
                       ))}
                       <td
                         ref={idx === 0 ? imgDropRef : undefined}
                         className="relative border-t border-secondary px-2.5 py-2 text-center align-middle"
-                        style={{ width: 110 }}
+                        style={{ width: 120 }}
                       >
                         <div className="flex flex-col items-center gap-1">
-                          {attached ? (
+                          {isEditing ? (
+                            <label className="inline-flex w-full cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md border border-dashed border-border bg-bg-page px-2 py-1.25 text-[9px] font-semibold text-text-muted transition-colors hover:border-status-info-blue hover:text-status-info-blue-text">
+                              <Icon name="upload" size={11} />
+                              <span>{editFile ? editFile.name.slice(0, 12) + "…" : attached ? "Replace file" : "Attach file"}</span>
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*,.pdf"
+                                onChange={(e) => setEditFile(e.target.files?.[0] || null)}
+                              />
+                            </label>
+                          ) : attached ? (
                             <button
                               onClick={() => window.open(rowData.fileUrl, "_blank")}
                               className="flex items-center gap-1 rounded-[5px] border border-border-input bg-white px-2.25 py-1.25 text-[10px] font-semibold text-text hover:bg-bg-page cursor-pointer"
@@ -202,25 +253,71 @@ export default function SectionTableCard({
                                 type="file"
                                 className="hidden"
                                 accept="image/*,.pdf"
-                                onChange={handleExamImg}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file || !onFileUpload) return;
+                                  try { await onFileUpload(file); } catch { /* ignore */ }
+                                }}
                               />
                             </label>
                           )}
                         </div>
                       </td>
-                      {showDeleteCol && (
+                      {showActionCol && (
                         <td className="border-t border-secondary px-2 py-2 text-center align-middle">
                           {rowData._apiId ? (
-                            <button
-                              disabled={isDeleting}
-                              onClick={() => handleDelete(rowData)}
-                              className="inline-flex items-center justify-center w-6.5 h-6.5 rounded-md border border-status-error-bg text-status-error-text hover:bg-status-error-bg disabled:opacity-40 cursor-pointer bg-white transition-colors"
-                              title="Delete record"
-                            >
-                              {isDeleting
-                                ? <Icon name="loader" size={11} className="animate-spin" />
-                                : <Icon name="trash" size={11} />}
-                            </button>
+                            <div className="flex items-center justify-center gap-1">
+                              {isEditing ? (
+                                <>
+                                  <button
+                                    disabled={isUpdating}
+                                    onClick={() => saveEdit(rowData)}
+                                    className="inline-flex items-center justify-center px-2 h-6.5 rounded-md border border-green-500 text-green-700 hover:bg-green-50 disabled:opacity-40 cursor-pointer bg-white transition-colors text-[10px] font-semibold gap-1"
+                                    title="Save changes"
+                                  >
+                                    {isUpdating ? (
+                                      <Icon name="loader" size={11} className="animate-spin" />
+                                    ) : (
+                                      <>
+                                        <Icon name="check" size={11} />
+                                        Update
+                                      </>
+                                    )}
+                                  </button>
+                                  <button
+                                    onClick={cancelEdit}
+                                    className="inline-flex items-center justify-center w-6.5 h-6.5 rounded-md border border-border-input text-text-muted hover:bg-bg-page cursor-pointer bg-white transition-colors"
+                                    title="Cancel"
+                                  >
+                                    <Icon name="x" size={11} />
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  {onUpdateRow && (
+                                    <button
+                                      onClick={() => startEdit(rowData)}
+                                      className="inline-flex items-center justify-center w-6.5 h-6.5 rounded-md border border-border-input text-text-muted hover:bg-blue-50 hover:border-blue-400 hover:text-blue-600 cursor-pointer bg-white transition-colors"
+                                      title="Edit record"
+                                    >
+                                      <Icon name="pencil" size={11} />
+                                    </button>
+                                  )}
+                                  {onDeleteRow && (
+                                    <button
+                                      disabled={isDeleting}
+                                      onClick={() => handleDelete(rowData)}
+                                      className="inline-flex items-center justify-center w-6.5 h-6.5 rounded-md border border-status-error-bg text-status-error-text hover:bg-status-error-bg disabled:opacity-40 cursor-pointer bg-white transition-colors"
+                                      title="Delete record"
+                                    >
+                                      {isDeleting
+                                        ? <Icon name="loader" size={11} className="animate-spin" />
+                                        : <Icon name="trash" size={11} />}
+                                    </button>
+                                  )}
+                                </>
+                              )}
+                            </div>
                           ) : null}
                         </td>
                       )}

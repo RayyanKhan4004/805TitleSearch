@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Icon from "@/components/common/icon";
+import toast from "react-hot-toast";
 import { ABBR_MAP, DOC_ENTITIES, DOC_TITLES, DOC_TYPES } from "./temp";
 import { entityStyle, rowScheme } from "./schemes";
 import "./styles/entity-colors.css";
@@ -27,6 +28,7 @@ interface IndexRowProps {
   onAddChild: () => void;
   onRemove: () => void;
   onDelete?: () => Promise<void>;
+  onUpdate?: (values: Record<string, string>, file?: File | null) => Promise<void>;
   depth?: number;
   zoomed?: boolean;
   onFileUpload?: (file: File) => Promise<string>;
@@ -44,6 +46,7 @@ export default function IndexRow({
   onAddChild,
   onRemove,
   onDelete,
+  onUpdate,
   depth = 0,
   zoomed = false,
   onFileUpload,
@@ -63,6 +66,10 @@ export default function IndexRow({
     showRowMenu: false,
     deleting: false,
   });
+  /* Rows from the API start read-only; newly added rows (no apiId) start editable */
+  const [isEditing, setIsEditing] = useState(!row.apiId);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [updating, setUpdating] = useState(false);
   const imgDropRef = useRef<HTMLTableCellElement>(null);
   const rowMenuRef = useRef<HTMLTableCellElement>(null);
 
@@ -123,9 +130,41 @@ export default function IndexRow({
     }
   };
 
+  const handleUpdate = async () => {
+    if (!onUpdate) return;
+    setUpdating(true);
+    try {
+      await onUpdate(
+        {
+          rec: state.rec,
+          abbr: state.abbr,
+          grantor: state.grantor,
+          grantee: state.grantee,
+          instr: state.instr,
+          book: state.book,
+          pg: state.pg,
+          entity: state.entity,
+          docTitle: state.docTitle,
+        },
+        pendingFile,
+      );
+      setIsEditing(false);
+      setPendingFile(null);
+      toast.success("Record updated");
+    } catch {
+      toast.error("Failed to update record");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const abbrFull =
     ABBR_MAP.find((item) => item.abbr === state.abbr)?.full || "";
   const entityCss = entityStyle(state.entity);
+
+  const readOnlyStyle = !isEditing
+    ? { background: "#f8fafc", color: "#475569", cursor: "default" }
+    : {};
 
   return (
     <>
@@ -133,8 +172,10 @@ export default function IndexRow({
         <input
           value={state.rec}
           onChange={(e) => set("rec", e.target.value)}
+          readOnly={!isEditing}
           placeholder="MM/DD/YYYY"
           className={inputClass}
+          style={readOnlyStyle}
         />
       </td>
       <td className="border-t border-secondary px-2.5 py-2 align-middle w-19.5">
@@ -172,16 +213,20 @@ export default function IndexRow({
         <input
           value={state.grantor}
           onChange={(e) => set("grantor", e.target.value)}
+          readOnly={!isEditing}
           placeholder="Grantor..."
           className={inputClass}
+          style={readOnlyStyle}
         />
       </td>
       <td className="border-t border-secondary px-2.5 py-2 align-middle min-w-26.25">
         <input
           value={state.grantee}
           onChange={(e) => set("grantee", e.target.value)}
+          readOnly={!isEditing}
           placeholder="Grantee..."
           className={inputClass}
+          style={readOnlyStyle}
         />
       </td>
       <td className="border-t border-secondary px-2.5 py-2 align-middle min-w-40">
@@ -189,20 +234,26 @@ export default function IndexRow({
           <input
             value={state.instr}
             onChange={(e) => set("instr", e.target.value)}
+            readOnly={!isEditing}
             placeholder="Instrument No."
             className={`${inputClass} flex-2`}
+            style={readOnlyStyle}
           />
           <input
             value={state.book}
             onChange={(e) => set("book", e.target.value)}
+            readOnly={!isEditing}
             placeholder="Bk"
             className={`${inputClass} flex-1`}
+            style={readOnlyStyle}
           />
           <input
             value={state.pg}
             onChange={(e) => set("pg", e.target.value)}
+            readOnly={!isEditing}
             placeholder="Pg"
             className={`${inputClass} flex-1`}
+            style={readOnlyStyle}
           />
         </div>
       </td>
@@ -210,8 +261,9 @@ export default function IndexRow({
         <select
           value={state.entity}
           onChange={(e) => set("entity", e.target.value)}
+          disabled={!isEditing}
           className="mb-1 w-full cursor-pointer rounded-md border px-1.5 py-1 text-[10px] font-bold outline-none"
-          style={entityCss}
+          style={isEditing ? entityCss : { ...entityCss, cursor: "default", opacity: 0.85 }}
         >
           {DOC_ENTITIES.map((item) => (
             <option key={item.value} value={item.value}>
@@ -222,7 +274,9 @@ export default function IndexRow({
         <select
           value={state.docTitle}
           onChange={(e) => set("docTitle", e.target.value)}
+          disabled={!isEditing}
           className={`${inputClass} cursor-pointer`}
+          style={isEditing ? {} : readOnlyStyle}
         >
           {DOC_TITLES.map((title) => (
             <option key={title}>{title}</option>
@@ -237,7 +291,6 @@ export default function IndexRow({
           {state.examImg ? (
             <div className="relative inline-block">
               {isImageUrl(state.examImg) ? (
-                /* ── actual image thumbnail ── */
                 <button
                   onClick={() => window.open(state.examImg ?? undefined, "_blank")}
                   className="block border-none bg-transparent p-0"
@@ -251,7 +304,6 @@ export default function IndexRow({
                   />
                 </button>
               ) : (
-                /* ── PDF / non-image file ── */
                 <button
                   onClick={() => window.open(state.examImg ?? undefined, "_blank")}
                   className="flex flex-col items-center justify-center gap-0.5 rounded-md border border-status-info-blue-border bg-[#eff6ff] px-2.5 py-1.5 text-[9px] font-semibold text-status-info-blue-text cursor-pointer"
@@ -262,23 +314,39 @@ export default function IndexRow({
                   <span>View File</span>
                 </button>
               )}
-              <button
-                onClick={() => set("examImg", null)}
-                title="Remove"
-                className="absolute -right-1.25 -top-1.25 h-3.75 w-3.75 rounded-full border-none bg-brand text-[9px] leading-3.75 text-white"
-              >
-                x
-              </button>
+              {isEditing && (
+                <button
+                  onClick={() => set("examImg", null)}
+                  title="Remove"
+                  className="absolute -right-1.25 -top-1.25 h-3.75 w-3.75 rounded-full border-none bg-brand text-[9px] leading-3.75 text-white"
+                >
+                  x
+                </button>
+              )}
             </div>
           ) : (
             <label className="inline-flex w-15.5 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md border border-dashed border-border bg-bg-page px-2.5 py-1.25 text-[9px] font-semibold text-text-muted transition-colors hover:border-status-info-blue hover:text-status-info-blue-text">
               <Icon name="upload" size={11} />
-              <span>Attach</span>
+              <span>{isEditing ? "Attach" : "No file"}</span>
+              {isEditing && (
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*,.pdf"
+                  onChange={handleExamImg}
+                />
+              )}
+            </label>
+          )}
+          {isEditing && (
+            <label className="inline-flex cursor-pointer items-center gap-0.5 rounded-[5px] border border-dashed border-blue-300 bg-blue-50 px-1.5 py-0.75 text-[9px] font-semibold text-blue-600 transition-colors hover:bg-blue-100">
+              <Icon name="upload" size={9} />
+              {pendingFile ? pendingFile.name.slice(0, 10) + "…" : "Change file"}
               <input
                 type="file"
                 className="hidden"
                 accept="image/*,.pdf"
-                onChange={handleExamImg}
+                onChange={(e) => setPendingFile(e.target.files?.[0] || null)}
               />
             </label>
           )}
@@ -407,6 +475,34 @@ export default function IndexRow({
             }}
             className="overflow-hidden rounded-[9px] border border-border bg-white shadow-[0_6px_20px_rgba(0,0,0,.14)]"
           >
+            {onUpdate && row.apiId && !isEditing && (
+              <button
+                onClick={() => { setIsEditing(true); set("showRowMenu", false); }}
+                className="flex w-full items-center gap-1.75 border-none border-b border-light bg-white px-3.25 py-2.25 text-left text-[11px] font-medium text-text hover:bg-bg-page"
+              >
+                <Icon name="pencil" size={12} className="text-blue-500" />
+                Edit Record
+              </button>
+            )}
+            {onUpdate && isEditing && (
+              <>
+                <button
+                  disabled={updating}
+                  onClick={async () => { set("showRowMenu", false); await handleUpdate(); }}
+                  className="flex w-full items-center gap-1.75 border-none border-b border-light bg-white px-3.25 py-2.25 text-left text-[11px] font-medium text-green-700 hover:bg-green-50 disabled:opacity-40"
+                >
+                  <Icon name="check" size={12} className="text-green-600" />
+                  {updating ? "Saving…" : "Update Record"}
+                </button>
+                <button
+                  onClick={() => { setIsEditing(false); setPendingFile(null); set("showRowMenu", false); }}
+                  className="flex w-full items-center gap-1.75 border-none border-b border-light bg-white px-3.25 py-2.25 text-left text-[11px] font-medium text-text-muted hover:bg-bg-page"
+                >
+                  <Icon name="x" size={12} className="text-text-muted" />
+                  Cancel Edit
+                </button>
+              </>
+            )}
             <button
               onClick={() => {
                 onAddChild();

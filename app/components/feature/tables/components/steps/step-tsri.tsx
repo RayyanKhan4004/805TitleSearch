@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import type {
   ChainCode,
   SharedState,
+  OrderDetail,
 } from "@/app/components/feature/tables/types";
 import {
   Button,
@@ -30,12 +31,30 @@ interface StepTSRIProps {
   shared: SharedState;
   setShared: React.Dispatch<React.SetStateAction<SharedState>>;
   onGenerate: (data: Record<string, unknown>) => void;
+  orderDetail?: OrderDetail;
+}
+
+function orderDetailToCodes(od?: OrderDetail): ChainCode[] {
+  const exceptions: ChainCode[] = (od?.tsriExceptions || []).map((e) => ({
+    id: e.id,
+    type: "exception" as const,
+    code: e.code,
+    verbiage: e.verbiage || "",
+  }));
+  const requirements: ChainCode[] = (od?.tsriRequirements || []).map((r) => ({
+    id: r.id,
+    type: "requirement" as const,
+    code: r.code,
+    verbiage: r.verbiage || "",
+  }));
+  return [...exceptions, ...requirements];
 }
 
 export default function StepTSRI({
   shared,
   setShared,
   onGenerate,
+  orderDetail,
 }: StepTSRIProps) {
   const [proposedInsured, setProposedInsured] = useState(
     `${(shared.vesting || "").split(",")[0] || "John D. Doe and Jane R. Doe"}`,
@@ -49,7 +68,15 @@ export default function StepTSRI({
   const [legal, setLegal] = useState(shared.legal || "");
   const [easements, setEasements] = useState("");
   const [notes, setNotes] = useState("");
-  const [codes, setCodes] = useState<ChainCode[]>(shared.chainCodes || []);
+  const [codes, setCodes] = useState<ChainCode[]>(() => {
+    const fromApi = orderDetailToCodes(orderDetail);
+    return fromApi.length > 0 ? fromApi : (shared.chainCodes || []);
+  });
+
+  useEffect(() => {
+    const fromApi = orderDetailToCodes(orderDetail);
+    if (fromApi.length > 0) setCodes(fromApi);
+  }, [orderDetail]);
   const [newCode, setNewCode] = useState<{
     type: "exception" | "requirement" | "note";
     code: string;
@@ -464,6 +491,14 @@ Authorized Signatory: _________________________
             title="Tax Cert"
             sub="Tax certificate and payment records"
             accent="#7c3aed"
+            orderId={orderDetail?.id}
+            initialAddedCodes={
+              (orderDetail?.taxCerts || []).map((t) => ({
+                id: t.id,
+                code: t.code,
+                verbiage: t.verbiage || "",
+              }))
+            }
           />
         </div>
 

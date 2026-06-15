@@ -45,6 +45,11 @@ export default function TaxCertCard({
 }: TaxCertCardProps) {
   const [open, setOpen] = useState(true);
   const [chips, setChips] = useState<Chip[]>(() => initChips(initialAddedCodes));
+
+  useEffect(() => {
+    if (initialAddedCodes && initialAddedCodes.length > 0)
+      setChips(initChips(initialAddedCodes));
+  }, [initialAddedCodes]);
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [triggerSearch, { data: searchResults, isFetching }] = useLazySearchCodeBookQuery();

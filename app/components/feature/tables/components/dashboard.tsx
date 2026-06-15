@@ -575,6 +575,7 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
                     shared={shared}
                     setShared={setShared}
                     onGenerate={handleGeneratePrelim}
+                    orderDetail={orderDetail ?? undefined}
                   />
                 )}
                 {step === 3 && (

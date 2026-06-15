@@ -228,7 +228,7 @@ export const ordersApi = createApi({
         url: `/orders/${orderId}/starters`,
         method: "POST",
         body: data,
-        responseHandler: async (response) => {
+        responseHandler: async (response: Response) => {
           if (response.status === 204) return null;
           const text = await response.text();
           if (!text) return null;
@@ -242,7 +242,7 @@ export const ordersApi = createApi({
       query: ({ orderId, id }) => ({
         url: `/orders/${orderId}/starters/${id}`,
         method: "DELETE",
-        responseHandler: async (response) =>
+        responseHandler: async (response: Response) =>
           response.status === 204 || response.headers.get("content-length") === "0"
             ? null : response.json(),
       }),
@@ -255,7 +255,7 @@ export const ordersApi = createApi({
         url: `/orders/${orderId}/title-chain-reviews`,
         method: "POST",
         body: data,
-        responseHandler: async (response) => {
+        responseHandler: async (response: Response) => {
           if (response.status === 204) return null;
           const text = await response.text();
           if (!text) return null;
@@ -269,7 +269,7 @@ export const ordersApi = createApi({
       query: ({ orderId, id }) => ({
         url: `/orders/${orderId}/title-chain-reviews/${id}`,
         method: "DELETE",
-        responseHandler: async (response) =>
+        responseHandler: async (response: Response) =>
           response.status === 204 || response.headers.get("content-length") === "0"
             ? null : response.json(),
       }),
@@ -281,7 +281,7 @@ export const ordersApi = createApi({
       query: ({ orderId, id }) => ({
         url: `/orders/${orderId}/tract-map/${id}`,
         method: "DELETE",
-        responseHandler: async (response) =>
+        responseHandler: async (response: Response) =>
           response.status === 204 || response.headers.get("content-length") === "0"
             ? null : response.json(),
       }),
@@ -293,7 +293,7 @@ export const ordersApi = createApi({
       query: ({ orderId, id }) => ({
         url: `/orders/${orderId}/assessor-map/${id}`,
         method: "DELETE",
-        responseHandler: async (response) =>
+        responseHandler: async (response: Response) =>
           response.status === 204 || response.headers.get("content-length") === "0"
             ? null : response.json(),
       }),
@@ -305,7 +305,7 @@ export const ordersApi = createApi({
       query: ({ orderId, id }) => ({
         url: `/orders/${orderId}/runsheet/${id}`,
         method: "DELETE",
-        responseHandler: async (response) =>
+        responseHandler: async (response: Response) =>
           response.status === 204 || response.headers.get("content-length") === "0"
             ? null : response.json(),
       }),

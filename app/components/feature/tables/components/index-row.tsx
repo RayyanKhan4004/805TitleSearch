@@ -62,7 +62,6 @@ export default function IndexRow({
     entity: row.entity || "MISC",
     docTitle: row.docTitle || DOC_TITLES[0],
     examImg: (row.fileUrl || null) as string | null,
-    showImgDrop: false,
     showRowMenu: false,
     deleting: false,
   });
@@ -70,7 +69,6 @@ export default function IndexRow({
   const [isEditing, setIsEditing] = useState(!row.apiId);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [updating, setUpdating] = useState(false);
-  const imgDropRef = useRef<HTMLTableCellElement>(null);
   const rowMenuRef = useRef<HTMLTableCellElement>(null);
 
   const set = <K extends keyof typeof state>(
@@ -82,20 +80,6 @@ export default function IndexRow({
   useEffect(() => {
     if (row.fileUrl) set("examImg", row.fileUrl);
   }, [row.fileUrl]);
-
-  useEffect(() => {
-    if (!state.showImgDrop) return;
-    const handler = (event: MouseEvent) => {
-      if (
-        imgDropRef.current &&
-        !imgDropRef.current.contains(event.target as Node)
-      ) {
-        set("showImgDrop", false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [state.showImgDrop]);
 
   useEffect(() => {
     if (!state.showRowMenu) return;
@@ -283,10 +267,7 @@ export default function IndexRow({
           ))}
         </select>
       </td>
-      <td
-        ref={imgDropRef}
-        className="relative w-27.5 border-t border-secondary px-2.5 py-2 text-center align-middle"
-      >
+      <td className="relative w-27.5 border-t border-secondary px-2.5 py-2 text-center align-middle">
         <div className="flex flex-col items-center gap-1">
           {state.examImg ? (
             <div className="relative inline-block">
@@ -350,108 +331,7 @@ export default function IndexRow({
               />
             </label>
           )}
-          <button
-            onClick={() => set("showImgDrop", !state.showImgDrop)}
-            title="Image options"
-            className="inline-flex items-center gap-0.5 rounded-[5px] border px-1.75 py-0.75 text-[9px] font-semibold transition-colors"
-            style={{
-              background: state.showImgDrop
-                ? "var(--brand-primary)"
-                : "var(--color-white)",
-              borderColor: state.showImgDrop
-                ? "var(--brand-primary)"
-                : "var(--border-input)",
-              color: state.showImgDrop
-                ? "var(--color-white)"
-                : "var(--text-secondary)",
-            }}
-          >
-            <Icon name="file" size={9} />
-            Options
-            <Icon name="chevDown" size={8} />
-          </button>
         </div>
-        {state.showImgDrop && imgDropRef.current && (
-          <div
-            style={{
-              position: "fixed",
-              top: imgDropRef.current.getBoundingClientRect().top - 8,
-              left:
-                imgDropRef.current.getBoundingClientRect().left +
-                imgDropRef.current.getBoundingClientRect().width / 2,
-              transform: "translate(-50%, -100%)",
-              zIndex: 9999,
-              minWidth: 185,
-            }}
-            className="overflow-hidden rounded-[10px] border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,.16)]"
-          >
-            <div className="border-b border-light bg-table-header px-2.75 py-1.5 text-left text-[9px] font-extrabold uppercase tracking-[0.07em] text-text-muted">
-              Image Options
-            </div>
-            <label className="flex cursor-pointer items-center gap-2 border-b border-light px-3 py-2 text-left text-[11px] font-medium text-text hover:bg-bg-page">
-              <Icon
-                name="upload"
-                size={12}
-                className="text-status-info-blue-text"
-              />
-              {state.examImg
-                ? "Re-attach Examiner Image"
-                : "Attach Examiner Image"}
-              <input
-                type="file"
-                className="hidden"
-                accept="image/*,.pdf"
-                onChange={(e) => {
-                  handleExamImg(e);
-                  set("showImgDrop", false);
-                }}
-              />
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 border-b border-light px-3 py-2 text-left text-[11px] font-medium text-text hover:bg-bg-page">
-              <Icon
-                name="file"
-                size={12}
-                className="text-status-success-emerald"
-              />
-              Replace Image
-              <input
-                type="file"
-                className="hidden"
-                accept="image/*,.pdf"
-                onChange={(e) => {
-                  handleExamImg(e);
-                  set("showImgDrop", false);
-                }}
-              />
-            </label>
-            <button
-              onClick={() => set("showImgDrop", false)}
-              className="flex w-full items-center gap-2 border-none bg-white px-3 py-2 text-left text-[11px] font-medium text-text hover:bg-bg-page"
-            >
-              <Icon name="refresh" size={12} className="text-purple-700" />
-              Override from Back Source
-            </button>
-            {onDelete && (
-              <button
-                disabled={state.deleting}
-                onClick={async () => {
-                  set("showImgDrop", false);
-                  set("deleting", true);
-                  try {
-                    await onDelete();
-                    onRemove();
-                  } catch {
-                    set("deleting", false);
-                  }
-                }}
-                className="flex w-full items-center gap-2 border-none border-t border-light bg-white px-3 py-2 text-left text-[11px] font-medium text-status-error-text hover:bg-status-error-bg disabled:opacity-40"
-              >
-                <Icon name="trash" size={12} className="text-status-error-text" />
-                {state.deleting ? "Deleting…" : "Delete Record"}
-              </button>
-            )}
-          </div>
-        )}
       </td>
       <td
         ref={rowMenuRef}
@@ -459,9 +339,9 @@ export default function IndexRow({
       >
         <button
           onClick={() => set("showRowMenu", !state.showRowMenu)}
-          className="flex rounded border-none bg-transparent p-0.5 text-text-muted transition-colors hover:text-text-secondary"
+          className="flex items-center justify-center w-6.5 h-6.5 rounded-md border border-border-input bg-white text-[#475569] transition-colors hover:bg-[#f1f5f9] hover:border-[#94a3b8] hover:text-[#1e293b] cursor-pointer"
         >
-          <Icon name="moreV" size={13} />
+          <Icon name="moreV" size={14} />
         </button>
         {state.showRowMenu && rowMenuRef.current && (
           <div

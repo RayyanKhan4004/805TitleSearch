@@ -50,14 +50,13 @@ const FORM_TO_API: Record<string, Record<string, string>> = {
     amount: "amount",
     lienPos: "lienPosition",
     notes: "remarks",
-    category: "category",
   },
   Starters: {
-    policyNo: "remarks",
-    policyDate: "documentDate",
-    insured: "grantee",
-    company: "grantor",
-    amount: "amount",
+    policyNo: "priorPolicyNo",
+    policyDate: "policyDate",
+    insured: "insured",
+    company: "titleCompany",
+    amount: "policyAmount",
   },
 };
 

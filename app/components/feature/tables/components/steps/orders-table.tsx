@@ -57,7 +57,7 @@ export default function OrdersTable({
                 flexWrap: "wrap",
               }}
             >
-              {row.no}
+              {row.id}
               {row.rush && <RushBadge />}
               {isHovered && <OpenBadge />}
             </div>

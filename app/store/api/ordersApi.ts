@@ -315,13 +315,14 @@ export const ordersApi = createApi({
 
     createTaxCert: builder.mutation<
       { id: number; code: string; verbiage: string },
-      { code: string; verbiage?: string }
+      { orderId: number | string; code: string; verbiage?: string }
     >({
-      query: (body) => ({
-        url: "/tax-certs",
+      query: ({ orderId, ...body }) => ({
+        url: `/orders/${orderId}/tax-certs`,
         method: "POST",
         body,
       }),
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
     }),
 
     deleteTaxCert: builder.mutation<{ message: string }, { orderId: number | string; id: number }>({
@@ -329,6 +330,7 @@ export const ordersApi = createApi({
         url: `/orders/${orderId}/tax-certs/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
     }),
   }),
 });

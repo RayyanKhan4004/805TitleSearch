@@ -194,25 +194,14 @@ export default function StepTitleChain({
   const starterFields = FIELDS["Starters"] || [];
   const starterRows: Array<Record<string, string>> = (orderDetail?.starters || []).map((r) => ({
     _apiId: String(r.id),
-    policyNo: r.remarks || "",
-    policyDate: r.documentDate || "",
-    insured: r.grantee || "",
-    company: r.grantor || "",
-    amount: r.amount || "",
+    policyNo: r.priorPolicyNo || "",
+    policyDate: r.policyDate || "",
+    insured: r.insured || "",
+    company: r.titleCompany || "",
+    amount: r.policyAmount || "",
     fileUrl: r.fileUrl || "",
   }));
-  /* scalar fallback from titleChainReviews when starters array is empty */
-  const starterEntry = starterRows.length === 0 && Array.isArray(orderDetail?.titleChainReviews)
-    ? (orderDetail.titleChainReviews as Record<string, unknown>[]).find((r: any) => r.isStarter)
-    : null;
-  const starterValues: Record<string, string> = starterRows.length === 0 ? {
-    policyNo: (starterEntry as any)?.remarks || "",
-    policyDate: (starterEntry as any)?.documentDate || "",
-    insured: (starterEntry as any)?.grantee || "",
-    company: (starterEntry as any)?.grantor || "",
-    amount: (starterEntry as any)?.amount || "",
-    fileUrl: (starterEntry as any)?.fileUrl || "",
-  } : {};
+  const starterValues: Record<string, string> = {};
 
   const runsheetFields = FIELDS["Runsheet"] || [];
   const runsheetRows: Array<Record<string, string>> = (orderDetail?.runsheets || []).map((r) => ({

@@ -865,11 +865,11 @@ export interface OrderDetail {
   }>;
   starters: Array<{
     id: number;
-    remarks: string | null;
-    documentDate: string | null;
-    grantee: string | null;
-    grantor: string | null;
-    amount: string | null;
+    priorPolicyNo: string | null;
+    policyDate: string | null;
+    insured: string | null;
+    titleCompany: string | null;
+    policyAmount: string | null;
     fileUrl: string | null;
     fileName: string | null;
   }>;

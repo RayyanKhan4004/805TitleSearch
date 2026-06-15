@@ -77,8 +77,9 @@ export default function TaxCertCard({
 
   const addFromSearch = async (code: string, verbiage: string) => {
     if (hasCode(code)) return;
+    if (!orderId) { toast.error("Order not loaded"); return; }
     try {
-      const result = await createTaxCert({ code, verbiage }).unwrap();
+      const result = await createTaxCert({ orderId, code, verbiage }).unwrap();
       setChips((c) => [...c, { id: Date.now(), apiId: result.id, code: result.code, verbiage: result.verbiage, selected: true, editing: false }]);
       toast.success(`Tax cert ${result.code} added`);
     } catch (err: any) {

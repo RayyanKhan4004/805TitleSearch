@@ -7,8 +7,10 @@ import {
   useLazySearchCodeBookQuery,
   useCreateTsriExceptionMutation,
   useDeleteTsriExceptionMutation,
+  usePatchTsriExceptionMutation,
   useCreateTsriRequirementMutation,
   useDeleteTsriRequirementMutation,
+  usePatchTsriRequirementMutation,
 } from "@/app/store/api/ordersApi";
 import toast from "react-hot-toast";
 
@@ -58,11 +60,15 @@ export default function GenieSectionCard({
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
+  const [savingIds, setSavingIds] = useState<Set<number>>(new Set());
+
   const [triggerSearch, { data: searchResults, isFetching }] = useLazySearchCodeBookQuery();
   const [createTsriException] = useCreateTsriExceptionMutation();
   const [deleteTsriException] = useDeleteTsriExceptionMutation();
+  const [patchTsriException] = usePatchTsriExceptionMutation();
   const [createTsriRequirement] = useCreateTsriRequirementMutation();
   const [deleteTsriRequirement] = useDeleteTsriRequirementMutation();
+  const [patchTsriRequirement] = usePatchTsriRequirementMutation();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -184,8 +190,24 @@ export default function GenieSectionCard({
   const startEdit = (id: number) =>
     setChips((c) => c.map((x) => x.id === id ? { ...x, editing: true } : x));
 
-  const saveEdit = (id: number) =>
+  const saveEdit = async (id: number) => {
+    const chip = chips.find((c) => c.id === id);
+    if (!chip) return;
+    if (chip.apiId && orderId && sectionType) {
+      setSavingIds((s) => new Set(s).add(id));
+      try {
+        const patchFn = sectionType === "exception" ? patchTsriException : patchTsriRequirement;
+        await patchFn({ orderId, id: chip.apiId, verbiage: chip.verbiage }).unwrap();
+        toast.success("Verbiage saved");
+      } catch {
+        toast.error("Failed to save verbiage");
+        setSavingIds((s) => { const n = new Set(s); n.delete(id); return n; });
+        return;
+      }
+      setSavingIds((s) => { const n = new Set(s); n.delete(id); return n; });
+    }
     setChips((c) => c.map((x) => x.id === id ? { ...x, editing: false } : x));
+  };
 
   return (
     <div className="bg-white border border-border rounded-xl">
@@ -362,8 +384,14 @@ export default function GenieSectionCard({
                     </div>
                     <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                       {c.editing ? (
-                        <button onClick={() => saveEdit(c.id)} className="bg-[#059669] text-white text-[9px] font-bold px-2 py-0.75 rounded border-none cursor-pointer flex items-center gap-1">
-                          <Icon name="check" size={9} /> Save
+                        <button
+                          onClick={() => saveEdit(c.id)}
+                          disabled={savingIds.has(c.id)}
+                          className="bg-[#059669] text-white text-[9px] font-bold px-2 py-0.75 rounded border-none cursor-pointer flex items-center gap-1 disabled:opacity-60"
+                        >
+                          {savingIds.has(c.id)
+                            ? <><Icon name="loader" size={9} className="animate-spin" /> Saving…</>
+                            : <><Icon name="check" size={9} /> Save</>}
                         </button>
                       ) : (
                         <button onClick={() => startEdit(c.id)} className="bg-transparent text-text-secondary border border-border text-[9px] font-bold px-2 py-0.75 rounded cursor-pointer flex items-center gap-1">

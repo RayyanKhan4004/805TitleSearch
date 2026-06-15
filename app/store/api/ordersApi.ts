@@ -178,6 +178,23 @@ export const ordersApi = createApi({
       }),
     }),
 
+    patchTsriException: builder.mutation<
+      { id: number; code: string; verbiage: string } | null,
+      { orderId: string; id: number; verbiage: string }
+    >({
+      query: ({ orderId, id, verbiage }) => ({
+        url: `/orders/${orderId}/tsri-exceptions/${id}`,
+        method: "PATCH",
+        body: { verbiage },
+        responseHandler: async (response) => {
+          if (response.status === 204) return null;
+          const text = await response.text();
+          if (!text) return null;
+          try { return JSON.parse(text); } catch { return null; }
+        },
+      }),
+    }),
+
     createTsriRequirement: builder.mutation<
       { id: number; code: string; verbiage: string; type: string },
       { orderId: string; code?: string; verbiage?: string; type?: string; sortOrder?: number }
@@ -193,6 +210,23 @@ export const ordersApi = createApi({
       query: ({ orderId, id }) => ({
         url: `/orders/${orderId}/tsri-requirements/${id}`,
         method: "DELETE",
+      }),
+    }),
+
+    patchTsriRequirement: builder.mutation<
+      { id: number; code: string; verbiage: string } | null,
+      { orderId: string; id: number; verbiage: string }
+    >({
+      query: ({ orderId, id, verbiage }) => ({
+        url: `/orders/${orderId}/tsri-requirements/${id}`,
+        method: "PATCH",
+        body: { verbiage },
+        responseHandler: async (response) => {
+          if (response.status === 204) return null;
+          const text = await response.text();
+          if (!text) return null;
+          try { return JSON.parse(text); } catch { return null; }
+        },
       }),
     }),
 
@@ -332,7 +366,24 @@ export const ordersApi = createApi({
       }),
       invalidatesTags: (result, error, { orderId }) => [{ type: "Orders", id: orderId }],
     }),
+
+    patchTaxCert: builder.mutation<
+      { id: number; code: string; verbiage: string } | null,
+      { orderId: number | string; id: number; verbiage: string }
+    >({
+      query: ({ orderId, id, verbiage }) => ({
+        url: `/orders/${orderId}/tax-certs/${id}`,
+        method: "PATCH",
+        body: { verbiage },
+        responseHandler: async (response) => {
+          if (response.status === 204) return null;
+          const text = await response.text();
+          if (!text) return null;
+          try { return JSON.parse(text); } catch { return null; }
+        },
+      }),
+    }),
   }),
 });
 
-export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation, useUploadFileMutation, useUpdateOrderChainFileMutation, useCreateCodeBookMutation, useUpdateCodeBookMutation, useDeleteCodeBookMutation, useDeleteOrderMutation, useSearchCodeBookQuery, useLazySearchCodeBookQuery, useCreateTaxCertMutation, useDeleteTaxCertMutation, useCreateTsriExceptionMutation, useDeleteTsriExceptionMutation, useCreateTsriRequirementMutation, useDeleteTsriRequirementMutation, useCreateTractMapMutation, useCreateAssessorMapMutation, useCreateRunsheetMutation, useCreateStarterMutation, useDeleteStarterMutation, useCreateTitleChainDocMutation, useDeleteTitleChainReviewMutation, useDeleteTractMapMutation, useDeleteAssessorMapMutation, useDeleteRunsheetMutation } = ordersApi
+export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation, useUploadFileMutation, useUpdateOrderChainFileMutation, useCreateCodeBookMutation, useUpdateCodeBookMutation, useDeleteCodeBookMutation, useDeleteOrderMutation, useSearchCodeBookQuery, useLazySearchCodeBookQuery, useCreateTaxCertMutation, useDeleteTaxCertMutation, usePatchTaxCertMutation, useCreateTsriExceptionMutation, useDeleteTsriExceptionMutation, usePatchTsriExceptionMutation, useCreateTsriRequirementMutation, useDeleteTsriRequirementMutation, usePatchTsriRequirementMutation, useCreateTractMapMutation, useCreateAssessorMapMutation, useCreateRunsheetMutation, useCreateStarterMutation, useDeleteStarterMutation, useCreateTitleChainDocMutation, useDeleteTitleChainReviewMutation, useDeleteTractMapMutation, useDeleteAssessorMapMutation, useDeleteRunsheetMutation } = ordersApi

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, Fragment } from "react";
 import Icon from "@/components/common/icon";
 import RichEditor from "@/components/common/text-toolbar";
-import { useLazySearchCodeBookQuery, useCreateTaxCertMutation, useDeleteTaxCertMutation } from "@/app/store/api/ordersApi";
+import { useLazySearchCodeBookQuery, useCreateTaxCertMutation, useDeleteTaxCertMutation, usePatchTaxCertMutation } from "@/app/store/api/ordersApi";
 import toast from "react-hot-toast";
 
 interface Chip {
@@ -53,8 +53,10 @@ export default function TaxCertCard({
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [triggerSearch, { data: searchResults, isFetching }] = useLazySearchCodeBookQuery();
+  const [savingIds, setSavingIds] = useState<Set<number>>(new Set());
   const [createTaxCert] = useCreateTaxCertMutation();
   const [deleteTaxCert] = useDeleteTaxCertMutation();
+  const [patchTaxCert] = usePatchTaxCertMutation();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -128,8 +130,23 @@ export default function TaxCertCard({
   const startEdit = (id: number) =>
     setChips((c) => c.map((x) => x.id === id ? { ...x, editing: true } : x));
 
-  const saveEdit = (id: number) =>
+  const saveEdit = async (id: number) => {
+    const chip = chips.find((c) => c.id === id);
+    if (!chip) return;
+    if (chip.apiId && orderId) {
+      setSavingIds((s) => new Set(s).add(id));
+      try {
+        await patchTaxCert({ orderId, id: chip.apiId, verbiage: chip.verbiage }).unwrap();
+        toast.success("Verbiage saved");
+      } catch {
+        toast.error("Failed to save verbiage");
+        setSavingIds((s) => { const n = new Set(s); n.delete(id); return n; });
+        return;
+      }
+      setSavingIds((s) => { const n = new Set(s); n.delete(id); return n; });
+    }
     setChips((c) => c.map((x) => x.id === id ? { ...x, editing: false } : x));
+  };
 
   const renderVerbiage = (text: string) => {
     const parts = text.split("*");
@@ -339,10 +356,13 @@ export default function TaxCertCard({
                       {c.editing ? (
                         <button
                           onClick={() => saveEdit(c.id)}
-                          className="inline-flex items-center gap-1 rounded-md border-none text-[10px] font-bold cursor-pointer text-white"
-                          style={{ background: "var(--bg-status-success-emerald)", padding: "2px 10px" }}
+                          disabled={savingIds.has(c.id)}
+                          className="inline-flex items-center gap-1 rounded-md border-none text-[10px] font-bold cursor-pointer text-white disabled:opacity-60"
+                          style={{ background: "#059669", padding: "2px 10px" }}
                         >
-                          <Icon name="save" size={10} /> Save
+                          {savingIds.has(c.id)
+                            ? <><Icon name="loader" size={10} className="animate-spin" /> Saving…</>
+                            : <><Icon name="save" size={10} /> Save</>}
                         </button>
                       ) : (
                         <button

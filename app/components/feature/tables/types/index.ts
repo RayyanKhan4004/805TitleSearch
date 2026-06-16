@@ -801,6 +801,7 @@ export interface OrderDetail {
     id: number;
     code: string;
     verbiage: string | null;
+    sortOrder?: number | null;
   }>;
   otherExceptions: Array<{
     id: number;

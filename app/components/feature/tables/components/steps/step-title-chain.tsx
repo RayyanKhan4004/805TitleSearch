@@ -172,14 +172,7 @@ export default function StepTitleChain({
     notes: r.notes || "",
     fileUrl: r.fileUrl || "",
   }));
-  /* scalar fallback when no section records exist yet */
-  const assessorMapValues: Record<string, string> = assessorMapRows.length === 0 ? {
-    mapRef: orderDetail?.tract || propertyForm?.tract || "",
-    parcelNo: orderDetail?.apn1 || propertyForm?.apn1 || "",
-    mapDate: "",
-    notes: orderDetail?.additionalNotes || "",
-    fileUrl: reportRaw?.FileLink || "",
-  } : {};
+  const assessorMapValues: Record<string, string> = {};
 
   const tractMapFields = FIELDS["Tract Map"] || [];
   const tractMapRows: Array<Record<string, string>> = (orderDetail?.tractMaps || []).map((r) => ({
@@ -190,16 +183,7 @@ export default function StepTitleChain({
     subdivision: r.subdivision || "",
     fileUrl: r.fileUrl || "",
   }));
-  const tractMapValues: Record<string, string> = tractMapRows.length === 0 ? {
-    tractNo: orderDetail?.tract || propertyForm?.tract || "",
-    bookPage:
-      orderDetail?.mapBook || propertyForm?.mapBook
-        ? `${orderDetail?.mapBook || propertyForm?.mapBook}${orderDetail?.page || propertyForm?.page ? ` / ${orderDetail?.page || propertyForm?.page}` : ""}`
-        : "",
-    recDate: "",
-    subdivision: "",
-    fileUrl: reportRaw?.FileLink || "",
-  } : {};
+  const tractMapValues: Record<string, string> = {};
 
   const starterFields = FIELDS["Starters"] || [];
   const starterRows: Array<Record<string, string>> = (orderDetail?.starters || []).map((r) => ({
@@ -223,14 +207,7 @@ export default function StepTitleChain({
     notes: r.notes || "",
     fileUrl: r.fileUrl || "",
   }));
-  const runsheetValues: Record<string, string> = runsheetRows.length === 0 ? {
-    orderNo: orderDetail?.clientFileNo || "",
-    searchedBy: orderDetail?.runsheetGINames || "",
-    searchDate: "",
-    geoCov: "",
-    notes: orderDetail?.additionalNotes || "",
-    fileUrl: reportRaw?.FileLink || "",
-  } : {};
+  const runsheetValues: Record<string, string> = {};
 
   const initialExceptions =
     orderDetail?.tsriExceptions?.map((e) => ({
@@ -447,13 +424,14 @@ export default function StepTitleChain({
                 sub={sec.sub}
                 accent={sec.accent}
                 orderId={orderDetail?.id}
-                codes={orderDetail?.taxCerts}
                 initialAddedCodes={
-                  orderDetail?.taxCerts?.map((e) => ({
-                    id: e.id,
-                    code: e.code,
-                    verbiage: e.verbiage || "",
-                  })) || []
+                  [...(orderDetail?.taxCerts || [])]
+                    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+                    .map((e) => ({
+                      id: e.id,
+                      code: e.code,
+                      verbiage: e.verbiage || "",
+                    }))
                 }
               />
             );
@@ -645,13 +623,13 @@ export default function StepTitleChain({
           <Icon name="save" size={12} />
           Save &amp; Close
         </button>
-        <Button
+        {/* <Button
           className="inline-flex items-center gap-1.25 bg-header text-white border-none rounded-lg px-4 py-1.75 text-[12px] font-semibold cursor-pointer"
           size="md"
           style={{ background: "#8B0000" }}
         >
           Create TSR
-        </Button>
+        </Button> */}
       </div>
 
       {showSearch && <ManualSearchModal onClose={() => setShowSearch(false)} />}

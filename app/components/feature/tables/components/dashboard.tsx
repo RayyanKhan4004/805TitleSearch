@@ -397,7 +397,7 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
               </button>
               <span className="text-[11px] text-text-muted">Order #:</span>
               <span className="text-[11px] font-bold text-text">
-                {selectedOrder.no}
+                {selectedOrder.id}
               </span>
               <span className="text-border">|</span>
               <span className="text-[11px] text-text-muted">

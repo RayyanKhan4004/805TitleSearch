@@ -458,7 +458,40 @@ export const ordersApi = createApi({
         },
       }),
     }),
+
+    reorderTsriExceptions: builder.mutation<
+      void,
+      { orderId: string; items: { id: number; sortOrder: number }[] }
+    >({
+      query: ({ orderId, items }) => ({
+        url: `/orders/${orderId}/tsri-exceptions/sort-order`,
+        method: "PATCH",
+        body: { items },
+      }),
+    }),
+
+    reorderTsriRequirements: builder.mutation<
+      void,
+      { orderId: string; items: { id: number; sortOrder: number }[] }
+    >({
+      query: ({ orderId, items }) => ({
+        url: `/orders/${orderId}/tsri-requirements/sort-order`,
+        method: "PATCH",
+        body: { items },
+      }),
+    }),
+
+    reorderTaxCerts: builder.mutation<
+      void,
+      { orderId: number | string; items: { id: number; sortOrder: number }[] }
+    >({
+      query: ({ orderId, items }) => ({
+        url: `/orders/${orderId}/tax-certs/sort-order`,
+        method: "PATCH",
+        body: { items },
+      }),
+    }),
   }),
 });
 
-export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation, useUploadFileMutation, useUpdateOrderChainFileMutation, useCreateCodeBookMutation, useUpdateCodeBookMutation, useDeleteCodeBookMutation, useDeleteOrderMutation, useSearchCodeBookQuery, useLazySearchCodeBookQuery, useCreateTaxCertMutation, useDeleteTaxCertMutation, usePatchTaxCertMutation, useCreateTsriExceptionMutation, useDeleteTsriExceptionMutation, usePatchTsriExceptionMutation, useCreateTsriRequirementMutation, useDeleteTsriRequirementMutation, usePatchTsriRequirementMutation, useCreateTractMapMutation, useCreateAssessorMapMutation, useCreateRunsheetMutation, useCreateStarterMutation, useDeleteStarterMutation, useCreateTitleChainDocMutation, useDeleteTitleChainReviewMutation, useDeleteTractMapMutation, useDeleteAssessorMapMutation, useDeleteRunsheetMutation, usePatchAssessorMapMutation, usePatchTractMapMutation, usePatchRunsheetMutation, usePatchStarterMutation, usePatchTitleChainReviewMutation } = ordersApi
+export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation, useUploadFileMutation, useUpdateOrderChainFileMutation, useCreateCodeBookMutation, useUpdateCodeBookMutation, useDeleteCodeBookMutation, useDeleteOrderMutation, useSearchCodeBookQuery, useLazySearchCodeBookQuery, useCreateTaxCertMutation, useDeleteTaxCertMutation, usePatchTaxCertMutation, useCreateTsriExceptionMutation, useDeleteTsriExceptionMutation, usePatchTsriExceptionMutation, useCreateTsriRequirementMutation, useDeleteTsriRequirementMutation, usePatchTsriRequirementMutation, useCreateTractMapMutation, useCreateAssessorMapMutation, useCreateRunsheetMutation, useCreateStarterMutation, useDeleteStarterMutation, useCreateTitleChainDocMutation, useDeleteTitleChainReviewMutation, useDeleteTractMapMutation, useDeleteAssessorMapMutation, useDeleteRunsheetMutation, usePatchAssessorMapMutation, usePatchTractMapMutation, usePatchRunsheetMutation, usePatchStarterMutation, usePatchTitleChainReviewMutation, useReorderTsriExceptionsMutation, useReorderTsriRequirementsMutation, useReorderTaxCertsMutation } = ordersApi

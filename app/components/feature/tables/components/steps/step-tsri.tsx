@@ -4,6 +4,11 @@ import Icon from "@/components/common/icon";
 import { CardHead, Lbl } from "../shared-atoms";
 import TaxCertCard from "../tax-cert-card";
 import { useState, useEffect } from "react";
+import {
+  useReorderTsriExceptionsMutation,
+  useReorderTsriRequirementsMutation,
+} from "@/app/store/api/ordersApi";
+import toast from "react-hot-toast";
 import type {
   ChainCode,
   SharedState,
@@ -35,18 +40,22 @@ interface StepTSRIProps {
 }
 
 function orderDetailToCodes(od?: OrderDetail): ChainCode[] {
-  const exceptions: ChainCode[] = (od?.tsriExceptions || []).map((e) => ({
-    id: e.id,
-    type: "exception" as const,
-    code: e.code,
-    verbiage: e.verbiage || "",
-  }));
-  const requirements: ChainCode[] = (od?.tsriRequirements || []).map((r) => ({
-    id: r.id,
-    type: "requirement" as const,
-    code: r.code,
-    verbiage: r.verbiage || "",
-  }));
+  const exceptions: ChainCode[] = [...(od?.tsriExceptions || [])]
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    .map((e) => ({
+      id: e.id,
+      type: "exception" as const,
+      code: e.code,
+      verbiage: e.verbiage || "",
+    }));
+  const requirements: ChainCode[] = [...(od?.tsriRequirements || [])]
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    .map((r) => ({
+      id: r.id,
+      type: "requirement" as const,
+      code: r.code,
+      verbiage: r.verbiage || "",
+    }));
   return [...exceptions, ...requirements];
 }
 
@@ -259,6 +268,11 @@ Authorized Signatory: _________________________
 
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null)
+  const [dragReqIdx, setDragReqIdx] = useState<number | null>(null)
+  const [dragOverReqIdx, setDragOverReqIdx] = useState<number | null>(null)
+
+  const [reorderTsriExceptions] = useReorderTsriExceptionsMutation()
+  const [reorderTsriRequirements] = useReorderTsriRequirementsMutation()
 
   const addCode = () => {
     if (!newCode.code.trim() || !newCode.verbiage.trim()) return;
@@ -352,7 +366,7 @@ Authorized Signatory: _________________________
       </div>
 
       {/* Two-column layout */}
-      <div className="grid grid-cols-2 gap-[18px]">
+      <div className="grid grid-cols-2 gap-4.5">
         {/* LEFT column */}
         <div className="flex flex-col gap-4">
           {/* Proposed Insured */}
@@ -462,7 +476,7 @@ Authorized Signatory: _________________________
               accent="#d97706"
               right={
                 <div className="flex items-center gap-1.5">
-                  <span className="bg-[var(--status-success-emerald)] text-white text-[9px] font-bold px-1.5 py-0.5 rounded">AI</span>
+                  <span className="bg-status-success-emerald text-white text-[9px] font-bold px-1.5 py-0.5 rounded">AI</span>
                   <button className="bg-transparent border-none cursor-pointer text-text-muted flex">
                     <Icon name="copy" size={13} />
                   </button>
@@ -492,12 +506,15 @@ Authorized Signatory: _________________________
             sub="Tax certificate and payment records"
             accent="#7c3aed"
             orderId={orderDetail?.id}
+            readOnly
             initialAddedCodes={
-              (orderDetail?.taxCerts || []).map((t) => ({
-                id: t.id,
-                code: t.code,
-                verbiage: t.verbiage || "",
-              }))
+              [...(orderDetail?.taxCerts || [])]
+                .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+                .map((t) => ({
+                  id: t.id,
+                  code: t.code,
+                  verbiage: t.verbiage || "",
+                }))
             }
           />
         </div>
@@ -536,6 +553,17 @@ Authorized Signatory: _________________________
                     onDrop={() => {
                       if (dragIdx !== null && dragIdx !== globalIdx) {
                         moveCode(dragIdx, globalIdx)
+                        const next = [...codes]
+                        const [moved] = next.splice(dragIdx, 1)
+                        next.splice(globalIdx, 0, moved)
+                        const items = next
+                          .filter((x) => x.type === "exception" && x.id)
+                          .map((x, idx) => ({ id: x.id, sortOrder: idx + 1 }))
+                        if (orderDetail?.id && items.length > 0) {
+                          reorderTsriExceptions({ orderId: String(orderDetail.id), items })
+                            .unwrap()
+                            .catch(() => toast.error("Failed to save exception order"))
+                        }
                       }
                       setDragIdx(null)
                       setDragOverIdx(null)
@@ -573,7 +601,7 @@ Authorized Signatory: _________________________
                         ×
                       </button>
                     </div>
-                    <p className="text-[11px] text-text-secondary m-0 leading-[1.5] pl-[18px]">
+                    <p className="text-[11px] text-text-secondary m-0 leading-normal pl-4.5">
                       {c.verbiage}
                     </p>
                   </div>
@@ -605,29 +633,74 @@ Authorized Signatory: _________________________
               }
             />
             <CardContent className="flex flex-col gap-2">
-              {[...requirements, ...notesCodes].map((c) => (
-                <div
-                  key={c.id}
-                  className={`rounded-lg p-2.5 relative border ${c.type === "requirement" ? "border-blue-200 bg-blue-50" : "border-green-200 bg-green-50"}`}
-                >
-                  <div className="flex justify-between items-start mb-1">
-                    <span
-                      className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${codeTypeStyle(c.type)}`}
-                    >
-                      {c.code}
-                    </span>
-                    <button
-                      onClick={() => removeCode(c.id)}
-                      className="bg-transparent border-none cursor-pointer text-blue-300 text-[11px] p-0 leading-none"
-                    >
-                      ×
-                    </button>
+              {[...requirements, ...notesCodes].map((c, i) => {
+                const globalIdx = codes.findIndex((x) => x.id === c.id)
+                const isDragReq = dragReqIdx === globalIdx
+                const isOverReq = dragOverReqIdx === i
+                return (
+                  <div
+                    key={c.id}
+                    draggable
+                    onDragStart={() => setDragReqIdx(globalIdx)}
+                    onDragOver={(e) => { e.preventDefault(); setDragOverReqIdx(i) }}
+                    onDragEnd={() => { setDragReqIdx(null); setDragOverReqIdx(null) }}
+                    onDrop={() => {
+                      if (dragReqIdx !== null && dragReqIdx !== globalIdx) {
+                        moveCode(dragReqIdx, globalIdx)
+                        const next = [...codes]
+                        const [moved] = next.splice(dragReqIdx, 1)
+                        next.splice(globalIdx, 0, moved)
+                        const items = next
+                          .filter((x) => x.type === "requirement" && x.id)
+                          .map((x, idx) => ({ id: x.id, sortOrder: idx + 1 }))
+                        if (orderDetail?.id && items.length > 0) {
+                          reorderTsriRequirements({ orderId: String(orderDetail.id), items })
+                            .unwrap()
+                            .catch(() => toast.error("Failed to save requirement order"))
+                        }
+                      }
+                      setDragReqIdx(null)
+                      setDragOverReqIdx(null)
+                    }}
+                    className={`rounded-lg p-2.5 relative border transition-all duration-150 ${
+                      isDragReq
+                        ? "opacity-40 border-brand shadow-md"
+                        : c.type === "requirement" ? "border-blue-200 bg-blue-50" : "border-green-200 bg-green-50"
+                    } ${isOverReq ? "ring-2 ring-brand pt-5" : ""}`}
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="cursor-grab active:cursor-grabbing text-blue-200 hover:text-blue-400 transition-colors flex"
+                          onMouseDown={(e) => e.currentTarget.style.cursor = "grabbing"}
+                          onMouseUp={(e) => e.currentTarget.style.cursor = "grab"}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                            <circle cx="9" cy="5" r="1.5" fill="currentColor" stroke="none" />
+                            <circle cx="15" cy="5" r="1.5" fill="currentColor" stroke="none" />
+                            <circle cx="9" cy="12" r="1.5" fill="currentColor" stroke="none" />
+                            <circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none" />
+                            <circle cx="9" cy="19" r="1.5" fill="currentColor" stroke="none" />
+                            <circle cx="15" cy="19" r="1.5" fill="currentColor" stroke="none" />
+                          </svg>
+                        </span>
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${codeTypeStyle(c.type)}`}>
+                          {c.code}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeCode(c.id)}
+                        className="bg-transparent border-none cursor-pointer text-blue-300 text-[11px] p-0 leading-none"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-text-secondary m-0 leading-normal pl-4.5">
+                      {c.verbiage}
+                    </p>
                   </div>
-                  <p className="text-[11px] text-text-secondary m-0 leading-[1.5]">
-                    {c.verbiage}
-                  </p>
-                </div>
-              ))}
+                )
+              })}
               <div className="mt-1">
                 <Lbl>Additional Notes / Free-text</Lbl>
                 <Textarea
@@ -709,11 +782,11 @@ Authorized Signatory: _________________________
       {/* Preview Modal */}
       {showPreview && (
         <div
-          className="fixed inset-0 bg-black/55 flex items-center justify-center z-[999] p-6"
+          className="fixed inset-0 bg-black/55 flex items-center justify-center z-999 p-6"
           onClick={() => setShowPreview(false)}
         >
           <div
-            className="bg-white w-[900px] max-h-[90vh] rounded-2xl overflow-hidden flex flex-col"
+            className="bg-white w-225 max-h-[90vh] rounded-2xl overflow-hidden flex flex-col"
             style={{ boxShadow: "0 32px 80px rgba(0,0,0,.28)" }}
             onClick={(e) => e.stopPropagation()}
           >

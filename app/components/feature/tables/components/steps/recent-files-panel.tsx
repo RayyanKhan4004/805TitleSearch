@@ -25,7 +25,7 @@ export default function RecentFilesPanel({ orders, onSelect, getOrderStatus, get
           className="border border-border rounded-lg p-[11px] mb-2 cursor-pointer transition-all duration-150 hover:bg-[var(--brand-primary-subtle)] hover:border-brand"
         >
           <div className="flex justify-between items-center mb-1">
-            <span className="text-[12px] font-bold text-text">{f.no}</span>
+            <span className="text-[12px] font-bold text-text">{f.id}</span>
             <div className="flex items-center gap-1.25">
               <span
                 className="text-[10px] font-semibold px-2 py-0.5 rounded-full"

@@ -11,6 +11,7 @@ import {
   useReorderTaxCertsMutation,
 } from "@/app/store/api/ordersApi";
 import toast from "react-hot-toast";
+import { looksLikeHtml } from "./prelim";
 
 interface Chip {
   id: number;
@@ -46,8 +47,25 @@ function initChips(
   }));
 }
 
-const renderVerbiage = (text: string) =>
-  text.split("*").map((seg, i, arr) => (
+const MARK_HTML =
+  '<mark style="background:#fef9c3;color:#92400e;padding:0 3px;border-radius:3px;font-weight:700">*</mark>';
+
+const wrapAsterisksInTextNodes = (html: string) =>
+  html.replace(/(<[^>]+>)|([^<]+)/g, (_m, tag, text) =>
+    tag ? tag : (text as string).replace(/\*/g, MARK_HTML),
+  );
+
+const renderVerbiage = (text: string) => {
+  if (looksLikeHtml(text)) {
+    return (
+      <span
+        className="rich-content"
+        style={{ whiteSpace: "normal" }}
+        dangerouslySetInnerHTML={{ __html: wrapAsterisksInTextNodes(text) }}
+      />
+    );
+  }
+  return text.split("*").map((seg, i, arr) => (
     <Fragment key={i}>
       {seg}
       {i < arr.length - 1 && (
@@ -57,6 +75,7 @@ const renderVerbiage = (text: string) =>
       )}
     </Fragment>
   ));
+};
 
 export default function TaxCertCard({
   title,

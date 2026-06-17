@@ -19,6 +19,7 @@ import {
   mapOrderDetailToSharedState,
 } from "@/app/services/datatree-api";
 import { mapOrdersResponse } from "./models/api-mappers";
+import { buildPrelimData, buildPrelimBody } from "./prelim";
 import toast from "react-hot-toast";
 import type { PropertyForm } from "@/app/components/feature/tables/types";
 import {
@@ -129,113 +130,16 @@ export default function Dashboard({
   //   return lock && lock.user !== currentUserName;
   // };
 
-  function buildPrelimData(tsri: any, shared: any) {
-    const toItem = (x: any) => ({
-      code: x?.code ?? "",
-      verbiage: x?.verbiage ?? "",
-    });
-    const chainExceptions = (shared.chainCodes || []).filter(
-      (c: any) => c.type === "exception",
-    );
-    const requirements = (shared.chainCodes || []).filter(
-      (c: any) => c.type === "requirement",
-    );
-    const notes = (shared.chainCodes || []).filter(
-      (c: any) => c.type === "note",
-    );
-    const taxCerts = Array.isArray(tsri.taxCerts) ? tsri.taxCerts : [];
-    const exceptions = [
-      ...taxCerts.map(toItem),
-      ...chainExceptions.map(toItem),
-    ];
-    console.log("orderDetails", orderDetail);
-    const od = orderDetail as any;
-    const streetLine = od
-      ? [
-          od.addrNo,
-          od.dirPrefix,
-          od.streetName,
-          od.suffix,
-          od.postDir,
-          od.unitType,
-          od.unitNo,
-        ]
-          .filter(Boolean)
-          .join(" ")
-      : "";
-    const cityStateZip = od
-      ? [od.city, od.state].filter(Boolean).join(", ") +
-        (od.zipCode ? " " + od.zipCode : "")
-      : "";
-    const propertyAddress =
-      [streetLine, cityStateZip].filter(Boolean).join(", ").trim() ||
-      selectedOrder?.addr ||
-      "";
-    const apnParts = od
-      ? [od.apn1, od.apn2, od.apn3, od.apn4].filter(Boolean)
-      : [];
-
-    return {
-      orderNo: String(
-        selectedOrder?.id ?? orderDetail?.id ?? orderDetailId ?? "",
-      ),
-      fileNo: od?.clientFileNo || "",
-      titleOfficer: od?.titleOfficer || "",
-      titleEmail: od?.titleOfficerEmail || "",
-      titlePhone: "(805) 568-6006",
-      titleFax: "(805) 568-7838",
-      propertyAddress,
-      effectiveDate: tsri.effectiveDate || shared.effectiveDate || "05/07/2026",
-      effectiveTime: "8:00 AM",
-      county: od?.county || "",
-      city: od?.city || "",
-      vestingName: tsri.vesting || shared.vesting || "",
-      vestingType: "",
-      leaseHold: tsri.leaseHold || shared.leaseHold || "",
-      legal: tsri.legal || shared.legal || "",
-      apn: apnParts.join("-") || "",
-      exceptions,
-      requirements: requirements.map(toItem),
-      notes: notes.map(toItem),
-      easements: tsri.easements || "",
-      extraNotes: tsri.notes || "",
-    };
-  }
-
-  function buildPrelimBody(tsri: any, shared: any) {
-    const d = buildPrelimData(tsri, shared);
-    const stripHtml = (s: string) =>
-      (s || "")
-        .replace(/<br\s*\/?>/gi, "\n")
-        .replace(/<\/p\s*>/gi, "\n\n")
-        .replace(/<[^>]+>/g, "")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/\n{3,}/g, "\n\n")
-        .trim();
-    return [
-      `PRELIMINARY REPORT — Order No. ${d.orderNo}`,
-      `Property: ${d.propertyAddress}`,
-      `Effective: ${d.effectiveDate} at ${d.effectiveTime}`,
-      `Vesting: ${stripHtml(d.vestingName)}`,
-      `Legal: ${stripHtml(d.legal)}`,
-      // `APN: ${d.apn}`,
-      ...d.exceptions.map(
-        (e: any, i: number) => `Exception ${i + 1}: ${stripHtml(e.verbiage)}`,
-      ),
-      ...d.requirements.map(
-        (r: any, i: number) => `Note ${i + 1}: ${stripHtml(r.verbiage)}`,
-      ),
-    ].join("\n");
-  }
-
   const handleGeneratePrelim = (tsriData: any) => {
     const date = new Date().toLocaleDateString("en-US");
-    const pData = buildPrelimData(tsriData, shared);
+    const sources = {
+      tsri: tsriData,
+      shared,
+      orderDetail,
+      selectedOrder,
+      orderDetailId,
+    };
+    const pData = buildPrelimData(sources);
     setPrelimData(pData as any); /* open preview modal */
     setGeneratedDocs((d) => [
       {
@@ -243,7 +147,7 @@ export default function Dashboard({
         date,
         size: "—",
         type: "template",
-        body: buildPrelimBody(tsriData, shared),
+        body: buildPrelimBody(sources),
         prelimData: pData,
       },
       ...d,

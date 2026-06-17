@@ -9,6 +9,7 @@ import {
   useReorderTsriRequirementsMutation,
 } from "@/app/store/api/ordersApi";
 import toast from "react-hot-toast";
+import { buildTsriPreviewBody } from "../prelim";
 import type {
   ChainCode,
   SharedState,
@@ -106,70 +107,20 @@ export default function StepTSRI({
     setShared((s) => ({ ...s, vesting, legal, effectiveDate }));
   }, [vesting, legal, effectiveDate, setShared]);
 
-  const buildPrelimBody = () => {
-    const exceptionLines = exceptions
-      .map((c, i) => `${i + 1}. ${c.verbiage}`)
-      .join("\n\n");
-    const requirementLines = requirements
-      .map((c, i) => `${i + 1}. ${c.verbiage}`)
-      .join("\n\n");
-    const noteLines = notesCodes
-      .map((c, i) => `${String.fromCharCode(65 + i)}. ${c.verbiage}`)
-      .join("\n\n");
-
-    return `PRELIMINARY REPORT
-
-Order No.: 2026-000123                          Date: ${effectiveDate}
-Property: 12345 Main Street, Apt 2, Rialto, CA 92376
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SCHEDULE A
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. Effective Date: ${effectiveDate} at ${effectiveTime}
-
-2. Policy or Policies to be issued:
-   CLTA Standard Coverage Policy – Owner's
-   Amount of Insurance: $485,000.00
-
-   ALTA Lender's Policy
-   Amount of Insurance: (Loan Amount TBD)
-
-3. The estate or interest in the land described herein is${leaseHold ? " a LEASEHOLD." : " a FEE."}
-${leaseHold ? `   Leasehold Note: ${leaseHold}` : ""}
-
-4. Title to said estate or interest at the date hereof is vested in:
-   ${vesting}
-
-5. The land referred to in this Report is described as follows:
-   ${legal}
-
-   APN: 0557-081-23-0000
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SCHEDULE B – REQUIREMENTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-${requirementLines || "No requirements added yet."}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SCHEDULE B – EXCEPTIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-${exceptionLines || "No exceptions added yet."}
-${easements ? `\n\nAdditional Easements:\n${easements}` : ""}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-NOTES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-${noteLines || "No notes added yet."}
-${notes ? `\n\n${notes}` : ""}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Authorized Signatory: _________________________
-`;
-  };
+  const buildPrelimBody = () =>
+    buildTsriPreviewBody({
+      effectiveDate,
+      effectiveTime,
+      leaseHold,
+      vesting,
+      legal,
+      easements,
+      notes,
+      exceptions,
+      requirements,
+      notesCodes,
+      orderDetail,
+    });
 
   const handleAutoGenerateExceptions = () => {
     /* Auto-populate standard exceptions based on state/county */

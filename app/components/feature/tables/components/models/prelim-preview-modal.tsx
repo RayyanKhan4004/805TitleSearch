@@ -4,6 +4,7 @@ import Icon from "@/components/common/icon";
 import { useState } from "react";
 import SendPrelimModal from "./send-prelim-modal";
 import { BOIL1, BOIL2 } from "../temp";
+import { renderRichString } from "../prelim";
 import type { PrelimPreviewModalProps } from "@/app/components/feature/tables/types";
 
 export default function PrelimPreviewModal({
@@ -60,23 +61,6 @@ export default function PrelimPreviewModal({
     ...(editData.extraNotes ? [editData.extraNotes] : []),
     ...editData.notes.map((n) => n.verbiage),
   ];
-
-  const looksLikeHtml = (s: string) => /<[a-zA-Z][^>]*>/.test(s);
-
-  const renderRichString = (s: string) =>
-    looksLikeHtml(s) ? (
-      <span
-        className="rich-content"
-        dangerouslySetInnerHTML={{ __html: s }}
-      />
-    ) : (
-      s.split("\n").map((l, i, arr) => (
-        <span key={i}>
-          {l}
-          {i < arr.length - 1 ? <br /> : null}
-        </span>
-      ))
-    );
 
   const numItem = (n: number, body: React.ReactNode) => (
     <div

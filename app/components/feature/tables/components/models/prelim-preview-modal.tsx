@@ -61,6 +61,23 @@ export default function PrelimPreviewModal({
     ...editData.notes.map((n) => n.verbiage),
   ];
 
+  const looksLikeHtml = (s: string) => /<[a-zA-Z][^>]*>/.test(s);
+
+  const renderRichString = (s: string) =>
+    looksLikeHtml(s) ? (
+      <span
+        className="rich-content"
+        dangerouslySetInnerHTML={{ __html: s }}
+      />
+    ) : (
+      s.split("\n").map((l, i, arr) => (
+        <span key={i}>
+          {l}
+          {i < arr.length - 1 ? <br /> : null}
+        </span>
+      ))
+    );
+
   const numItem = (n: number, body: React.ReactNode) => (
     <div
       key={n}
@@ -68,14 +85,7 @@ export default function PrelimPreviewModal({
     >
       <span className="min-w-[22px] font-semibold">{n}.</span>
       <div className="flex-1">
-        {typeof body === "string"
-          ? body.split("\n").map((l, i) => (
-              <span key={i}>
-                {l}
-                {i < body.split("\n").length - 1 ? <br /> : null}
-              </span>
-            ))
-          : body}
+        {typeof body === "string" ? renderRichString(body) : body}
       </div>
     </div>
   );
@@ -362,7 +372,9 @@ export default function PrelimPreviewModal({
                 <br />
                 <br />
                 <span style={{ color: "#0F3460", fontWeight: 600 }}>
-                  {editData.vestingName || "(Vesting not entered)"}
+                  {editData.vestingName
+                    ? renderRichString(editData.vestingName)
+                    : "(Vesting not entered)"}
                   {editData.vestingType ? ", " + editData.vestingType : ""}
                 </span>
               </span>,
@@ -458,8 +470,9 @@ export default function PrelimPreviewModal({
               APN:&nbsp;<strong>{editData.apn}</strong>
             </div>
             <p className="text-justify font-bold text-[11.5px] whitespace-pre-wrap">
-              {editData.legal ||
-                "(Legal description not entered in Legal & Vesting section)"}
+              {editData.legal
+                ? renderRichString(editData.legal)
+                : "(Legal description not entered in Legal & Vesting section)"}
             </p>
 
             <div

@@ -6,8 +6,18 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/auth-context";
 import { useRouter } from "next/navigation";
 import { useGetReportQuery } from "@/app/store/api/propertyReportApi";
-import { useFetchOrdersQuery, useUpdateOrderRushMutation, useFetchOrderQuery, useUpdateOrderMutation, useDeleteOrderMutation } from "@/app/store/api/ordersApi";
-import { mapApiToForm, mapOrderDetailToForm, mapOrderDetailToSharedState } from "@/app/services/datatree-api";
+import {
+  useFetchOrdersQuery,
+  useUpdateOrderRushMutation,
+  useFetchOrderQuery,
+  useUpdateOrderMutation,
+  useDeleteOrderMutation,
+} from "@/app/store/api/ordersApi";
+import {
+  mapApiToForm,
+  mapOrderDetailToForm,
+  mapOrderDetailToSharedState,
+} from "@/app/services/datatree-api";
 import { mapOrdersResponse } from "./models/api-mappers";
 import toast from "react-hot-toast";
 import type { PropertyForm } from "@/app/components/feature/tables/types";
@@ -47,18 +57,27 @@ function flattenReportRaw(raw: Record<string, any>) {
   };
 }
 
-export default function Dashboard({ initialOrderId }: { initialOrderId?: string } = {}) {
+export default function Dashboard({
+  initialOrderId,
+}: { initialOrderId?: string } = {}) {
   const { user } = useAuth();
   const router = useRouter();
-  const currentUserName = user ? `${user.firstName} ${user.lastName}` : "Unknown";
+  const currentUserName = user
+    ? `${user.firstName} ${user.lastName}`
+    : "Unknown";
 
-  const { data: ordersData, isLoading: isLoadingOrders } = useFetchOrdersQuery({ page: 1, pageSize: 500 });
+  const { data: ordersData, isLoading: isLoadingOrders } = useFetchOrdersQuery({
+    page: 1,
+    pageSize: 500,
+  });
   const [updateOrderRush] = useUpdateOrderRushMutation();
   const [updateOrder, { isLoading: isSaving }] = useUpdateOrderMutation();
   const [deleteOrder] = useDeleteOrderMutation();
 
   const [reportParams, setReportParams] = useState<{
-    searchType: string; apn: string; zipCode: string;
+    searchType: string;
+    apn: string;
+    zipCode: string;
   } | null>(null);
   const { data: reportData, isLoading: isLoadingReport } = useGetReportQuery(
     reportParams!,
@@ -111,7 +130,11 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
   // };
 
   function buildPrelimData(tsri: any, shared: any) {
-    const exceptions = (shared.chainCodes || []).filter(
+    const toItem = (x: any) => ({
+      code: x?.code ?? "",
+      verbiage: x?.verbiage ?? "",
+    });
+    const chainExceptions = (shared.chainCodes || []).filter(
       (c: any) => c.type === "exception",
     );
     const requirements = (shared.chainCodes || []).filter(
@@ -120,26 +143,60 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
     const notes = (shared.chainCodes || []).filter(
       (c: any) => c.type === "note",
     );
+    const taxCerts = Array.isArray(tsri.taxCerts) ? tsri.taxCerts : [];
+    const exceptions = [
+      ...taxCerts.map(toItem),
+      ...chainExceptions.map(toItem),
+    ];
+    console.log("orderDetails", orderDetail);
+    const od = orderDetail as any;
+    const streetLine = od
+      ? [
+          od.addrNo,
+          od.dirPrefix,
+          od.streetName,
+          od.suffix,
+          od.postDir,
+          od.unitType,
+          od.unitNo,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : "";
+    const cityStateZip = od
+      ? [od.city, od.state].filter(Boolean).join(", ") +
+        (od.zipCode ? " " + od.zipCode : "")
+      : "";
+    const propertyAddress =
+      [streetLine, cityStateZip].filter(Boolean).join(", ").trim() ||
+      selectedOrder?.addr ||
+      "";
+    const apnParts = od
+      ? [od.apn1, od.apn2, od.apn3, od.apn4].filter(Boolean)
+      : [];
+
     return {
-      orderNo: "2026-000123",
-      fileNo: "ESC-2026-4412",
-      titleOfficer: "John Smith",
-      titleEmail: "john.smith@805title.com",
+      orderNo: String(
+        selectedOrder?.id ?? orderDetail?.id ?? orderDetailId ?? "",
+      ),
+      fileNo: od?.clientFileNo || "",
+      titleOfficer: od?.titleOfficer || "",
+      titleEmail: od?.titleOfficerEmail || "",
       titlePhone: "(805) 568-6006",
       titleFax: "(805) 568-7838",
-      propertyAddress: "12345 Main Street, Apt 2, Rialto, CA 92376",
+      propertyAddress,
       effectiveDate: tsri.effectiveDate || shared.effectiveDate || "05/07/2026",
       effectiveTime: "8:00 AM",
-      county: "San Bernardino",
-      city: "Rialto",
+      county: od?.county || "",
+      city: od?.city || "",
       vestingName: tsri.vesting || shared.vesting || "",
-      vestingType: "Community Property",
+      vestingType: "",
       leaseHold: tsri.leaseHold || shared.leaseHold || "",
       legal: tsri.legal || shared.legal || "",
-      apn: "0557-081-23-0000",
+      apn: apnParts.join("-") || "",
       exceptions,
-      requirements,
-      notes,
+      requirements: requirements.map(toItem),
+      notes: notes.map(toItem),
       easements: tsri.easements || "",
       extraNotes: tsri.notes || "",
     };
@@ -147,18 +204,31 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
 
   function buildPrelimBody(tsri: any, shared: any) {
     const d = buildPrelimData(tsri, shared);
+    const stripHtml = (s: string) =>
+      (s || "")
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<\/p\s*>/gi, "\n\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
     return [
       `PRELIMINARY REPORT — Order No. ${d.orderNo}`,
       `Property: ${d.propertyAddress}`,
       `Effective: ${d.effectiveDate} at ${d.effectiveTime}`,
-      `Vesting: ${d.vestingName}`,
-      `Legal: ${d.legal}`,
-      `APN: ${d.apn}`,
+      `Vesting: ${stripHtml(d.vestingName)}`,
+      `Legal: ${stripHtml(d.legal)}`,
+      // `APN: ${d.apn}`,
       ...d.exceptions.map(
-        (e: any, i: number) => `Exception ${i + 1}: ${e.verbiage}`,
+        (e: any, i: number) => `Exception ${i + 1}: ${stripHtml(e.verbiage)}`,
       ),
       ...d.requirements.map(
-        (r: any, i: number) => `Note ${i + 1}: ${r.verbiage}`,
+        (r: any, i: number) => `Note ${i + 1}: ${stripHtml(r.verbiage)}`,
       ),
     ].join("\n");
   }
@@ -186,18 +256,15 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
       const pf = mapApiToForm(propertyData);
       setPropertyForm(pf);
       const reportVesting =
-        reportData.form.vesting ||
-        reportData.form.vestingText ||
-        "";
+        reportData.form.vesting || reportData.form.vestingText || "";
       const reportLegal =
-        reportData.form.legalDescription ||
-        reportData.form.shortLegal ||
-        "";
+        reportData.form.legalDescription || reportData.form.shortLegal || "";
       setShared((s) => ({
         ...s,
         vesting: s.vesting || reportVesting,
         legal: s.legal || reportLegal,
-        effectiveDate: s.effectiveDate || new Date().toLocaleDateString("en-US"),
+        effectiveDate:
+          s.effectiveDate || new Date().toLocaleDateString("en-US"),
       }));
     }
   }, [reportData]);
@@ -280,8 +347,8 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
       (o) => String(o.id) === initialOrderId || o.no === initialOrderId,
     );
     if (order) openOrder(order);
-  // openOrder intentionally omitted — it changes every render; orders + id are the real triggers
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // openOrder intentionally omitted — it changes every render; orders + id are the real triggers
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialOrderId, ordersData?.data]);
 
   const handleSelectOrder = (order: Order) => {
@@ -290,7 +357,10 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
   };
 
   /* Save — PATCH order detail with current title chain data */
-  const handleSave = async (dates?: { typeDate: string; effectiveDate: string }) => {
+  const handleSave = async (dates?: {
+    typeDate: string;
+    effectiveDate: string;
+  }) => {
     if (!orderDetailId) return;
     const body: Record<string, any> = {
       legalDescription: shared.legal || null,
@@ -345,10 +415,12 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
           <>
             {/* dashboard header bar */}
             <div className="bg-white border-b border-border flex items-center px-5 h-9.5 shrink-0 gap-2.5">
-              <Icon name="dashboard" size={13} style={{ color: "var(--brand-primary)" }} />
-              <span className="text-[12px] font-bold text-text">
-                Dashboard
-              </span>
+              <Icon
+                name="dashboard"
+                size={13}
+                style={{ color: "var(--brand-primary)" }}
+              />
+              <span className="text-[12px] font-bold text-text">Dashboard</span>
               <span className="text-border">|</span>
               <span className="text-[11px] text-text-muted">
                 Select a file to open the title workflow
@@ -495,7 +567,10 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
                             : done
                               ? "var(--status-success-emerald)"
                               : "var(--border-primary)",
-                          color: active || done ? "var(--color-white)" : "var(--text-tertiary)",
+                          color:
+                            active || done
+                              ? "var(--color-white)"
+                              : "var(--text-tertiary)",
                         }}
                       >
                         {done ? <Icon name="check" size={9} /> : idx}
@@ -588,7 +663,6 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
               </div>
 
               {/* prev / next bar */}
-          
             </div>
           </>
         )}
@@ -605,54 +679,57 @@ export default function Dashboard({ initialOrderId }: { initialOrderId?: string 
             className="fixed inset-0 bg-black/55 flex items-center justify-center z-999 p-6"
             onClick={() => setLockAttempt(null)}
           >
-              <div
-                className="bg-white w-105 rounded-2xl overflow-hidden"
-                style={{ boxShadow: "var(--modal-shadow-strong)" }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="bg-status-warning-text px-5 py-3.5 flex items-center gap-2.5">
-                  <Icon name="lock" size={20} style={{ color: "var(--color-white)" }} />
-                  <span className="text-[14px] font-bold text-(--color-white)">
-                    Order Locked
-                  </span>
-                </div>
-                <div className="p-5.5 flex flex-col gap-3.5">
-                  <p className="m-0 text-[12px] text-text-secondary leading-[1.6]">
-                    Order{" "}
-                    <strong className="text-text">#{lockAttempt.no}</strong>{" "}
-                    is currently locked and in review by:
-                  </p>
-                  <div className="bg-status-warning-subtle border border-status-warning-border rounded-[10px] px-4 py-3 flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-status-warning-border flex items-center justify-center text-white text-[13px] font-bold shrink-0">
-                      {lockAttempt.lock.user[0]}
+            <div
+              className="bg-white w-105 rounded-2xl overflow-hidden"
+              style={{ boxShadow: "var(--modal-shadow-strong)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-status-warning-text px-5 py-3.5 flex items-center gap-2.5">
+                <Icon
+                  name="lock"
+                  size={20}
+                  style={{ color: "var(--color-white)" }}
+                />
+                <span className="text-[14px] font-bold text-(--color-white)">
+                  Order Locked
+                </span>
+              </div>
+              <div className="p-5.5 flex flex-col gap-3.5">
+                <p className="m-0 text-[12px] text-text-secondary leading-[1.6]">
+                  Order <strong className="text-text">#{lockAttempt.no}</strong>{" "}
+                  is currently locked and in review by:
+                </p>
+                <div className="bg-status-warning-subtle border border-status-warning-border rounded-[10px] px-4 py-3 flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-full bg-status-warning-border flex items-center justify-center text-white text-[13px] font-bold shrink-0">
+                    {lockAttempt.lock.user[0]}
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-bold text-status-warning-text">
+                      {lockAttempt.lock.user}
                     </div>
-                    <div>
-                      <div className="text-[13px] font-bold text-status-warning-text">
-                        {lockAttempt.lock.user}
-                      </div>
-                      <div className="text-[11px] text-text-muted">
-                        Locked since {lockAttempt.lock.since}
-                      </div>
+                    <div className="text-[11px] text-text-muted">
+                      Locked since {lockAttempt.lock.since}
                     </div>
                   </div>
-                  <p className="m-0 text-[11px] text-text-muted leading-normal">
-                    This order will become available once the examiner saves and
-                    closes the file. Please try again later or contact the
-                    examiner directly.
-                  </p>
-                  <Button
-                    onClick={() => setLockAttempt(null)}
-                    style={{
-                      background: "var(--brand-primary)",
-                      justifyContent: "center",
-                      fontSize: 12,
-                      padding: "9px",
-                    }}
-                  >
-                    OK, Got It
-                  </Button>
                 </div>
+                <p className="m-0 text-[11px] text-text-muted leading-normal">
+                  This order will become available once the examiner saves and
+                  closes the file. Please try again later or contact the
+                  examiner directly.
+                </p>
+                <Button
+                  onClick={() => setLockAttempt(null)}
+                  style={{
+                    background: "var(--brand-primary)",
+                    justifyContent: "center",
+                    fontSize: 12,
+                    padding: "9px",
+                  }}
+                >
+                  OK, Got It
+                </Button>
               </div>
+            </div>
           </div>
         )}
       </div>

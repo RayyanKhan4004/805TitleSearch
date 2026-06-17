@@ -25,11 +25,11 @@ import {
 } from "@/components/ui";
 
 function sanitizeHtml(html: string): string {
-  return html
-    // .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    // .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
-    // .replace(/href\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/gi, 'href="#"')
-    // .replace(/src\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/gi, 'src="#"');
+  return html;
+  // .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+  // .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+  // .replace(/href\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/gi, 'href="#"')
+  // .replace(/src\s*=\s*(?:"javascript:[^"]*"|'javascript:[^']*')/gi, 'src="#"');
 }
 
 interface StepTSRIProps {
@@ -79,13 +79,15 @@ export default function StepTSRI({
   const [notes, setNotes] = useState("");
   const [codes, setCodes] = useState<ChainCode[]>(() => {
     const fromApi = orderDetailToCodes(orderDetail);
-    return fromApi.length > 0 ? fromApi : (shared.chainCodes || []);
+    return fromApi.length > 0 ? fromApi : shared.chainCodes || [];
   });
-
   useEffect(() => {
     const fromApi = orderDetailToCodes(orderDetail);
-    if (fromApi.length > 0) setCodes(fromApi);
-  }, [orderDetail]);
+    if (fromApi.length > 0) {
+      setCodes(fromApi);
+      setShared((s) => ({ ...s, chainCodes: fromApi }));
+    }
+  }, [orderDetail, setShared]);
   const [newCode, setNewCode] = useState<{
     type: "exception" | "requirement" | "note";
     code: string;
@@ -261,18 +263,19 @@ Authorized Signatory: _________________________
         easements,
         notes,
         codes,
+        taxCerts: orderDetail?.taxCerts || [],
         body: buildPrelimBody(),
       });
     }, 1600);
   };
 
-  const [dragIdx, setDragIdx] = useState<number | null>(null)
-  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null)
-  const [dragReqIdx, setDragReqIdx] = useState<number | null>(null)
-  const [dragOverReqIdx, setDragOverReqIdx] = useState<number | null>(null)
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const [dragReqIdx, setDragReqIdx] = useState<number | null>(null);
+  const [dragOverReqIdx, setDragOverReqIdx] = useState<number | null>(null);
 
-  const [reorderTsriExceptions] = useReorderTsriExceptionsMutation()
-  const [reorderTsriRequirements] = useReorderTsriRequirementsMutation()
+  const [reorderTsriExceptions] = useReorderTsriExceptionsMutation();
+  const [reorderTsriRequirements] = useReorderTsriRequirementsMutation();
 
   const addCode = () => {
     if (!newCode.code.trim() || !newCode.verbiage.trim()) return;
@@ -476,7 +479,9 @@ Authorized Signatory: _________________________
               accent="#d97706"
               right={
                 <div className="flex items-center gap-1.5">
-                  <span className="bg-status-success-emerald text-white text-[9px] font-bold px-1.5 py-0.5 rounded">AI</span>
+                  <span className="bg-status-success-emerald text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                    AI
+                  </span>
                   <button className="bg-transparent border-none cursor-pointer text-text-muted flex">
                     <Icon name="copy" size={13} />
                   </button>
@@ -507,15 +512,13 @@ Authorized Signatory: _________________________
             accent="#7c3aed"
             orderId={orderDetail?.id}
             readOnly
-            initialAddedCodes={
-              [...(orderDetail?.taxCerts || [])]
-                .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-                .map((t) => ({
-                  id: t.id,
-                  code: t.code,
-                  verbiage: t.verbiage || "",
-                }))
-            }
+            initialAddedCodes={[...(orderDetail?.taxCerts || [])]
+              .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+              .map((t) => ({
+                id: t.id,
+                code: t.code,
+                verbiage: t.verbiage || "",
+              }))}
           />
         </div>
 
@@ -536,56 +539,122 @@ Authorized Signatory: _________________________
             <CardContent className="flex flex-col gap-2">
               {exceptions.length === 0 && (
                 <p className="text-[11px] text-text-muted italic py-2">
-                  No exceptions yet — add from Title Chain codes or use Auto Exceptions above.
+                  No exceptions yet — add from Title Chain codes or use Auto
+                  Exceptions above.
                 </p>
               )}
               {exceptions.map((c, i) => {
-                const globalIdx = codes.findIndex((x) => x.id === c.id)
-                const isDrag = dragIdx === globalIdx
-                const isOver = dragOverIdx === i
+                const globalIdx = codes.findIndex(
+                  (x) => x.id === c.id && x.type === c.type,
+                );
+                const isDrag = dragIdx === globalIdx;
+                const isOver = dragOverIdx === i;
                 return (
                   <div
-                    key={c.id}
+                    key={`${c.type}-${c.id}`}
                     draggable
                     onDragStart={() => setDragIdx(globalIdx)}
-                    onDragOver={(e) => { e.preventDefault(); setDragOverIdx(i) }}
-                    onDragEnd={() => { setDragIdx(null); setDragOverIdx(null) }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverIdx(i);
+                    }}
+                    onDragEnd={() => {
+                      setDragIdx(null);
+                      setDragOverIdx(null);
+                    }}
                     onDrop={() => {
                       if (dragIdx !== null && dragIdx !== globalIdx) {
-                        moveCode(dragIdx, globalIdx)
-                        const next = [...codes]
-                        const [moved] = next.splice(dragIdx, 1)
-                        next.splice(globalIdx, 0, moved)
+                        moveCode(dragIdx, globalIdx);
+                        const next = [...codes];
+                        const [moved] = next.splice(dragIdx, 1);
+                        next.splice(globalIdx, 0, moved);
                         const items = next
                           .filter((x) => x.type === "exception" && x.id)
-                          .map((x, idx) => ({ id: x.id, sortOrder: idx + 1 }))
+                          .map((x, idx) => ({ id: x.id, sortOrder: idx + 1 }));
                         if (orderDetail?.id && items.length > 0) {
-                          reorderTsriExceptions({ orderId: String(orderDetail.id), items })
+                          reorderTsriExceptions({
+                            orderId: String(orderDetail.id),
+                            items,
+                          })
                             .unwrap()
-                            .catch(() => toast.error("Failed to save exception order"))
+                            .catch(() =>
+                              toast.error("Failed to save exception order"),
+                            );
                         }
                       }
-                      setDragIdx(null)
-                      setDragOverIdx(null)
+                      setDragIdx(null);
+                      setDragOverIdx(null);
                     }}
                     className={`border rounded-lg p-2.5 relative transition-all duration-150 ${
-                      isDrag ? "opacity-40 border-brand shadow-md" : "border-red-100 bg-red-50/50"
+                      isDrag
+                        ? "opacity-40 border-brand shadow-md"
+                        : "border-red-100 bg-red-50/50"
                     } ${isOver ? "ring-2 ring-brand pt-5" : ""}`}
                   >
                     <div className="flex justify-between items-start mb-1">
                       <div className="flex items-center gap-1.5">
                         <span
                           className="cursor-grab active:cursor-grabbing text-red-200 hover:text-red-400 transition-colors flex"
-                          onMouseDown={(e) => e.currentTarget.style.cursor = "grabbing"}
-                          onMouseUp={(e) => e.currentTarget.style.cursor = "grab"}
+                          onMouseDown={(e) =>
+                            (e.currentTarget.style.cursor = "grabbing")
+                          }
+                          onMouseUp={(e) =>
+                            (e.currentTarget.style.cursor = "grab")
+                          }
                         >
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                            <circle cx="9" cy="5" r="1.5" fill="currentColor" stroke="none" />
-                            <circle cx="15" cy="5" r="1.5" fill="currentColor" stroke="none" />
-                            <circle cx="9" cy="12" r="1.5" fill="currentColor" stroke="none" />
-                            <circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none" />
-                            <circle cx="9" cy="19" r="1.5" fill="currentColor" stroke="none" />
-                            <circle cx="15" cy="19" r="1.5" fill="currentColor" stroke="none" />
+                          <svg
+                            width="11"
+                            height="11"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ flexShrink: 0 }}
+                          >
+                            <circle
+                              cx="9"
+                              cy="5"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
+                            <circle
+                              cx="15"
+                              cy="5"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
+                            <circle
+                              cx="9"
+                              cy="12"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
+                            <circle
+                              cx="15"
+                              cy="12"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
+                            <circle
+                              cx="9"
+                              cy="19"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
+                            <circle
+                              cx="15"
+                              cy="19"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
                           </svg>
                         </span>
                         <span
@@ -605,7 +674,7 @@ Authorized Signatory: _________________________
                       {c.verbiage}
                     </p>
                   </div>
-                )
+                );
               })}
               <div className="mt-1">
                 <Lbl>Additional Easements / Free-text</Lbl>
@@ -634,57 +703,122 @@ Authorized Signatory: _________________________
             />
             <CardContent className="flex flex-col gap-2">
               {[...requirements, ...notesCodes].map((c, i) => {
-                const globalIdx = codes.findIndex((x) => x.id === c.id)
-                const isDragReq = dragReqIdx === globalIdx
-                const isOverReq = dragOverReqIdx === i
+                const globalIdx = codes.findIndex(
+                  (x) => x.id === c.id && x.type === c.type,
+                );
+                const isDragReq = dragReqIdx === globalIdx;
+                const isOverReq = dragOverReqIdx === i;
                 return (
                   <div
-                    key={c.id}
+                    key={`${c.type}-${c.id}`}
                     draggable
                     onDragStart={() => setDragReqIdx(globalIdx)}
-                    onDragOver={(e) => { e.preventDefault(); setDragOverReqIdx(i) }}
-                    onDragEnd={() => { setDragReqIdx(null); setDragOverReqIdx(null) }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverReqIdx(i);
+                    }}
+                    onDragEnd={() => {
+                      setDragReqIdx(null);
+                      setDragOverReqIdx(null);
+                    }}
                     onDrop={() => {
                       if (dragReqIdx !== null && dragReqIdx !== globalIdx) {
-                        moveCode(dragReqIdx, globalIdx)
-                        const next = [...codes]
-                        const [moved] = next.splice(dragReqIdx, 1)
-                        next.splice(globalIdx, 0, moved)
+                        moveCode(dragReqIdx, globalIdx);
+                        const next = [...codes];
+                        const [moved] = next.splice(dragReqIdx, 1);
+                        next.splice(globalIdx, 0, moved);
                         const items = next
                           .filter((x) => x.type === "requirement" && x.id)
-                          .map((x, idx) => ({ id: x.id, sortOrder: idx + 1 }))
+                          .map((x, idx) => ({ id: x.id, sortOrder: idx + 1 }));
                         if (orderDetail?.id && items.length > 0) {
-                          reorderTsriRequirements({ orderId: String(orderDetail.id), items })
+                          reorderTsriRequirements({
+                            orderId: String(orderDetail.id),
+                            items,
+                          })
                             .unwrap()
-                            .catch(() => toast.error("Failed to save requirement order"))
+                            .catch(() =>
+                              toast.error("Failed to save requirement order"),
+                            );
                         }
                       }
-                      setDragReqIdx(null)
-                      setDragOverReqIdx(null)
+                      setDragReqIdx(null);
+                      setDragOverReqIdx(null);
                     }}
                     className={`rounded-lg p-2.5 relative border transition-all duration-150 ${
                       isDragReq
                         ? "opacity-40 border-brand shadow-md"
-                        : c.type === "requirement" ? "border-blue-200 bg-blue-50" : "border-green-200 bg-green-50"
+                        : c.type === "requirement"
+                          ? "border-blue-200 bg-blue-50"
+                          : "border-green-200 bg-green-50"
                     } ${isOverReq ? "ring-2 ring-brand pt-5" : ""}`}
                   >
                     <div className="flex justify-between items-start mb-1">
                       <div className="flex items-center gap-1.5">
                         <span
                           className="cursor-grab active:cursor-grabbing text-blue-200 hover:text-blue-400 transition-colors flex"
-                          onMouseDown={(e) => e.currentTarget.style.cursor = "grabbing"}
-                          onMouseUp={(e) => e.currentTarget.style.cursor = "grab"}
+                          onMouseDown={(e) =>
+                            (e.currentTarget.style.cursor = "grabbing")
+                          }
+                          onMouseUp={(e) =>
+                            (e.currentTarget.style.cursor = "grab")
+                          }
                         >
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
-                            <circle cx="9" cy="5" r="1.5" fill="currentColor" stroke="none" />
-                            <circle cx="15" cy="5" r="1.5" fill="currentColor" stroke="none" />
-                            <circle cx="9" cy="12" r="1.5" fill="currentColor" stroke="none" />
-                            <circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none" />
-                            <circle cx="9" cy="19" r="1.5" fill="currentColor" stroke="none" />
-                            <circle cx="15" cy="19" r="1.5" fill="currentColor" stroke="none" />
+                          <svg
+                            width="11"
+                            height="11"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            style={{ flexShrink: 0 }}
+                          >
+                            <circle
+                              cx="9"
+                              cy="5"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
+                            <circle
+                              cx="15"
+                              cy="5"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
+                            <circle
+                              cx="9"
+                              cy="12"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
+                            <circle
+                              cx="15"
+                              cy="12"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
+                            <circle
+                              cx="9"
+                              cy="19"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
+                            <circle
+                              cx="15"
+                              cy="19"
+                              r="1.5"
+                              fill="currentColor"
+                              stroke="none"
+                            />
                           </svg>
                         </span>
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${codeTypeStyle(c.type)}`}>
+                        <span
+                          className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${codeTypeStyle(c.type)}`}
+                        >
                           {c.code}
                         </span>
                       </div>
@@ -699,7 +833,7 @@ Authorized Signatory: _________________________
                       {c.verbiage}
                     </p>
                   </div>
-                )
+                );
               })}
               <div className="mt-1">
                 <Lbl>Additional Notes / Free-text</Lbl>

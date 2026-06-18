@@ -339,6 +339,16 @@ export interface OrderNote {
   updatedAt: string;
 }
 
+export interface OrderDocument {
+  id: number;
+  documentSection: string;
+  fileName: string;
+  fileUrl: string;
+  fileKey: string;
+  fileMimeType: string;
+  sourceModule: string;
+}
+
 export interface FInpProps {
   label?: string;
   placeholder?: string;

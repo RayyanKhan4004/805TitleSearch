@@ -35,7 +35,7 @@ export default function UploadPopover({ onUpload, onClose }: UploadPopoverProps)
   return (
     <div
       ref={popoverRef}
-      className="absolute top-full right-0 mt-1.5 w-[320px] bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,.18)] border border-border z-50 overflow-hidden"
+      className="absolute top-full right-0 mt-1.5 w-75 bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,.18)] border border-border z-50 overflow-hidden"
     >
       <div className="px-4 pt-3 pb-2 border-b border-border">
         <div className="text-[12px] font-bold text-text">Upload Document</div>

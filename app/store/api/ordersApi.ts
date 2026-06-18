@@ -2,12 +2,12 @@
 
 import { createApi } from "@reduxjs/toolkit/query/react"
 import { baseQueryWithAuth } from "../baseQuery"
-import type { Order, OrderDetail, PaginatedOrdersResponse, CodeBookEntry, OrderNote } from "@/app/components/feature/tables/types"
+import type { Order, OrderDetail, PaginatedOrdersResponse, CodeBookEntry, OrderNote, OrderDocument } from "@/app/components/feature/tables/types"
 
 export const ordersApi = createApi({
   reducerPath: "ordersApi",
   baseQuery: baseQueryWithAuth,
-  tagTypes: ["Orders", "CodeBook", "Notes"],
+  tagTypes: ["Orders", "CodeBook", "Notes", "Documents"],
   endpoints: (builder) => ({
     fetchOrders: builder.query<
       PaginatedOrdersResponse,
@@ -522,7 +522,38 @@ export const ordersApi = createApi({
       }),
       invalidatesTags: (result, error, { orderId }) => [{ type: "Notes", id: orderId }],
     }),
+
+    fetchDocuments: builder.query<OrderDocument[], string>({
+      query: (orderId) => ({ url: `/orders/${orderId}/documents`, method: "GET" }),
+      providesTags: (result, error, orderId) => [{ type: "Documents", id: orderId }],
+    }),
+
+    uploadDocument: builder.mutation<any, { orderId: string; documentSection: string; file: File }>({
+      query: ({ orderId, documentSection, file }) => {
+        const fd = new FormData();
+        fd.append("documentSection", documentSection);
+        fd.append("file", file);
+        return { url: `/orders/${orderId}/documents/upload`, method: "POST", body: fd };
+      },
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Documents", id: orderId }],
+    }),
+
+    deleteDocument: builder.mutation<any, { orderId: string; id: number; sourceModule: string }>({
+      query: ({ orderId, id, sourceModule }) => {
+        const pathMap: Record<string, string> = {
+          title_chain_review: "title-chain-reviews",
+          starters: "starters",
+          assessor_map: "assessor-map",
+          tract_map: "tract-map",
+          runsheet: "runsheet",
+          tax_cert_docs: "tax-cert-docs",
+        };
+        const path = pathMap[sourceModule] ?? sourceModule;
+        return { url: `/orders/${orderId}/${path}/${id}`, method: "DELETE" };
+      },
+      invalidatesTags: (result, error, { orderId }) => [{ type: "Documents", id: orderId }],
+    }),
   }),
 });
 
-export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation, useUploadFileMutation, useUpdateOrderChainFileMutation, useCreateCodeBookMutation, useUpdateCodeBookMutation, useDeleteCodeBookMutation, useDeleteOrderMutation, useSearchCodeBookQuery, useLazySearchCodeBookQuery, useCreateTaxCertMutation, useDeleteTaxCertMutation, usePatchTaxCertMutation, useCreateTsriExceptionMutation, useDeleteTsriExceptionMutation, usePatchTsriExceptionMutation, useCreateTsriRequirementMutation, useDeleteTsriRequirementMutation, usePatchTsriRequirementMutation, useCreateTractMapMutation, useCreateAssessorMapMutation, useCreateRunsheetMutation, useCreateStarterMutation, useDeleteStarterMutation, useCreateTitleChainDocMutation, useDeleteTitleChainReviewMutation, useDeleteTractMapMutation, useDeleteAssessorMapMutation, useDeleteRunsheetMutation, usePatchAssessorMapMutation, usePatchTractMapMutation, usePatchRunsheetMutation, usePatchStarterMutation, usePatchTitleChainReviewMutation, useReorderTsriExceptionsMutation, useReorderTsriRequirementsMutation, useReorderTaxCertsMutation, useFetchNotesQuery, useCreateNoteMutation, useUpdateNoteMutation, useDeleteNoteMutation } = ordersApi
+export const { useFetchOrdersQuery, useFetchOrderQuery, useFetchCodeBookQuery, useFetchCodeBookByCodeQuery, useUpdateOrderRushMutation, useUpdateOrderMutation, useCreateOrderMutation, useUploadFileMutation, useUpdateOrderChainFileMutation, useCreateCodeBookMutation, useUpdateCodeBookMutation, useDeleteCodeBookMutation, useDeleteOrderMutation, useSearchCodeBookQuery, useLazySearchCodeBookQuery, useCreateTaxCertMutation, useDeleteTaxCertMutation, usePatchTaxCertMutation, useCreateTsriExceptionMutation, useDeleteTsriExceptionMutation, usePatchTsriExceptionMutation, useCreateTsriRequirementMutation, useDeleteTsriRequirementMutation, usePatchTsriRequirementMutation, useCreateTractMapMutation, useCreateAssessorMapMutation, useCreateRunsheetMutation, useCreateStarterMutation, useDeleteStarterMutation, useCreateTitleChainDocMutation, useDeleteTitleChainReviewMutation, useDeleteTractMapMutation, useDeleteAssessorMapMutation, useDeleteRunsheetMutation, usePatchAssessorMapMutation, usePatchTractMapMutation, usePatchRunsheetMutation, usePatchStarterMutation, usePatchTitleChainReviewMutation, useReorderTsriExceptionsMutation, useReorderTsriRequirementsMutation, useReorderTaxCertsMutation, useFetchNotesQuery, useCreateNoteMutation, useUpdateNoteMutation, useDeleteNoteMutation, useFetchDocumentsQuery, useUploadDocumentMutation, useDeleteDocumentMutation } = ordersApi

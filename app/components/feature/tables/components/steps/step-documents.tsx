@@ -7,11 +7,20 @@ import FinalPrelimModal from "../models/final-prelim-modal";
 import CreateTemplateModal from "../models/create-template-modal";
 import SendPrelimModal from "../models/send-prelim-modal";
 import UploadPopover from "../upload-popover";
-import { INIT_DOCS } from "../temp";
 import type { DocItem } from "@/app/components/feature/tables/types";
 import { Button, Card, CardContent, Badge } from "@/components/ui";
-import { useUploadFileMutation, useFetchNotesQuery, useCreateNoteMutation, useDeleteNoteMutation, useUpdateNoteMutation } from "@/app/store/api/ordersApi";
+import { useFetchNotesQuery, useCreateNoteMutation, useDeleteNoteMutation, useUpdateNoteMutation, useFetchDocumentsQuery, useUploadDocumentMutation, useDeleteDocumentMutation } from "@/app/store/api/ordersApi";
 import toast from "react-hot-toast";
+
+const SECTION_LABELS: Record<string, string> = {
+  general: "General",
+  title_chain_review: "Title Chain",
+  starters: "Starters",
+  assessor_map: "Assessor Map",
+  tract_map: "Tract Map",
+  runsheet: "Runsheet",
+  tax_cert_docs: "Tax Cert",
+};
 
 interface StepDocumentsProps {
   orderId?: string;
@@ -32,8 +41,12 @@ function formatNoteDate(iso: string): string {
 }
 
 export default function StepDocuments({ orderId, extraDocs = [], onSaveClose }: StepDocumentsProps) {
-  const [docs, setDocs] = useState<DocItem[]>(INIT_DOCS);
-  const [uploadFile] = useUploadFileMutation();
+  /* local-only docs (templates from CreateTemplate/FinalPrelim — not API-backed) */
+  const [localDocs, setLocalDocs] = useState<DocItem[]>([]);
+
+  const { data: apiDocs = [], isLoading: docsLoading } = useFetchDocumentsQuery(orderId!, { skip: !orderId });
+  const [uploadDocument, { isLoading: uploading }] = useUploadDocumentMutation();
+  const [deleteDocument] = useDeleteDocumentMutation();
 
   const { data: apiNotes = [], isLoading: notesLoading } = useFetchNotesQuery(orderId!, { skip: !orderId });
   const [createNote, { isLoading: creating }] = useCreateNoteMutation();
@@ -43,10 +56,10 @@ export default function StepDocuments({ orderId, extraDocs = [], onSaveClose }: 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
 
-  /* Merge extraDocs (generated prelims from TSRI) when they change */
+  /* Merge extraDocs (generated prelims from TSRI) into localDocs */
   useEffect(() => {
     if (extraDocs.length > 0) {
-      setDocs((prev) => {
+      setLocalDocs((prev) => {
         const existingNames = prev.map((d) => d.name);
         const newExtras = extraDocs.filter((d) => !existingNames.includes(d.name));
         return newExtras.length > 0 ? [...newExtras, ...prev] : prev;
@@ -99,38 +112,25 @@ export default function StepDocuments({ orderId, extraDocs = [], onSaveClose }: 
     }
   };
   const handleSaveTemplate = (tpl: DocItem) => {
-    setDocs((d) => [
+    setLocalDocs((d) => [
       { ...tpl, date: new Date().toLocaleDateString("en-US"), size: "—" },
       ...d,
     ]);
   };
-  const typeIcon = (t: string | undefined) =>
-    t === "template" ? "fileCheck" : "file";
-  const typeBg = (t: string | undefined) =>
-    t === "template"
-      ? "bg-status-info-subtle border border-status-info-blue-border"
-      : "bg-status-error-bg border border-status-error-border";
-  const typeColor = (t: string | undefined) =>
-    t === "template" ? "var(--status-info-blue)" : "var(--status-error-text)";
-
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-[18px]">
         <Card>
           <CardHead
-            title={`Documents (${docs.length})`}
-            sub="All files and templates attached to this order"
+            title={`Documents (${apiDocs.length})`}
+            sub="All files attached to this order"
             right={
               <div className="flex gap-1.5 flex-wrap">
                 <Button onClick={() => setShowTpl(true)} size="sm">
                   <Icon name="plus" size={11} />
                   Create Template
                 </Button>
-                <Button
-                  onClick={() => setShowFinal(true)}
-                  size="sm"
-                  variant="info"
-                >
+                <Button onClick={() => setShowFinal(true)} size="sm" variant="info">
                   <Icon name="fileCheck" size={11} />
                   Final Prelim
                 </Button>
@@ -147,33 +147,23 @@ export default function StepDocuments({ orderId, extraDocs = [], onSaveClose }: 
                     variant="secondary"
                     size="sm"
                     onClick={() => setShowUpload(!showUpload)}
+                    disabled={!orderId || uploading}
                   >
                     <Icon name="upload" size={11} />
-                    Upload
+                    {uploading ? "Uploading…" : "Upload"}
                   </Button>
                   {showUpload && (
                     <UploadPopover
                       onUpload={async (files) => {
-                        const file = files[0]
-                        if (!file) return
-                        const fd = new FormData()
-                        fd.append("file", file)
+                        const file = files[0];
+                        if (!file || !orderId) return;
                         try {
-                          const fileUrl = await uploadFile(fd).unwrap()
-                          setDocs((d) => [
-                            {
-                              name: file.name,
-                              date: new Date().toLocaleDateString("en-US"),
-                              size: file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.round(file.size / 1024)} KB`,
-                              type: "document",
-                              fileUrl,
-                            },
-                            ...d,
-                          ])
+                          await uploadDocument({ orderId, documentSection: "general", file }).unwrap();
+                          toast.success("File uploaded");
                         } catch {
-                          toast.error("Upload failed")
+                          toast.error("Upload failed");
                         }
-                        setShowUpload(false)
+                        setShowUpload(false);
                       }}
                       onClose={() => setShowUpload(false)}
                     />
@@ -182,42 +172,67 @@ export default function StepDocuments({ orderId, extraDocs = [], onSaveClose }: 
               </div>
             }
           />
-          <div className="p-3.5 flex flex-col gap-[7px] max-h-[380px] overflow-y-auto">
-            {docs.map((doc, i) => (
+          <div className="p-3.5 flex flex-col gap-1.75 max-h-95 overflow-y-auto">
+            {docsLoading && (
+              <p className="text-[11px] text-text-muted text-center py-4">Loading documents…</p>
+            )}
+            {!docsLoading && apiDocs.length === 0 && orderId && (
+              <p className="text-[11px] text-text-muted text-center py-4">No documents uploaded yet</p>
+            )}
+            {apiDocs.map((doc) => (
               <div
-                key={i}
-                className={`flex items-center justify-between px-3 py-[9px] rounded-lg cursor-pointer transition-all duration-150 border ${doc.type === "template" ? "border-status-success-border bg-status-success-bg" : "border-light bg-page"} hover:border-border hover:shadow-[0_1px_6px_rgba(0,0,0,.06)]`}
+                key={`${doc.sourceModule}-${doc.id}`}
+                className="flex items-center justify-between px-3 py-2.25 rounded-lg border border-light bg-page hover:border-border hover:shadow-[0_1px_6px_rgba(0,0,0,.06)] transition-all duration-150"
               >
-                <div className="flex items-center gap-2.5">
-                  <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${typeBg(doc.type)}`}
-                  >
-                    <Icon
-                      name={typeIcon(doc.type)}
-                      size={14}
-                      style={{ color: typeColor(doc.type) }}
-                    />
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-status-error-bg border border-status-error-border">
+                    <Icon name="file" size={14} style={{ color: "var(--status-error-text)" }} />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-semibold text-status-info-blue-text underline">
-                        {doc.name}
-                      </span>
-                      {doc.type === "template" && (
-                        <Badge variant="info" size="sm">
-                          WORD
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-[10px] text-text-muted">
-                      {doc.date}
-                      {doc.size !== "—" ? ` · ${doc.size}` : ""}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <a
+                        href={doc.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] font-semibold text-status-info-blue-text underline truncate max-w-45"
+                        title={doc.fileName}
+                      >
+                        {doc.fileName}
+                      </a>
+                      <Badge variant="info" size="sm">
+                        {SECTION_LABELS[doc.documentSection] ?? doc.documentSection}
+                      </Badge>
                     </div>
                   </div>
                 </div>
-                <button className="bg-transparent border-none cursor-pointer text-text-disabled flex">
-                  <Icon name="moreV" size={13} />
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => window.open(doc.fileUrl, "_blank")}
+                    title="View"
+                  >
+                    <Icon name="eye" size={12} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={async () => {
+                      if (!orderId) return;
+                      try {
+                        await deleteDocument({ orderId, id: doc.id, sourceModule: doc.sourceModule }).unwrap();
+                        toast.success("Document deleted");
+                      } catch {
+                        toast.error("Failed to delete document");
+                      }
+                    }}
+                    title="Delete"
+                  >
+                    <Icon name="trash" size={12} />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -317,7 +332,7 @@ export default function StepDocuments({ orderId, extraDocs = [], onSaveClose }: 
           </CardContent>
         </Card>
       </div>
-      {docs.filter((d) => d.type === "template").length > 0 && (
+      {localDocs.filter((d) => d.type === "template").length > 0 && (
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-3">
             <Icon
@@ -329,11 +344,11 @@ export default function StepDocuments({ orderId, extraDocs = [], onSaveClose }: 
               Saved Templates
             </span>
             <Badge variant="success">
-              {docs.filter((d) => d.type === "template").length}
+              {localDocs.filter((d) => d.type === "template").length}
             </Badge>
           </div>
           <div className="flex flex-wrap gap-2.5">
-            {docs
+            {localDocs
               .filter((d) => d.type === "template")
               .map((t, i) => (
                 <div
@@ -374,7 +389,7 @@ export default function StepDocuments({ orderId, extraDocs = [], onSaveClose }: 
         />
       )}
       {showSend && (
-        <SendPrelimModal onClose={() => setShowSend(false)} docs={docs} />
+        <SendPrelimModal onClose={() => setShowSend(false)} docs={localDocs} />
       )}
     </div>
   );

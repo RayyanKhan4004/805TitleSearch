@@ -331,6 +331,14 @@ export interface NoteItem {
   text: string;
 }
 
+export interface OrderNote {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface FInpProps {
   label?: string;
   placeholder?: string;

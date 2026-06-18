@@ -559,6 +559,7 @@ export default function Dashboard({
                 )}
                 {step === 3 && (
                   <StepDocuments
+                    orderId={selectedOrder?.id ? String(selectedOrder.id) : undefined}
                     extraDocs={generatedDocs}
                     onSaveClose={unlockAndClose}
                   />

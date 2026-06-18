@@ -275,25 +275,6 @@ export default function StepTSRI({
           </p>
         </div>
         <div className="flex gap-1.5">
-          <Button variant="secondary" onClick={handleSync}>
-            <Icon name="refresh" size={11} />
-            {synced ? "✓ Synced!" : "Sync from Chain & Legal"}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setShowPreview(!showPreview)}
-          >
-            <Icon name="eye" size={11} />
-            {showPreview ? "Hide Preview" : "Preview Report"}
-          </Button>
-          <Button variant="secondary" onClick={handleAutoGenerateExceptions}>
-            <Icon name="fileCheck" size={11} />
-            Auto Exceptions
-          </Button>
-          <Button variant="secondary" onClick={handleAutoGenerateRequirements}>
-            <Icon name="checkCircle" size={11} />
-            Auto Requirements
-          </Button>
           <Button
             onClick={handleGenerate}
             disabled={generating || generated}

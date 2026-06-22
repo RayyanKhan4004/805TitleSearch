@@ -9,6 +9,7 @@ export function buildCreatePayload(
   parties: PartiesState | null,
 ): CreateOrderRequest {
   return {
+    orderNumber: file.editOrderNo || undefined,
     addrNo: property.addrNo ?? "",
     dirPrefix: property.dirPrefix ?? "",
     streetName: property.streetName ?? "",

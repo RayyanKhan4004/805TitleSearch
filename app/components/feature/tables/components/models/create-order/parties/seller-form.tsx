@@ -188,6 +188,20 @@ export default function SellerForm({
             />
           </div>
         </div>
+
+        // Add SSN / Tax ID (last 4)
+        <div className="grid grid-cols-2 gap-2.75 mb-3.5">
+          <div>
+            <label className={lblCls}>SSN / Tax ID (last 4)</label>
+            <input
+              className={inpCls}
+              value={""}
+              onChange={(e) => {}}
+              placeholder="0000"
+              type="password"
+            />
+          </div>
+        </div>
         <div className="flex gap-2">
           <button
             onClick={onAdd}

@@ -43,12 +43,43 @@ export function buildPrelimData({
     selectedOrder?.addr ||
     "";
 
+  const titleOfficer = orderDetail?.titleOfficer || "";
+  const TOInitials = titleOfficer
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+
+  const propertyStreet = orderDetail
+    ? [
+        orderDetail.addrNo,
+        orderDetail.dirPrefix,
+        orderDetail.streetName,
+        orderDetail.suffix,
+        orderDetail.postDir,
+        orderDetail.unitType,
+        orderDetail.unitNo,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .trim()
+    : "";
+
+  const propertyCity = orderDetail?.city || "";
+  const propertyState = orderDetail?.state || "CA";
+  const propertyZip = orderDetail?.zipCode || "";
+
+  const buyer0 = orderDetail?.buyers?.[0];
+  const customer1Name = buyer0
+    ? [buyer0.firstName, buyer0.lastName].filter(Boolean).join(" ").trim()
+    : "";
+
   return {
     orderNo: String(
       selectedOrder?.id ?? orderDetail?.id ?? orderDetailId ?? "",
     ),
     fileNo: orderDetail?.clientFileNo || "",
-    titleOfficer: orderDetail?.titleOfficer || "",
+    titleOfficer,
     titleEmail: orderDetail?.titleOfficerEmail || "",
     titlePhone: PRELIM_COMPANY.phone,
     titleFax: PRELIM_COMPANY.fax,
@@ -57,7 +88,7 @@ export function buildPrelimData({
       tsri.effectiveDate || shared.effectiveDate || PRELIM_DEFAULTS.effectiveDate,
     effectiveTime: PRELIM_DEFAULTS.effectiveTime,
     county: orderDetail?.county || "",
-    city: orderDetail?.city || "",
+    city: propertyCity,
     vestingName: tsri.vesting || shared.vesting || "",
     vestingType: "",
     leaseHold: tsri.leaseHold || shared.leaseHold || "",
@@ -68,6 +99,20 @@ export function buildPrelimData({
     notes: notes.map(mapCodeItem),
     easements: tsri.easements || "",
     extraNotes: tsri.notes || "",
+    TOInitials,
+    underwriterName: "Westcor Land Title Insurance Company",
+    amountOfInsurance: "",
+    propertyStreet,
+    propertyCity,
+    propertyState,
+    propertyZip,
+    customer1Contact: "",
+    customer1Name,
+    customer1Address: "",
+    customer1CityState: propertyCity
+      ? `${propertyCity}, ${propertyState} ${propertyZip}`.trim()
+      : "",
+    customer1Ref: orderDetail?.clientFileNo || "",
   };
 }
 

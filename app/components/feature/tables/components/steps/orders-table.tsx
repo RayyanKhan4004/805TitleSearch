@@ -22,6 +22,7 @@ interface Props {
   onRushToggle: (no: string) => void;
   onStatusChange: (no: string, status: Order["status"]) => void;
   onDelete: (id: string) => void;
+  onEdit?: (id: string) => void;
   statusToColor: (s: string) => { background: string; color: string };
 }
 
@@ -35,6 +36,7 @@ export default function OrdersTable({
   onRushToggle,
   onStatusChange,
   onDelete,
+  onEdit,
   statusToColor,
 }: Props) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export default function OrdersTable({
                 flexWrap: "wrap",
               }}
             >
-              {row.id}
+              <span style={{ fontWeight: 700 }}>{row.no || row.id}</span>
               {row.rush && <RushBadge />}
               {isHovered && <OpenBadge />}
             </div>
@@ -240,6 +242,38 @@ export default function OrdersTable({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  onEdit?.(id);
+                }}
+                title="Edit order"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 28,
+                  height: 28,
+                  borderRadius: 7,
+                  border: "1px solid var(--border-primary)",
+                  background: "var(--color-white)",
+                  color: "var(--text-muted)",
+                  cursor: "pointer",
+                  transition: "all .15s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = "#eff6ff";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "#3b82f6";
+                  (e.currentTarget as HTMLButtonElement).style.color = "#3b82f6";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = "var(--color-white)";
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-primary)";
+                  (e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)";
+                }}
+              >
+                <Icon name="pencil" size={12} />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
                   setConfirmDeleteId(id);
                 }}
                 title="Delete order"
@@ -281,6 +315,7 @@ export default function OrdersTable({
       onRushToggle,
       onStatusChange,
       onDelete,
+      onEdit,
       statusToColor,
     ],
   );

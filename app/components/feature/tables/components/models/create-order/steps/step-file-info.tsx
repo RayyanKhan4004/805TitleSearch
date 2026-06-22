@@ -95,38 +95,45 @@ export default function StepFileInfo({ form, onChange, salePrice, loanAmount }: 
           File Information
         </div>
 
-        {form.editMode && (
-          <div style={grid3}>
-            <div>
-              <label style={lbl}>Order No.</label>
-              <input style={{ ...inp, background: "#f8fafc", color: "#94a3b8" }} readOnly value={form.editOrderNo} />
-            </div>
-            <div>
-              <label style={lbl}>File Open Date</label>
-              <input style={inp} type="date" value={form.editOpenDate} onChange={(e) => onChange("editOpenDate", e.target.value)} />
-            </div>
-            <div>
-              <label style={lbl}>Status</label>
-              <select style={inp} value={form.editStatus} onChange={(e) => onChange("editStatus", e.target.value)}>
-                {["Open", "In Review", "In Clarification", "Closed", "Cancelled"].map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-            <div
-              style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", border: "1px solid #e2e8f0", borderRadius: 8, background: "#fafafa", cursor: "pointer", gridColumn: "span 1" }}
-              onClick={() => onChange("editRush", !form.editRush)}
-            >
-              <input type="checkbox" readOnly checked={form.editRush} style={{ width: 14, height: 14, accentColor: "#dc2626", cursor: "pointer" }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: "#475569" }}>Rush File</span>
-              {form.editRush && (
-                <span style={{ background: "#dc2626", color: "#fff", fontSize: 9, fontWeight: 700, padding: "1px 7px", borderRadius: 999 }}>RUSH</span>
-              )}
-            </div>
+        <div style={{ ...grid3, marginBottom: 13 }}>
+          <div>
+            <label style={lbl}>Order No.</label>
+            <input
+              style={inp}
+              value={form.editOrderNo}
+              onChange={(e) => onChange("editOrderNo", e.target.value)}
+              placeholder="e.g. 2025-00123"
+            />
           </div>
-        )}
+          {form.editMode && (
+            <>
+              <div>
+                <label style={lbl}>File Open Date</label>
+                <input style={inp} type="date" value={form.editOpenDate} onChange={(e) => onChange("editOpenDate", e.target.value)} />
+              </div>
+              <div>
+                <label style={lbl}>Status</label>
+                <select style={inp} value={form.editStatus} onChange={(e) => onChange("editStatus", e.target.value)}>
+                  {["Open", "In Review", "In Clarification", "Closed", "Cancelled"].map((s) => (
+                    <option key={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", border: "1px solid #e2e8f0", borderRadius: 8, background: "#fafafa", cursor: "pointer" }}
+                onClick={() => onChange("editRush", !form.editRush)}
+              >
+                <input type="checkbox" readOnly checked={form.editRush} style={{ width: 14, height: 14, accentColor: "#dc2626", cursor: "pointer" }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#475569" }}>Rush File</span>
+                {form.editRush && (
+                  <span style={{ background: "#dc2626", color: "#fff", fontSize: 9, fontWeight: 700, padding: "1px 7px", borderRadius: 999 }}>RUSH</span>
+                )}
+              </div>
+            </>
+          )}
+        </div>
 
-        <div style={grid3}>
+        {/* <div style={grid3}>
           <div>
             <label style={lbl}>Client Name</label>
             <select style={inp} value={form.clientName} onChange={(e) => onChange("clientName", e.target.value)}>
@@ -143,9 +150,9 @@ export default function StepFileInfo({ form, onChange, salePrice, loanAmount }: 
             <label style={lbl}>Source of Business</label>
             <input style={inp} value={form.editSource} onChange={(e) => onChange("editSource", e.target.value)} placeholder="Source" />
           </div>
-        </div>
+        </div> */}
 
-        <div style={grid3}>
+        {/* <div style={grid3}>
           <div>
             <label style={lbl}>Estimated Closing Date</label>
             <input type="date" style={inp} value={form.editCloseDate} onChange={(e) => onChange("editCloseDate", e.target.value)} />
@@ -164,7 +171,7 @@ export default function StepFileInfo({ form, onChange, salePrice, loanAmount }: 
               <option>Land</option>
             </select>
           </div>
-        </div>
+        </div> */}
 
         <div style={grid3}>
           <div>
@@ -241,7 +248,7 @@ export default function StepFileInfo({ form, onChange, salePrice, loanAmount }: 
           </div>
         </div>
 
-        <div style={grid4}>
+        {/* <div style={grid4}>
           <div>
             <label style={lbl}>Title Officer</label>
             <input style={inp} value={form.editTitleOfficer} onChange={(e) => onChange("editTitleOfficer", e.target.value)} placeholder="Name" />
@@ -258,9 +265,9 @@ export default function StepFileInfo({ form, onChange, salePrice, loanAmount }: 
             <label style={lbl}>Escrow Officer Email</label>
             <input type="email" style={inp} value={form.editEscrowOfficerEmail} onChange={(e) => onChange("editEscrowOfficerEmail", e.target.value)} placeholder="Email" />
           </div>
-        </div>
+        </div> */}
 
-        <div style={grid4}>
+        {/* <div style={grid4}>
           <div>
             <label style={lbl}>Title Rep</label>
             <input style={inp} value={form.editTitleRep} onChange={(e) => onChange("editTitleRep", e.target.value)} placeholder="Rep name" />
@@ -277,7 +284,7 @@ export default function StepFileInfo({ form, onChange, salePrice, loanAmount }: 
             <label style={lbl}>File Source</label>
             <input style={inp} value={form.editFileSource} onChange={(e) => onChange("editFileSource", e.target.value)} placeholder="File source" />
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -437,6 +437,19 @@ export interface PrelimData {
   notes: { code: string; verbiage: string }[];
   easements: string;
   extraNotes: string;
+  /* extended fields */
+  TOInitials?: string;
+  underwriterName?: string;
+  amountOfInsurance?: string;
+  propertyStreet?: string;
+  propertyCity?: string;
+  propertyState?: string;
+  propertyZip?: string;
+  customer1Contact?: string;
+  customer1Name?: string;
+  customer1Address?: string;
+  customer1CityState?: string;
+  customer1Ref?: string;
 }
 
 export interface PrelimPreviewModalProps {
@@ -711,6 +724,7 @@ export interface OrderDetailParty {
 
 export interface OrderDetail {
   id: number;
+  orderNumber?: string;
 
   /* address */
   addrNo: string;

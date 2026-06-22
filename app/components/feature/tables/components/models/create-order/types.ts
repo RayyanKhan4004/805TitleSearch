@@ -83,6 +83,7 @@ export interface PrimaryContactPayload {
 }
 
 export interface CreateOrderRequest {
+  orderNumber?: string;
   addrNo: string;
   dirPrefix: string;
   streetName: string;

@@ -2,7 +2,7 @@
 
 import Icon from "@/components/common/icon";
 import { useState, useEffect } from "react";
-import { CreateOrderModal } from "../models";
+import { CreateOrderModal, EditOrderModal } from "../models";
 import type { Order, OrderLock } from "@/app/components/feature/tables/types";
 import RecentFilesPanel from "./recent-files-panel";
 import FilterControls from "./filter-controls";
@@ -29,6 +29,7 @@ export default function StepDashboard({
   onDelete,
 }: StepDashboardProps) {
   const [showModal, setShowModal] = useState(false);
+  const [editOrderId, setEditOrderId] = useState<string | null>(null);
   const [hovered, setHovered] = useState<number | null>(null);
   const [showFunnel, setShowFunnel] = useState(false);
   const [expandedSection, setExpandedSection] = useState<
@@ -185,6 +186,7 @@ export default function StepDashboard({
           onRushToggle={(no) => onRushToggle?.(no)}
           onStatusChange={(no, status) => onStatusChange?.(no, status)}
           onDelete={(id) => onDelete?.(id)}
+          onEdit={(id) => setEditOrderId(id)}
           statusToColor={statusToColor}
         />
 
@@ -205,6 +207,9 @@ export default function StepDashboard({
       </div>
 
       {showModal && <CreateOrderModal onClose={() => setShowModal(false)} />}
+      {editOrderId && (
+        <EditOrderModal orderId={editOrderId} onClose={() => setEditOrderId(null)} />
+      )}
     </div>
   );
 }

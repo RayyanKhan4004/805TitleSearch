@@ -2,7 +2,7 @@ import type { Order } from "@/app/components/feature/tables/types";
 
 export function mapOrdersResponse(items: Record<string, any>[]): Order[] {
   return items.map((item) => {
-    const no = String(item.addrNo ?? "");
+    const no = String(item.orderNumber ?? item.no ?? "");
     const apn1 = item.apn1 ?? "";
     const street = [
       item.addrNo,

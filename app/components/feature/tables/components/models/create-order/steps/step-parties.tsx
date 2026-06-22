@@ -107,6 +107,7 @@ export interface PartiesState {
   sEmail: string;
   sAddr: string;
   sDocNo: string;
+  sSSN: string;
   titleOffice: string;
   escrowOffice: string;
   branch: string;
@@ -842,39 +843,7 @@ export default function StepParties({
                 />
               </div>
             </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 11,
-                marginBottom: 11,
-              }}
-            >
-              <div>
-                <label style={lbl}>Entity Type</label>
-                <select
-                  style={inp}
-                  value={s.bEntity}
-                  onChange={(e) => set("bEntity", e.target.value)}
-                >
-                  {ENTITY_OPTS.map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label style={lbl}>How Title Will Be Held (Vesting)</label>
-                <select
-                  style={inp}
-                  value={s.bVest}
-                  onChange={(e) => set("bVest", e.target.value)}
-                >
-                  {VESTING_OPTS.map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+           
             <div
               style={{
                 display: "grid",

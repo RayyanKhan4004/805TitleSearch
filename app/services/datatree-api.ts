@@ -179,7 +179,7 @@ export function mapOrderDetailToForm(d: OrderDetail): PropertyForm {
 export function mapOrderDetailToSharedState(d: OrderDetail) {
   return {
     vesting: d.vesting || "",
-    legal: d.legalDescription || d.shortLegal || "",
+    legal: (d.legalDescription && d.legalDescription !== d.shortLegal) ? d.legalDescription : "",
     leaseHold: d.leaseHoldInterest || "",
     effectiveDate: d.effectiveDate || "",
     typeDate: d.typeDate || "",

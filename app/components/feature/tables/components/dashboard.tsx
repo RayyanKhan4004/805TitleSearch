@@ -181,8 +181,8 @@ export default function Dashboard({
       const odShared = mapOrderDetailToSharedState(orderDetail);
       setShared((s) => ({
         ...s,
-        vesting: odShared.vesting,
-        legal: odShared.legal,
+        vesting: odShared.vesting || s.vesting,
+        legal: odShared.legal || s.legal,
         leaseHold: odShared.leaseHold,
         effectiveDate: odShared.effectiveDate,
         typeDate: odShared.typeDate,
@@ -267,7 +267,7 @@ export default function Dashboard({
   }) => {
     if (!orderDetailId) return;
     const body: Record<string, any> = {
-      legalDescription: shared.legal || null,
+      legalDescription: shared.legal || propertyForm?.shortLegal || null,
       vesting: shared.vesting || null,
       shortLegal: propertyForm?.shortLegal || null,
       leaseHoldInterest: shared.leaseHold || null,

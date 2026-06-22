@@ -81,6 +81,7 @@ export interface SellerEntry {
   email: string;
   addr: string;
   docNo: string;
+  ssn: string;
 }
 
 export interface PartiesState {
@@ -234,6 +235,7 @@ const defaultState = (form?: Record<string, any>): PartiesState => ({
   sEmail: "",
   sAddr: "",
   sDocNo: form?._docNo || "",
+  sSSN: "",
   titleOffice: "",
   escrowOffice: "",
   branch: "South Cal",
@@ -649,6 +651,7 @@ export default function StepParties({
           email: s.sEmail,
           addr: s.sAddr,
           docNo: s.sDocNo,
+          ssn: s.sSSN,
         },
       ],
       sFirst: "",
@@ -657,6 +660,7 @@ export default function StepParties({
       sPhone: "",
       sEmail: "",
       sAddr: "",
+      sSSN: "",
     }));
   };
 
@@ -1192,6 +1196,19 @@ export default function StepParties({
                   value={s.sDocNo}
                   onChange={(e) => set("sDocNo", e.target.value)}
                   placeholder="e.g. 2021.70877"
+                />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 11, marginBottom: 14 }}>
+              <div>
+                <label style={lbl}>SSN / Tax ID (Last 4)</label>
+                <input
+                  style={inp}
+                  value={s.sSSN}
+                  onChange={(e) => set("sSSN", e.target.value.replace(/\D/g, "").slice(0, 4))}
+                  placeholder="0000"
+                  maxLength={4}
+                  inputMode="numeric"
                 />
               </div>
             </div>

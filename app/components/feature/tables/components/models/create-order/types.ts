@@ -23,6 +23,7 @@ export interface SellerPayload {
   email: string;
   mailingAddress: string;
   recordedDocNo: string;
+  ssnTaxId?: string;
 }
 
 export interface EscrowTitlePayload {

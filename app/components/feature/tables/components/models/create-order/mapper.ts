@@ -96,6 +96,7 @@ export function buildCreatePayload(
       email: s.email ?? "",
       mailingAddress: s.addr ?? "",
       recordedDocNo: s.docNo ?? "",
+      ssnTaxId: s.ssn ?? "",
     })),
     escrowTitles: [{
       titleOffice: escrow.titleOffice ?? parties?.titleOffice ?? "",

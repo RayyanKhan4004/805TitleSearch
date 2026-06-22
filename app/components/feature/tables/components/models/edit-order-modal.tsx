@@ -119,6 +119,7 @@ function mapDetailToFormData(d: OrderDetail): FormData {
       addr: s.mailingAddress ?? "",
       deedType: s.deedType ?? "",
       docNo: s.recordedDocNo ?? "",
+      ssn: s.ssnTaxId ?? "",
     })),
     titleOffice: d.titleOffice ?? escrowTitle.titleOffice ?? "",
     escrowOffice: d.escrowOffice ?? escrowTitle.escrowOffice ?? "",

@@ -42,6 +42,8 @@ interface SellerFormProps {
   onEmailChange: (v: string) => void;
   onAddrChange: (v: string) => void;
   onDocNoChange: (v: string) => void;
+  ssn: string;
+  onSsnChange: (v: string) => void;
   onAdd: () => void;
   count: number;
 }
@@ -66,6 +68,8 @@ export default function SellerForm({
   onEmailChange,
   onAddrChange,
   onDocNoChange,
+  ssn,
+  onSsnChange,
   onAdd,
   count,
 }: SellerFormProps) {
@@ -189,16 +193,16 @@ export default function SellerForm({
           </div>
         </div>
 
-        // Add SSN / Tax ID (last 4)
         <div className="grid grid-cols-2 gap-2.75 mb-3.5">
           <div>
-            <label className={lblCls}>SSN / Tax ID (last 4)</label>
+            <label className={lblCls}>SSN / Tax ID (Last 4)</label>
             <input
               className={inpCls}
-              value={""}
-              onChange={(e) => {}}
+              value={ssn}
+              onChange={(e) => onSsnChange(e.target.value.replace(/\D/g, "").slice(0, 4))}
               placeholder="0000"
-              type="password"
+              maxLength={4}
+              inputMode="numeric"
             />
           </div>
         </div>

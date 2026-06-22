@@ -10,6 +10,7 @@ import UploadPopover from "../upload-popover";
 import type { DocItem } from "@/app/components/feature/tables/types";
 import { Button, Card, CardContent, Badge } from "@/components/ui";
 import { useFetchNotesQuery, useCreateNoteMutation, useDeleteNoteMutation, useUpdateNoteMutation, useFetchDocumentsQuery, useUploadDocumentMutation, useDeleteDocumentMutation } from "@/app/store/api/ordersApi";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 
 const SECTION_LABELS: Record<string, string> = {
@@ -41,6 +42,7 @@ function formatNoteDate(iso: string): string {
 }
 
 export default function StepDocuments({ orderId, extraDocs = [], onSaveClose }: StepDocumentsProps) {
+  const token = useSelector((state: any) => state.auth?.token);
   /* local-only docs (templates from CreateTemplate/FinalPrelim — not API-backed) */
   const [localDocs, setLocalDocs] = useState<DocItem[]>([]);
 
@@ -72,6 +74,32 @@ export default function StepDocuments({ orderId, extraDocs = [], onSaveClose }: 
   const [showFinal, setShowFinal] = useState(false);
   const [showSend, setShowSend] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [downloadingPrelim, setDownloadingPrelim] = useState(false);
+
+  const handleDownloadPrelim = async () => {
+    if (!orderId) return;
+    setDownloadingPrelim(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/";
+      const url = `${baseUrl}reports/preliminary/${orderId}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!response.ok) throw new Error("Failed to generate report");
+      const blob = await response.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = `prelim-report-${orderId}.docx`;
+      a.click();
+      window.URL.revokeObjectURL(objectUrl);
+    } catch {
+      toast.error("Failed to download prelim report");
+    } finally {
+      setDownloadingPrelim(false);
+    }
+  };
 
   const addNote = async () => {
     if (!noteText.trim() || !orderId) return;
@@ -130,9 +158,9 @@ export default function StepDocuments({ orderId, extraDocs = [], onSaveClose }: 
                   <Icon name="plus" size={11} />
                   Create Template
                 </Button>
-                <Button onClick={() => setShowFinal(true)} size="sm" variant="info">
-                  <Icon name="fileCheck" size={11} />
-                  Final Prelim
+                <Button onClick={handleDownloadPrelim} size="sm" variant="info" disabled={downloadingPrelim || !orderId}>
+                  <Icon name={downloadingPrelim ? "loader" : "fileCheck"} size={11} className={downloadingPrelim ? "animate-spin" : ""} />
+                  {downloadingPrelim ? "Downloading…" : "Final Prelim"}
                 </Button>
                 <Button
                   onClick={() => setShowSend(true)}

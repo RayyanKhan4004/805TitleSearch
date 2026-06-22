@@ -10,6 +10,7 @@ import {
 } from "@/app/store/api/ordersApi";
 import toast from "react-hot-toast";
 import { buildTsriPreviewBody } from "../prelim";
+import { stripHtml } from "../prelim/helpers";
 import type {
   ChainCode,
   SharedState,
@@ -67,7 +68,7 @@ export default function StepTSRI({
   orderDetail,
 }: StepTSRIProps) {
   const [proposedInsured, setProposedInsured] = useState(
-    `${(shared.vesting || "").split(",")[0] || "John D. Doe and Jane R. Doe"}`,
+    `${stripHtml(shared.vesting || "").split(",")[0] || "John D. Doe and Jane R. Doe"}`,
   );
   const [effectiveDate, setEffectiveDate] = useState(
     shared.effectiveDate || "05/07/2026",
